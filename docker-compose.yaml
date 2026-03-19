@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 1. BACKEND
+  backend:
+    build: ./backend-dashboard
+    container_name: dashboard_api
+    restart: always
+    ports:
+      - "3000:3000"
+    # Ini kuncinya agar Docker bisa tembus ke Postgres Local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Docker akan otomatis menarik variabel dari file .env di folder ini
+    env_file:
+      - ./backend-dashboard/.env 
+    volumes:
+      - ./backend-dashboard:/app
+      - /app/node_modules
+
+  # 2. FRONTEND ADMIN
+  frontend-admin:
+    build: ./frontend-admin
+    container_name: dashboard_admin
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    volumes:
+      - ./frontend-admin:/app
+      - /app/node_modules
+
+  # 3. FRONTEND USERS
+  frontend-users:
+    build: ./frontend-users
+    container_name: dashboard_users
+    ports:
+      - "5174:5174"
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    volumes:
+      - ./frontend-users:/app
+      - /app/node_modules

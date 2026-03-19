@@ -1,0 +1,35 @@
+# Dependency directories
+node_modules/
+npm-debug.log
+npm-debug.log.*
+yarn-error.log
+
+# Environment variables (Sangat penting agar kredensial tidak bocor ke dalam image)
+.env
+.env.test
+.env.production
+
+# Git
+.git
+.gitignore
+
+# Docker configuration (Opsional, tapi bagus agar image lebih bersih)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Testing/Coverage reports
+coverage/
+.nyc_output/
+
+# macOS file
+.DS_Store

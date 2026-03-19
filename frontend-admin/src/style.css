@@ -1,0 +1,10 @@
+/* src/style.css */
+@import "tailwindcss";
+
+/* Kustomisasi tambahan setelah import tailwind */
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  background-color: #f9fafb; /* Warna abu-abu sangat muda khas dashboard */
+  color: #111827; /* Warna teks default yang lebih tajam (Slate-900) */
+}

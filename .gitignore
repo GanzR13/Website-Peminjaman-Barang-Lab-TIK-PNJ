@@ -1,0 +1,5 @@
+/desktop.ini
+
+# Abaikan semua file env di folder manapun
+**/.env
+**/*.env
