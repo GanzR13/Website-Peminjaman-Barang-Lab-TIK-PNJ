@@ -5,13 +5,12 @@ require("dotenv").config();
 // 1. Import Database
 const db = require("./models"); 
 
-// 2. Import Routes & Swagger
+// 2. Import Routes
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const refRoutes = require('./routes/refRoutes');
-const swaggerDocs = require("./config/swagger"); 
 
-// INISIALISASI app DULU
+// INISIALISASI app
 const app = express();
 
 // 3. Setup Middleware
@@ -30,21 +29,21 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 4. Inisialisasi Swagger (Taruh sebelum rute lain agar terbaca)
-swaggerDocs(app);
-
-// 5. Daftarkan Routes Utama
+// 4. Daftarkan Routes Utama
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/ref', refRoutes);
 
-// 6. REDIRECT Rute Utama ke Swagger
-// Taruh paling bawah di bagian rute agar tidak bertabrakan dengan /api-docs
+// 5. REDIRECT Rute Utama ke Dokumentasi Postman
 app.get("/", (req, res) => {
-    res.redirect('/api-docs');
+    res.json({
+        status: "success",
+        message: "API SI-LAB TIK berjalan normal 🚀",
+        docs: "https://documenter.getpostman.com/view/40256156/2sBXiqFpKy"
+    });
 });
 
-// 7. Global Error Handler
+// 6. Global Error Handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
@@ -53,7 +52,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 8. Tentukan PORT & Jalankan Server
+// 7. Tentukan PORT & Jalankan Server
 const PORT = process.env.PORT || 3000;
 
 db.sequelize
@@ -65,7 +64,7 @@ db.sequelize
     .then(() => {
         app.listen(PORT, () => {
             console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
-            console.log(`📄 Swagger Docs: http://localhost:${PORT}/api-docs`);
+            console.log(`📄 Dokumentasi API: https://documenter.getpostman.com/view/40256156/2sBXiqFpKy`);
         });
     })
     .catch((err) => {
