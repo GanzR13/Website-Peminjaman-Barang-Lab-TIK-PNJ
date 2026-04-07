@@ -15,7 +15,6 @@ const checkValidation = (req, res, next) => {
 const validateLogin = [
   body('email').isEmail().withMessage('Format email salah.'),
   body('password').notEmpty().withMessage('Password wajib diisi.'),
-  // Tambahkan portal jika kamu pakai sistem pemisah login tadi
   body('portal').optional().isIn(['admin', 'user']).withMessage('Portal tidak valid.'),
   checkValidation
 ];

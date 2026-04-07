@@ -17,6 +17,7 @@ Sebelum menjalankan proyek ini, pastikan sistem kamu sudah menginstal:
 - [Node.js](https://nodejs.org/) (Versi 18 atau lebih baru)
 - [Docker Desktop](https://www.docker.com/)
 - PostgreSQL dan PgAdmin4
+- Postman
 
 ## 🛠️ Cara Menjalankan Proyek
 

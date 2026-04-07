@@ -2,40 +2,52 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../views/Login.vue';
 
 const routes = [
+  // 1. Rute Redirect Awal
   { 
     path: '/', 
     redirect: '/admin/login' 
   },
+
+  // 2. Rute Bebas Layout (Halaman Login Berdiri Sendiri)
   { 
     path: '/admin/login', 
     name: 'AdminLogin', 
     component: Login 
   },
-  { 
-    path: '/admin/dashboard', 
-    name: 'AdminDashboard', 
-    component: () => import('../views/Dashboard.vue'), 
-    meta: { requiresAuth: true } 
-  },
-  { 
-    path: '/users/pegawai',
-    name: 'ManagementPegawai', 
-    component: () => import('../views/ManagementPegawai.vue'), 
-    meta: { requiresAuth: true } 
-  },
-  {
-    path: '/users/peminjam', 
-    name: 'ManagementPeminjam', 
-    component: () => import('../views/ManagementPeminjam.vue'), 
-    meta: { requiresAuth: true } 
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: () => import('../views/Profile.vue'),
-    meta: { requiresAuth: true }
-  }
 
+  // 3. Rute Utama (Menggunakan SidebarOnlyLayout untuk semua halaman)
+  {
+    path: '/',
+    component: () => import('../layouts/SidebarOnlyLayout.vue'),
+    meta: { requiresAuth: true }, // Semua children di dalamnya otomatis butuh login
+    children: [
+      { 
+        path: '/admin/dashboard', 
+        name: 'AdminDashboard', 
+        component: () => import('../views/Dashboard.vue')
+      },
+      { 
+        path: '/users/pegawai',
+        name: 'ManagementPegawai', 
+        component: () => import('../views/ManagementPegawai.vue')
+      },
+      {
+        path: '/users/peminjam', 
+        name: 'ManagementPeminjam', 
+        component: () => import('../views/ManagementPeminjam.vue')
+      },
+      {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('../views/Profile.vue')
+      },
+      {
+        path: '/barang',
+        name: 'Barang',
+        component: () => import('../views/Barang.vue')
+      }
+    ]
+  }
 ];
 
 const router = createRouter({
@@ -43,30 +55,33 @@ const router = createRouter({
   routes
 });
 
+// NAVIGATION GUARD (Satpam Rute)
 router.beforeEach((to, from) => {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAuthenticated = !!token;
 
-  // Cek apakah user adalah Admin/Pegawai (Role ID 1 s/d 4 biasanya Pegawai/Admin)
+  // Cek apakah user adalah Admin/Pegawai (Role ID 1 s/d 4)
   const isAdmin = user.role_id <= 4; 
 
+  // Jika butuh login tapi belum ada token
   if (to.meta.requiresAuth && !isAuthenticated) {
-    return { name: 'Login' };
+    return { name: 'AdminLogin' }; 
   }
 
-  // VALIDASI TAMBAHAN: Jika dia login pakai akun Mahasiswa di web Admin, tendang balik!
+  // Jika sudah login pakai akun Mahasiswa tapi mencoba masuk rute Admin
   if (to.meta.requiresAuth && isAuthenticated && !isAdmin) {
-    localStorage.clear(); // Hapus token mahasiswa yang nyasar
+    localStorage.clear(); // Tendang tokennya
     alert("Akses Ditolak: Halaman ini hanya untuk Admin/Pegawai");
-    return { name: 'Login' };
+    return { name: 'AdminLogin' }; 
   }
 
-  if (to.path === '/login' && isAuthenticated && isAdmin) {
-    return { name: 'Dashboard' };
+  // Jika sudah login sebagai Admin, lalu mencoba buka halaman Login lagi
+  if (to.path === '/admin/login' && isAuthenticated && isAdmin) { 
+    return { name: 'AdminDashboard' }; // Langsung arahkan ke dashboard
   }
 
-  return true;
+  return true; // Jika semua aman, izinkan masuk
 });
 
 export default router;

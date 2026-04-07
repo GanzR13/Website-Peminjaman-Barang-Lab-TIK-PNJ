@@ -13,7 +13,7 @@ const authenticateToken = (req, res, next) => {
       return res.status(403).json({ message: "Token tidak valid atau sudah kedaluwarsa." });
     }
     req.user = user;
-    next(); // Lanjut ke controller
+    next();
   });
 };
 

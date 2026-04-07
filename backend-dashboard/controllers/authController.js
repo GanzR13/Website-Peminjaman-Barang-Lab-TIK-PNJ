@@ -16,8 +16,6 @@ exports.login = async (req, res) => {
 		if (!isMatch) return res.status(401).json({ message: "Password salah" });
 
 		if (portal === "admin") {
-			// Izinkan jika role_id adalah 1 (Super Admin), 2 (Admin), 3 (Laboran), atau 4 (Teknisi)
-			// JANGAN biarkan role_id 5 (Mahasiswa) masuk sini
 			if (user.role_id >= 4) {
 				return res
 					.status(403)
