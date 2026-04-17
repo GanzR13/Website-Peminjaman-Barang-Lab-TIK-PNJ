@@ -16,20 +16,20 @@ const togglePassword = () => {
 };
 
 const handleSubmit = async () => {
-    authStore.error = null;
+	authStore.error = null;
 
-    try {
-        const success = await authStore.login(form);
-        if (success) {
-            router.push("/dashboard");
-        }
-    } catch (err) {
-        console.error("Login Error:", err);
-        // Alert otomatis hilang setelah 5 detik
-        setTimeout(() => {
-            if (authStore.error) authStore.error = null;
-        }, 5000);
-    }
+	try {
+		const success = await authStore.login(form);
+		if (success) {
+			router.push("/dashboard");
+		}
+	} catch (err) {
+		console.error("Login Error:", err);
+		// Alert otomatis hilang setelah 5 detik
+		setTimeout(() => {
+			if (authStore.error) authStore.error = null;
+		}, 5000);
+	}
 };
 
 const goToRegister = () => {
@@ -225,7 +225,11 @@ const goToRegister = () => {
 					</button>
 				</p>
 				<p class="text-xs text-gray-400 font-medium">
-					Masalah login? Hubungi Teknisi PLP TIK
+					Ada masalah login? Hubungi Teknisi LAB PLP TIK
+				</p>
+				<p
+					class="text-center text-[10px] text-gray-400 mt-6 uppercase tracking-widest font-bold">
+					© 2026 LAB PLP TIK Politeknik Negeri Jakarta
 				</p>
 			</div>
 		</div>
@@ -235,35 +239,52 @@ const goToRegister = () => {
 <style scoped>
 /* Transisi Masuk/Keluar */
 .slide-fade-enter-active {
-  transition: all 0.3s ease-out;
+	transition: all 0.3s ease-out;
 }
 .slide-fade-leave-active {
-  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+	transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
 }
 .slide-fade-enter-from,
 .slide-fade-leave-to {
-  transform: translateY(-10px);
-  opacity: 0;
+	transform: translateY(-10px);
+	opacity: 0;
 }
 
 /* Animasi Progress Bar Waktu */
 .animate-progress {
-    animation: progress 5s linear forwards;
+	animation: progress 5s linear forwards;
 }
 
 @keyframes progress {
-    from { width: 100%; }
-    to { width: 0%; }
+	from {
+		width: 100%;
+	}
+	to {
+		width: 0%;
+	}
 }
 
 /* Animasi Shake */
 .animate-shake {
-    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+	animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 @keyframes shake {
-    10%, 90% { transform: translate3d(-1px, 0, 0); }
-    20%, 80% { transform: translate3d(2px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-    40%, 60% { transform: translate3d(4px, 0, 0); }
+	10%,
+	90% {
+		transform: translate3d(-1px, 0, 0);
+	}
+	20%,
+	80% {
+		transform: translate3d(2px, 0, 0);
+	}
+	30%,
+	50%,
+	70% {
+		transform: translate3d(-4px, 0, 0);
+	}
+	40%,
+	60% {
+		transform: translate3d(4px, 0, 0);
+	}
 }
 </style>

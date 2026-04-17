@@ -9,11 +9,6 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      kode_barang: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true
-      },
       nama_barang: {
         type: Sequelize.STRING,
         allowNull: false
@@ -22,10 +17,6 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         defaultValue: 0
-      },
-      kondisi: {
-        type: Sequelize.STRING,
-        defaultValue: 'Baik'
       },
       deskripsi: {
         type: Sequelize.TEXT,
@@ -37,11 +28,13 @@ module.exports = {
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.NOW
       }
     });
   },

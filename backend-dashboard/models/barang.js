@@ -10,11 +10,6 @@ module.exports = (sequelize, DataTypes) => {
   }
   
   Barang.init({
-    kode_barang: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true // Kode barang tidak boleh ada yang sama
-    },
     nama_barang: {
       type: DataTypes.STRING,
       allowNull: false
@@ -23,10 +18,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0
-    },
-    kondisi: {
-      type: DataTypes.STRING,
-      defaultValue: 'Baik'
     },
     deskripsi: {
       type: DataTypes.TEXT, // Menggunakan TEXT karena deskripsi bisa sangat panjang
@@ -39,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Barang',
-    tableName: 'barang',
+    tableName: 'barang', // Memaksa nama tabel menjadi 'barang' (tanpa tambahan 's')
     freezeTableName: true 
   });
   

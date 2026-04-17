@@ -13,11 +13,15 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // PERHATIAN: Pastikan ini sesuai dengan nama tabel usermu (biasanya 'Users' atau 'users')
+          model: 'Users', // Pastikan sesuai nama tabelmu
           key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE' // Jika user dihapus, riwayat peminjamannya ikut terhapus
+        onDelete: 'CASCADE'
+      },
+      antrian: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       kategori_kebutuhan: {
         type: Sequelize.ENUM('Akademik', 'Non-Akademik'),
@@ -69,7 +73,6 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('peminjaman');
     
-    // Trik Khusus PostgreSQL: Harus menghapus ENUM secara manual saat rollback
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_peminjaman_kategori_kebutuhan";');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_peminjaman_status";');
   }

@@ -9,6 +9,7 @@ const db = require("./models");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const refRoutes = require('./routes/refRoutes');
+const barangRoutes = require('./routes/barang');
 
 // INISIALISASI app
 const app = express();
@@ -28,11 +29,13 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
 
 // 4. Daftarkan Routes Utama
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/ref', refRoutes);
+app.use('/api/barang', barangRoutes);
 
 // 5. REDIRECT Rute Utama ke Dokumentasi Postman
 app.get("/", (req, res) => {

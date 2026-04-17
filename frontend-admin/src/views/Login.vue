@@ -176,7 +176,7 @@
 
 			<p
 				class="text-center text-[10px] text-gray-400 mt-6 uppercase tracking-widest font-bold">
-				© 2026 PLP TIK Politeknik Negeri Jakarta
+				© 2026 LAB PLP TIK Politeknik Negeri Jakarta
 			</p>
 		</div>
 	</div>
