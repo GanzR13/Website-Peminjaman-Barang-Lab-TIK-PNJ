@@ -4,8 +4,21 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Barang extends Model {
     static associate(models) {
-      // Relasi antar tabel akan didefinisikan di sini nantinya
-      // Contoh: Barang.hasMany(models.Peminjaman, { foreignKey: 'barang_id' })
+  
+      Barang.hasMany(models.LaporanKerusakan, {
+        foreignKey: "barang_id",
+        as: "riwayat_kerusakan",
+      });
+
+      Barang.hasMany(models.DetailPeminjaman, {
+        foreignKey: "barang_id",
+        as: "riwayat_peminjaman",
+      });
+
+      Barang.hasMany(models.LaporanKehilangan, {
+        foreignKey: "barang_id",
+        as: "riwayat_kehilangan",
+      });
     }
   }
   
@@ -30,9 +43,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Barang',
-    tableName: 'barang', // Memaksa nama tabel menjadi 'barang' (tanpa tambahan 's')
-    freezeTableName: true 
+    tableName: 'barang', 
+    freezeTableName: true // Memaksa nama tabel menjadi 'barang' (tanpa tambahan 's')
   });
-  
+
   return Barang;
 };

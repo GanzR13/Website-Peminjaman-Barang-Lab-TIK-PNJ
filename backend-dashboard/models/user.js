@@ -8,7 +8,9 @@ module.exports = (sequelize, DataTypes) => {
 		 * The `models/index` file will call this method automatically.
 		 */
 		static associate(models) {
-
+			User.hasOne(models.Pegawai, { foreignKey: "user_id", as: "pegawai" });
+			User.hasOne(models.Mahasiswa, { foreignKey: "user_id", as: "mahasiswa" });
+			User.belongsTo(models.Role, { foreignKey: "role_id" });
 		}
 	}
 	User.init(
@@ -23,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
 		{
 			sequelize,
 			modelName: "User",
+			tableName: "user",
+			freezeTableName: true,
+			timestamps: true,
 		},
 	);
 	return User;

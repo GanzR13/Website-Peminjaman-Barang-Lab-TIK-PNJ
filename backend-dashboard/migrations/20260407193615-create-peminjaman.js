@@ -1,5 +1,4 @@
 'use strict';
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('peminjaman', {
@@ -13,7 +12,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // Pastikan sesuai nama tabelmu
+          model: 'user',
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -69,11 +68,7 @@ module.exports = {
       }
     });
   },
-
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('peminjaman');
-    
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_peminjaman_kategori_kebutuhan";');
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_peminjaman_status";');
   }
 };

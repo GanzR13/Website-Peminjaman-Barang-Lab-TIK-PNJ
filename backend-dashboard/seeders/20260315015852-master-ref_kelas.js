@@ -40,10 +40,10 @@ module.exports = {
     msuProdi.forEach(prefix => generateClasses(prefix, 6, []));
 
     // Eksekusi insert massal ke database
-    await queryInterface.bulkInsert('ref_Kelas', dataKelas, {});
+    await queryInterface.bulkInsert('ref_kelas', dataKelas, {});
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('ref_Kelas', null, {});
+    await queryInterface.bulkDelete('ref_kelas', null, {});
   }
 };

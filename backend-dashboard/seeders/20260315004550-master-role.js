@@ -2,7 +2,7 @@
 
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.bulkInsert('Roles', [
+    await queryInterface.bulkInsert('role', [
       {
         nama_role: 'Kepala Laboratorium',
         level_akses: 'super_admin', // Super Admin
@@ -37,6 +37,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Roles', null, {});
+    await queryInterface.bulkDelete('role', null, {});
   }
 };

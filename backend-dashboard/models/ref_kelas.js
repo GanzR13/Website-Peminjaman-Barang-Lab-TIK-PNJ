@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
             sequelize,
             modelName: "ref_Kelas",
-            tableName: "ref_Kelas",
+            tableName: "ref_kelas",
             freezeTableName: true, 
             timestamps: true 
         });

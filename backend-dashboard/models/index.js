@@ -11,59 +11,39 @@ const db = {};
 
 let sequelize;
 if (config.use_env_variable) {
-	sequelize = new Sequelize(process.env[config.use_env_variable], config);
+    sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
-	sequelize = new Sequelize(
-		config.database,
-		config.username,
-		config.password,
-		config,
-	);
+    sequelize = new Sequelize(
+        config.database,
+        config.username,
+        config.password,
+        config,
+    );
 }
 
 fs.readdirSync(__dirname)
-	.filter((file) => {
-		return (
-			file.indexOf(".") !== 0 &&
-			file !== basename &&
-			file.slice(-3) === ".js" &&
-			file.indexOf(".test.js") === -1
-		);
-	})
-	.forEach((file) => {
-		const model = require(path.join(__dirname, file))(
-			sequelize,
-			Sequelize.DataTypes,
-		);
-		db[model.name] = model;
-	});
+    .filter((file) => {
+        return (
+            file.indexOf(".") !== 0 &&
+            file !== basename &&
+            file.slice(-3) === ".js" &&
+            file.indexOf(".test.js") === -1
+        );
+    })
+    .forEach((file) => {
+        const model = require(path.join(__dirname, file))(
+            sequelize,
+            Sequelize.DataTypes,
+        );
+        db[model.name] = model;
+    });
 
+// Mesin otomatis yang akan memanggil fungsi 'associate' di SETIAP file model
 Object.keys(db).forEach((modelName) => {
-	if (db[modelName].associate) {
-		db[modelName].associate(db);
-	}
+    if (db[modelName].associate) {
+        db[modelName].associate(db);
+    }
 });
-
-if (db.User && db.Pegawai) {
-	db.User.hasOne(db.Pegawai, { foreignKey: "user_id", as: "pegawai" });
-	db.Pegawai.belongsTo(db.User, { foreignKey: "user_id", as: "user" });
-}
-
-if (db.User && db.Mahasiswa) {
-	db.User.hasOne(db.Mahasiswa, { foreignKey: "user_id", as: "mahasiswa" });
-	db.Mahasiswa.belongsTo(db.User, { foreignKey: "user_id", as: "user" });
-}
-
-if (db.Mahasiswa && db.ref_Prodi) {
-  db.Mahasiswa.belongsTo(db.ref_Prodi, { foreignKey: 'prodi_id', as: 'prodi' });
-}
-if (db.Mahasiswa && db.ref_Kelas) {
-  db.Mahasiswa.belongsTo(db.ref_Kelas, { foreignKey: 'kelas_id', as: 'kelas' });
-}
-
-if (db.User && db.Role) {
-	db.User.belongsTo(db.Role, { foreignKey: "role_id" });
-}
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
