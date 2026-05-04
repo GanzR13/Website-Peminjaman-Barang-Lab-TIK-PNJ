@@ -1,551 +1,489 @@
 <template>
-    <div class="p-8 h-full flex flex-col relative">
+    <div class="p-4 md:p-8 h-full flex flex-col relative animate-fade-in max-w-5xl mx-auto">
+
+        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
-                <h2 class="text-2xl font-black text-gray-900 tracking-tight">Manajemen Peminjam</h2>
-                <p class="text-gray-600 mt-1 text-sm">Kelola data, profil, dan kategori peminjam laboratorium (Mahasiswa & Dosen).</p>
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Laporan & Manajemen Peminjaman</h2>
+                <p class="text-slate-500 mt-1 text-sm font-medium">Kelola antrian harian dan riwayat peminjaman alat lab.</p>
             </div>
-            
-            <button
-                @click="fetchUsers"
-                class="flex items-center gap-2 px-4 py-2 text-gray-600 bg-white border border-gray-200 hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 rounded-xl transition-all shadow-sm shrink-0 font-semibold text-sm"
-                title="Refresh Data">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    :class="{ 'animate-spin': isLoading }"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span class="hidden sm:inline">Refresh Data</span>
-            </button>
+
+            <div class="flex items-center gap-3">
+                <button @click="exportExcel"
+                    class="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 font-bold rounded-xl hover:bg-emerald-100 ring-1 ring-emerald-200 transition-all active:scale-95 text-sm cursor-pointer">
+                    <DocumentArrowDownIcon class="w-5 h-5" /> Export Excel
+                </button>
+                <button @click="exportPDF"
+                    class="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-700 font-bold rounded-xl hover:bg-red-100 ring-1 ring-red-200 transition-all active:scale-95 text-sm cursor-pointer">
+                    <DocumentTextIcon class="w-5 h-5" /> Export PDF
+                </button>
+            </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-125">
-            <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Daftar Peminjam Lab</h2>
-                    <p class="text-sm text-gray-500">
-                        Total <span class="font-bold text-emerald-600">{{ totalItems }}</span> peminjam terdaftar
-                    </p>
+        <!-- Filter Controls -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-6 space-y-4">
+            <div class="flex flex-col lg:flex-row gap-4 items-end">
+                <div class="w-full lg:w-auto flex-1">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Tanggal Mulai</label>
+                    <input v-model="startDate" type="date"
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 bg-slate-50 outline-none focus:ring-4 focus:ring-blue-50 transition-all" />
                 </div>
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Cari nama, NIM/NIP, email..."
-                        class="px-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-full md:w-64 transition-all" 
-                    />
-                    <button
-                        @click="openAddModal"
-                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-200 shrink-0">
-                        + Tambah Peminjam
+                <div class="w-full lg:w-auto flex-1">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Tanggal Selesai</label>
+                    <input v-model="endDate" type="date"
+                        class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 bg-slate-50 outline-none focus:ring-4 focus:ring-blue-50 transition-all" />
+                </div>
+                <div class="flex gap-2 w-full lg:w-auto">
+                    <button @click="setThisWeek"
+                        class="flex-1 lg:flex-none px-4 py-2.5 bg-blue-50 text-blue-700 text-xs font-black rounded-xl border border-blue-100 hover:bg-blue-100 transition-all cursor-pointer">Minggu Ini</button>
+                    <button @click="resetDateFilter"
+                        class="p-2.5 bg-slate-50 text-slate-400 rounded-xl border border-slate-100 hover:text-red-500 transition-all cursor-pointer"
+                        title="Reset Tanggal">
+                        <ArrowPathIcon class="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
-            <div v-if="isLoading" class="p-20 text-center flex-1 flex flex-col items-center justify-center">
-                <div class="animate-spin inline-block w-10 h-10 border-[3px] border-emerald-600 border-t-transparent rounded-full mb-4"></div>
-                <p class="text-gray-500 font-medium italic">Menarik data dari server...</p>
+            <div class="flex flex-col md:flex-row gap-4 pt-4 border-t border-slate-50">
+                <div class="relative flex-1">
+                    <MagnifyingGlassIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input v-model="searchQuery" type="text" placeholder="Cari nama peminjam..."
+                        class="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm font-medium" />
+                </div>
+                <select v-model="filterStatus"
+                    class="w-full md:w-48 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 bg-slate-50 outline-none cursor-pointer">
+                    <option value="">Semua Status</option>
+                    <option value="Menunggu">Menunggu</option>
+                    <option value="Disetujui">Disetujui</option>
+                    <option value="Selesai">Selesai</option>
+                    <option value="Ditolak">Ditolak / Batal</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Table Data -->
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex-1 flex flex-col">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest border-b border-slate-100">
+                            <th class="p-4 font-black">Antrian</th>
+                            <th class="p-4 font-black">Peminjam</th>
+                            <th class="p-4 font-black">Tanggal Pinjam</th>
+                            <th class="p-4 font-black">Tanggal Kembali</th>
+                            <th class="p-4 font-black text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm font-medium text-slate-700">
+                        <tr v-if="isLoading">
+                            <td colspan="5" class="p-8 text-center text-slate-500 animate-pulse">Sinkronisasi data...</td>
+                        </tr>
+                        <tr v-else-if="paginatedData.length === 0">
+                            <td colspan="5" class="p-16 text-center text-slate-500">
+                                <ClipboardDocumentListIcon class="w-16 h-16 mx-auto mb-4 text-slate-200" />
+                                <p class="font-bold text-slate-800">Tidak ada data</p>
+                            </td>
+                        </tr>
+                        <tr v-else v-for="item in paginatedData" :key="item.id" class="border-b border-slate-50 hover:bg-slate-50/50">
+                            <td class="p-4 font-black text-slate-900">#{{ item.antrian || item.id }}</td>
+                            <td class="p-4">
+                                <!-- LANGSUNG PAKAI NAMA_PEMINJAM DARI BACKEND -->
+                                <p class="font-bold text-slate-900">{{ item.nama_peminjam }}</p>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span :class="getStatusBadgeClass(item.status)"
+                                        class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ring-1">
+                                        {{ item.status }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="p-4">
+                                <span class="px-3 py-1 bg-slate-50 rounded-lg border border-slate-100 text-slate-700 font-bold">
+                                    {{ formatDate(item.tanggal_pinjam) }}
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <span class="px-3 py-1 bg-slate-50 rounded-lg border border-slate-100 text-slate-700 font-bold">
+                                    {{ formatDate(item.tanggal_kembali) }}
+                                </span>
+                            </td>
+                            <td class="p-4 text-center">
+                                <button @click="openProcessModal(item)"
+                                    class="px-4 py-2 bg-white border border-slate-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors active:scale-95 text-xs cursor-pointer">
+                                    Detail / Proses
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div v-else class="flex-1 flex flex-col">
-                <div class="overflow-x-auto flex-1">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50/50 text-gray-500 text-[11px] uppercase tracking-widest border-b border-gray-100">
-                                <th class="px-8 py-4 font-black">Profil Peminjam</th>
-                                <th class="px-8 py-4 font-black">Kontak Institusi</th>
-                                <th class="px-8 py-4 font-black">Kategori</th>
-                                <th class="px-8 py-4 font-black text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50">
-                            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-emerald-50/30 transition">
-                                <td class="px-8 py-5">
-                                    <div class="flex items-center">
-                                        <div class="w-10 h-10 rounded-full bg-linear-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white font-bold mr-4 text-sm shadow-md shadow-emerald-200 uppercase">
-                                            {{ user.nama_lengkap?.charAt(0) || "?" }}
-                                        </div>
-                                        <div>
-                                            <span class="font-bold text-gray-900 block leading-tight mb-1">{{ user.nama_lengkap }}</span>
-                                            <span class="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-0.5 rounded">
-                                                {{ user.nim ? "NIM: " + user.nim : "NIP: " + user.nip }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-8 py-5 text-sm text-gray-600 font-medium">
-                                    {{ user.user?.email || "-" }}
-                                </td>
-                                <td class="px-8 py-5">
-                                    <span
-                                        class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide ring-1"
-                                        :class="
-                                            user.user?.Role?.nama_role === 'Dosen'
-                                                ? 'bg-amber-100 text-amber-700 ring-amber-200'
-                                                : 'bg-teal-100 text-teal-700 ring-teal-200'
-                                        ">
-                                        {{ user.user?.Role?.nama_role || "Peminjam" }}
-                                    </span>
-                                </td>
-                                <td class="px-8 py-5 text-center">
-                                    <div class="flex justify-center items-center gap-2">
-                                        <button @click="openDetailModal(user)" class="text-emerald-600 hover:text-emerald-800 font-semibold text-sm hover:underline bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-lg transition-colors cursor-pointer">
-                                            Detail
-                                        </button>
-                                        <button @click="openEditModal(user)" class="text-blue-600 hover:text-blue-800 font-semibold text-sm hover:underline bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-colors cursor-pointer">
-                                            Edit
-                                        </button>
-                                        <button @click="handleDelete(user.id)" class="text-red-500 hover:text-red-700 font-semibold text-sm hover:underline bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg transition-colors cursor-pointer">
-                                            Hapus
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <div v-if="filteredUsers.length === 0" class="p-20 text-center">
-                        <p class="text-gray-400 font-medium">Data peminjam tidak ditemukan.</p>
-                    </div>
+            <!-- Pagination -->
+            <div v-if="!isLoading && filteredData.length > 0"
+                class="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-slate-100 bg-slate-50/50 gap-4 mt-auto">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold text-slate-500">Tampilkan:</span>
+                    <select v-model="itemsPerPage"
+                        class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-700 bg-white outline-none cursor-pointer">
+                        <option :value="10">10 Baris</option>
+                        <option :value="20">20 Baris</option>
+                        <option :value="50">50 Baris</option>
+                        <option :value="100">100 Baris</option>
+                        <option :value="200">200 Baris</option>
+                    </select>
                 </div>
-
-                <div v-if="totalItems > 0 && !searchQuery" class="bg-gray-50 px-8 py-4 border-t border-gray-100 flex items-center justify-between mt-auto">
-                    <div class="flex items-center gap-4 text-sm text-gray-600">
-                        <span class="hidden sm:inline font-medium">Tampilkan:</span>
-                        <div class="relative custom-select">
-                            <button
-                                @click.stop="toggleDropdown('limit')"
-                                class="flex items-center justify-between w-28 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 cursor-pointer hover:border-emerald-400 transition-all">
-                                <span>{{ limit }} Data</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 transition-transform" :class="{ 'rotate-180': activeDropdown === 'limit' }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            <transition name="fade">
-                                <div v-if="activeDropdown === 'limit'" class="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden py-1 z-30">
-                                    <button
-                                        v-for="opt in [5, 10, 25, 50]"
-                                        :key="opt"
-                                        @click="pilihLimit(opt)"
-                                        class="w-full px-4 py-2 text-sm text-left hover:bg-emerald-50 cursor-pointer"
-                                        :class="limit === opt ? 'text-emerald-600 font-bold bg-emerald-50/50' : 'text-gray-600'">
-                                        {{ opt }} Data
-                                    </button>
-                                </div>
-                            </transition>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-6">
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                            Hal <span class="text-emerald-600">{{ currentPage }}</span> / {{ totalPages }}
-                        </span>
-                        <div class="flex gap-2">
-                            <button @click="prevPage" :disabled="currentPage === 1" class="p-2 border border-gray-200 rounded-xl bg-white disabled:opacity-30 cursor-pointer hover:text-emerald-600 hover:border-emerald-300 transition-colors shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                            </button>
-                            <button @click="nextPage" :disabled="currentPage === totalPages" class="p-2 border border-gray-200 rounded-xl bg-white disabled:opacity-30 cursor-pointer hover:text-emerald-600 hover:border-emerald-300 transition-colors shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7-7" /></svg>
-                            </button>
-                        </div>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <button @click="currentPage--" :disabled="currentPage === 1"
+                        class="px-3 py-1.5 text-sm font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                        Sebelumnya
+                    </button>
+                    <span class="text-sm font-black text-slate-700 px-3 py-1.5 bg-white border border-slate-200 rounded-lg">
+                        Hal {{ currentPage }} / {{ totalPages }}
+                    </span>
+                    <button @click="currentPage++" :disabled="currentPage === totalPages"
+                        class="px-3 py-1.5 text-sm font-bold rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                        Selanjutnya
+                    </button>
                 </div>
             </div>
         </div>
 
-        <transition name="fade">
-            <div v-if="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-0 overflow-hidden">
-                    <div class="bg-linear-to-r from-emerald-500 to-teal-600 p-6 flex items-center gap-4 text-white">
-                        <div class="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center font-bold text-2xl uppercase border border-white/30">
-                            {{ detailUser.nama_lengkap?.charAt(0) || "?" }}
+        <!-- MODAL DETAIL -->
+        <BaseModal :isOpen="isModalOpen" maxWidth="max-w-2xl" @close="isModalOpen = false">
+            <template #header>
+                <div class="mb-6">
+                    <h2 class="text-2xl font-black text-slate-900">Detail Peminjaman</h2>
+                    <p class="text-slate-500 text-sm mt-1">Nomor Antrian: #{{ selectedData?.antrian || selectedData?.id }}</p>
+                </div>
+            </template>
+            
+            <div v-if="selectedData" class="space-y-4">
+                
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <p class="text-xs text-blue-500 font-black uppercase tracking-widest mb-3 border-b border-blue-200/50 pb-2">Informasi Peminjam</p>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-blue-400 font-bold mb-1">Nama Tampilan</p>
+                            <!-- LANGSUNG PAKAI NAMA_PEMINJAM DARI BACKEND -->
+                            <p class="font-bold text-slate-800">{{ selectedData.nama_peminjam }}</p>
                         </div>
-                        <div>
-                            <h3 class="text-xl font-black leading-tight">{{ detailUser.nama_lengkap }}</h3>
-                            <p class="text-teal-100 text-[10px] font-bold uppercase tracking-widest mt-1">
-                                {{ detailUser.user?.Role?.nama_role }}
+                        <div class="col-span-2 sm:col-span-1">
+                            <p class="text-xs text-blue-400 font-bold mb-1">Status / Peran</p>
+                            <p class="font-bold text-slate-800">
+                                {{ selectedData.peminjam?.mahasiswa ? 'Mahasiswa' : (selectedData.peminjam?.pegawai ? 'Dosen / Pegawai' : 'User') }}
                             </p>
                         </div>
-                    </div>
-                    <div class="p-6 space-y-3">
-                        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Identitas ({{ detailUser.nim ? "NIM" : "NIP" }})</p>
-                            <p class="text-gray-900 font-bold font-mono">{{ detailUser.nim || detailUser.nip || "-" }}</p>
+                        <div class="col-span-2">
+                            <p class="text-xs text-blue-400 font-bold mb-1">Email Akun</p>
+                            <p class="font-bold text-slate-800">{{ selectedData.peminjam?.email || '-' }}</p>
                         </div>
-                        <div v-if="detailUser.nim" class="grid grid-cols-2 gap-3">
-                            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Angkatan / Prodi</p>
-                                <p class="text-gray-900 font-bold text-xs">{{ detailUser.angkatan }} - {{ detailUser.nama_prodi }}</p>
-                            </div>
-                            <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Kelas</p>
-                                <p class="text-gray-900 font-bold text-xs">{{ detailUser.nama_kelas }}</p>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex justify-between">
-                            <div>
-                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Email</p>
-                                <p class="text-gray-900 font-bold text-xs">{{ detailUser.user?.email }}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Telepon</p>
-                                <p class="text-gray-900 font-bold text-xs">{{ detailUser.user?.no_telepon || "-" }}</p>
-                            </div>
-                        </div>
-                        <button @click="closeDetailModal" class="w-full mt-4 px-6 py-3 text-sm font-black text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-2xl transition cursor-pointer">
-                            Tutup Panel Detail
-                        </button>
                     </div>
                 </div>
-            </div>
-        </transition>
 
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto custom-select">
-                <h3 class="text-xl font-black text-gray-900 mb-6">
-                    {{ isEditMode ? "Update Data " + formData.kategori : "Registrasi Peminjam Baru" }}
-                </h3>
-
-                <form @submit.prevent="saveData" class="space-y-4">
-                    <div v-if="!isEditMode" class="flex p-1 bg-gray-100 rounded-2xl mb-4 shadow-inner">
-                        <button
-                            v-for="cat in ['Mahasiswa', 'Dosen']"
-                            :key="cat"
-                            type="button"
-                            @click="formData.kategori = cat"
-                            :class="formData.kategori === cat ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500'"
-                            class="flex-1 py-2.5 text-xs font-black rounded-xl transition-all uppercase tracking-widest cursor-pointer">
-                            {{ cat }}
-                        </button>
-                    </div>
-
-                    <div v-else class="mb-4">
-                        <span class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ring-1 ring-emerald-100 bg-emerald-50 text-emerald-700">
-                            Kategori: {{ formData.kategori }}
-                        </span>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nama Lengkap</label>
-                        <input v-model="formData.nama_lengkap" type="text" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" />
-                    </div>
-
-                    <div v-if="formData.kategori === 'Mahasiswa'" class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p class="text-xs text-slate-400 font-black uppercase tracking-widest mb-3 border-b border-slate-200 pb-2">Detail Transaksi</p>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold mb-1">Status Saat Ini</p>
+                            <span :class="getStatusBadgeClass(selectedData.status)"
+                                class="px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-tighter ring-1">{{
+                                selectedData.status }}</span>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold mb-1">Kategori Kebutuhan</p>
+                            <p class="font-bold text-slate-800">{{ selectedData.kategori_kebutuhan || '-' }}</p>
+                        </div>
                         <div class="col-span-2">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">NIM (Nomor Induk Mahasiswa)</label>
-                            <input v-model="formData.nim" type="text" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none" placeholder="Contoh: 432210..." />
+                            <p class="text-xs text-slate-400 font-bold mb-1">Tujuan / Nama Acara</p>
+                            <p class="font-medium text-slate-700">{{ selectedData.tujuan_peminjaman || '-' }} {{
+                                selectedData.nama_acara ? `(${selectedData.nama_acara})` : '' }}</p>
                         </div>
-                        <div class="relative custom-select">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Program Studi</label>
-                            <button type="button" @click.stop="toggleDropdown('prodi')" class="w-full flex items-center justify-between px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm font-bold cursor-pointer">
-                                <span>{{ ref_prodi.find((p) => p.id === formData.prodi_id)?.nama_prodi || "Pilih Prodi" }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                            </button>
-                            <transition name="fade">
-                                <div v-if="activeDropdown === 'prodi'" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-40 overflow-y-auto">
-                                    <button v-for="p in ref_prodi" :key="p.id" type="button" @click="formData.prodi_id = p.id; activeDropdown = null;" class="w-full px-4 py-2 text-sm text-left hover:bg-emerald-50 font-medium">
-                                        {{ p.nama_prodi }}
-                                    </button>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-100 px-4 py-3 border-b border-slate-200">
+                        <p class="text-xs text-slate-500 font-black uppercase tracking-widest">Daftar Barang yang Dipinjam</p>
+                    </div>
+                    <div class="p-4 bg-white">
+                        <ul v-if="selectedData.detail_barang && selectedData.detail_barang.length > 0" class="space-y-3">
+                            <li v-for="detail in selectedData.detail_barang" :key="detail.id" 
+                                class="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <div class="flex items-center gap-3">
+                                    <img :src="getImageUrl(detail.barang?.gambar)" 
+                                         :alt="detail.barang?.nama_barang"
+                                         class="w-12 h-12 rounded-md object-cover border border-slate-200 bg-white" />
+                                    <div>
+                                        <p class="font-bold text-slate-800 text-sm line-clamp-1">
+                                            {{ detail.barang?.nama_barang || 'Barang Dihapus' }}
+                                        </p>
+                                        <p class="text-xs text-slate-400 font-medium mt-0.5">ID Barang: {{ detail.barang_id }}</p>
+                                    </div>
                                 </div>
-                            </transition>
-                        </div>
-
-                        <div class="relative custom-select">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Angkatan</label>
-                            <button type="button" @click.stop="toggleDropdown('angkatan')" class="w-full flex items-center justify-between px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm font-bold cursor-pointer">
-                                <span>{{ formData.angkatan }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                            </button>
-                            <transition name="fade">
-                                <div v-if="activeDropdown === 'angkatan'" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-xl z-50">
-                                    <button v-for="y in years" :key="y" type="button" @click="pilihAngkatan(y)" class="w-full px-4 py-2 text-sm text-left hover:bg-emerald-50 font-medium">
-                                        {{ y }}
-                                    </button>
+                                <div class="text-right shrink-0 ml-4">
+                                    <span class="inline-block px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-xs font-black">
+                                        {{ detail.jumlah_pinjam }} Unit
+                                    </span>
                                 </div>
-                            </transition>
-                        </div>
-
-                        <div class="col-span-2 relative custom-select">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Kelas</label>
-                            <button type="button" @click.stop="toggleDropdown('kelas')" class="w-full flex items-center justify-between px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm font-bold cursor-pointer">
-                                <span>{{ ref_kelas.find((k) => k.id === formData.kelas_id)?.nama_kelas || "Pilih Kelas Mahasiswa" }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                            </button>
-                            <transition name="fade">
-                                <div v-if="activeDropdown === 'kelas'" class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-40 overflow-y-auto">
-                                    <button v-for="k in ref_kelas" :key="k.id" type="button" @click="formData.kelas_id = k.id; activeDropdown = null;" class="w-full px-4 py-2 text-sm text-left hover:bg-emerald-50 font-medium">
-                                        {{ k.nama_kelas }}
-                                    </button>
-                                </div>
-                            </transition>
+                            </li>
+                        </ul>
+                        <div v-else class="text-center py-6">
+                            <p class="text-slate-400 text-sm font-medium">Tidak ada detail barang untuk transaksi ini.</p>
                         </div>
                     </div>
+                </div>
 
-                    <div v-if="formData.kategori === 'Dosen'">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nomor Induk Pegawai (NIP)</label>
-                        <input v-model="formData.nip" type="text" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none" placeholder="Input NIP dosen..." />
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Email Institusi</label>
-                            <input v-model="formData.email" type="email" required :disabled="isEditMode" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl disabled:bg-gray-100 outline-none" placeholder="name@pnj.ac.id" />
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nomor Telepon</label>
-                            <input v-model="formData.no_telepon" type="text" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none" placeholder="08..." />
-                        </div>
-                    </div>
-
-                    <div v-if="!isEditMode">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Password Awal</label>
-                        <input v-model="formData.password" type="password" required class="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none" placeholder="Minimal 6 karakter..." />
-                    </div>
-
-                    <div class="flex justify-end gap-3 pt-6 border-t mt-4">
-                        <button type="button" @click="closeModal" class="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-2xl transition cursor-pointer">
-                            Batalkan
-                        </button>
-                        <button type="submit" class="px-6 py-2.5 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-2xl shadow-lg shadow-emerald-100 transition cursor-pointer">
-                            Simpan Perubahan
-                        </button>
-                    </div>
-                </form>
+                <div v-if="selectedData.status === 'Menunggu'" class="flex gap-3 pt-4 border-t border-slate-100">
+                    <button @click="updateStatus('Disetujui')"
+                        class="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition cursor-pointer active:scale-95">Setujui Permohonan</button>
+                    <button @click="updateStatus('Ditolak')"
+                        class="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl border border-red-100 hover:bg-red-100 transition cursor-pointer active:scale-95">Tolak</button>
+                </div>
+                <div v-else-if="selectedData.status === 'Disetujui'" class="flex gap-3 pt-4 border-t border-slate-100">
+                    <button @click="updateStatus('Dipinjam')"
+                        class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition shadow-lg shadow-emerald-200 cursor-pointer active:scale-95">Barang Telah Diambil (Mulai Pinjam)</button>
+                </div>
+                <div v-else-if="selectedData.status === 'Dipinjam'" class="flex gap-3 pt-4 border-t border-slate-100">
+                    <button @click="updateStatus('Selesai')"
+                        class="w-full py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition shadow-lg shadow-slate-200 cursor-pointer active:scale-95">Selesaikan & Kembalikan Barang</button>
+                </div>
+                <div v-else class="pt-4 border-t border-slate-100 text-center">
+                    <p class="text-slate-500 font-bold text-sm">Transaksi ini sudah tutup buku.</p>
+                </div>
             </div>
-        </div>
+        </BaseModal>
+
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, reactive } from "vue";
-// Sidebar import dihapus karena sudah diurus AdminLayout
-import api from "../plugins/axios";
+import { ref, computed, onMounted, watch } from 'vue';
+import api from '../plugins/axios';
+import { useAlert } from '../composables/useAlert';
+import BaseModal from '../components/BaseModal.vue';
+import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO, endOfDay } from 'date-fns';
+import { id } from 'date-fns/locale/id';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import {
+    MagnifyingGlassIcon, ClipboardDocumentListIcon,
+    DocumentArrowDownIcon, DocumentTextIcon, ArrowPathIcon
+} from '@heroicons/vue/24/outline';
 
-// DATA STATE
-const users = ref([]);
-const ref_prodi = ref([]);
-const ref_kelas = ref([]);
-const searchQuery = ref("");
-const isLoading = ref(true);
-const totalItems = ref(0);
-const totalPages = ref(1);
+const { showAlert } = useAlert();
+
+const rawPeminjamanList = ref([]);
+const isLoading = ref(false);
+const searchQuery = ref('');
+const filterStatus = ref('');
+const startDate = ref('');
+const endDate = ref('');
 const currentPage = ref(1);
-const limit = ref(10);
+const itemsPerPage = ref(10);
+const isModalOpen = ref(false);
+const selectedData = ref(null);
 
-// UI STATE
-const activeDropdown = ref(null);
-const showModal = ref(false);
-const showDetailModal = ref(false);
-const isEditMode = ref(false);
-const detailUser = ref({});
-
-const formData = reactive({
-    id: null,
-    kategori: "Mahasiswa",
-    nama_lengkap: "",
-    nim: "",
-    nip: "",
-    angkatan: new Date().getFullYear(),
-    prodi_id: "",
-    kelas_id: "",
-    email: "",
-    no_telepon: "",
-    password: "",
-});
-
-// LOGIKA DROPDOWN
-const toggleDropdown = (name) => {
-    activeDropdown.value = activeDropdown.value === name ? null : name;
-};
-
-const pilihAngkatan = (year) => {
-    formData.angkatan = year;
-    activeDropdown.value = null;
-};
-
-const pilihLimit = (newLimit) => {
-    limit.value = newLimit;
+const setThisWeek = () => {
+    const today = new Date();
+    const senin = startOfWeek(today, { weekStartsOn: 1 });
+    const minggu = endOfDay(endOfWeek(today, { weekStartsOn: 1 }));
+    startDate.value = format(senin, 'yyyy-MM-dd');
+    endDate.value = format(minggu, 'yyyy-MM-dd');
     currentPage.value = 1;
-    activeDropdown.value = null;
-    fetchUsers();
+    showAlert('Menampilkan rentang minggu ini', 'success');
 };
 
-// API ACTIONS
-const fetchUsers = async () => {
+const resetDateFilter = () => {
+    startDate.value = '';
+    endDate.value = '';
+};
+
+const fetchPeminjaman = async () => {
     isLoading.value = true;
     try {
-        const res = await api.get(
-            `/users/peminjam?page=${currentPage.value}&limit=${limit.value}`,
-        );
-        users.value = res.data.data;
-        totalItems.value = res.data.pagination.totalItems;
-        totalPages.value = res.data.pagination.totalPages;
-    } catch (err) {
-        console.error("Fetch Error:", err);
+        const response = await api.get('/admin/peminjaman/all?page=1&limit=1000');
+        rawPeminjamanList.value = response.data.data || [];
+    } catch (error) {
+        console.error("Error Fetch:", error);
+        showAlert('Gagal sinkronisasi data server', 'error');
     } finally {
         isLoading.value = false;
     }
 };
 
-onMounted(async () => {
-    fetchUsers();
-    try {
-        const [resProdi, resKelas] = await Promise.all([
-            api.get("/ref/prodi"),
-            api.get("/ref/kelas"),
-        ]);
-        ref_prodi.value = resProdi.data;
-        ref_kelas.value = resKelas.data;
-    } catch (err) {
-        console.error("Gagal memuat referensi:", err);
+onMounted(() => fetchPeminjaman());
+
+const filteredData = computed(() => {
+    let result = rawPeminjamanList.value;
+
+    // Filter Pencarian (Langsung pakai nama_peminjam dari API)
+    if (searchQuery.value) {
+        const q = searchQuery.value.toLowerCase();
+        result = result.filter(item => {
+            const nama = (item.nama_peminjam || '').toLowerCase();
+            return nama.includes(q);
+        });
     }
 
-    window.addEventListener("click", (e) => {
-        if (!e.target.closest(".custom-select")) activeDropdown.value = null;
-    });
-});
-
-// COMPUTED PROPERTIES
-const currentYear = new Date().getFullYear();
-const years = computed(() => {
-    const list = [];
-    for (let i = currentYear; i >= currentYear - 5; i--) list.push(i);
-    return list;
-});
-
-const filteredUsers = computed(() => {
-    if (!searchQuery.value) return users.value;
-    const term = searchQuery.value.toLowerCase();
-    return users.value.filter(
-        (u) =>
-            u.nama_lengkap?.toLowerCase().includes(term) ||
-            (u.nim || u.nip || "").toLowerCase().includes(term) ||
-            u.user?.email?.toLowerCase().includes(term),
-    );
-});
-
-// MODAL ACTIONS
-const openAddModal = () => {
-    isEditMode.value = false;
-    activeDropdown.value = null;
-    Object.assign(formData, {
-        id: null,
-        kategori: "Mahasiswa",
-        nama_lengkap: "",
-        nim: "",
-        nip: "",
-        angkatan: currentYear,
-        prodi_id: "",
-        kelas_id: "",
-        email: "",
-        no_telepon: "",
-        password: "",
-    });
-    showModal.value = true;
-};
-
-const openEditModal = (user) => {
-    isEditMode.value = true;
-    activeDropdown.value = null;
-    
-    const namaRole = user.user?.Role?.nama_role;
-    const kategoriSekarang = namaRole === "Mahasiswa" ? "Mahasiswa" : "Dosen";
-
-    Object.assign(formData, {
-        id: user.id,
-        kategori: kategoriSekarang,
-        nama_lengkap: user.nama_lengkap,
-        nim: user.nim || "",
-        nip: user.nip || "",
-        angkatan: user.angkatan || currentYear,
-        prodi_id: user.prodi_id || "",
-        kelas_id: user.kelas_id || "",
-        email: user.user?.email || "",
-        no_telepon: user.user?.no_telepon || "",
-    });
-    showModal.value = true;
-};
-
-const openDetailModal = (user) => {
-    detailUser.value = { ...user };
-    showDetailModal.value = true;
-};
-
-const closeDetailModal = () => {
-    showDetailModal.value = false;
-};
-
-const closeModal = () => {
-    showModal.value = false;
-    activeDropdown.value = null;
-};
-
-// DATA PERSISTENCE
-const saveData = async () => {
-    try {
-        const payload = {
-            ...formData,
-            role_id: formData.kategori === "Mahasiswa" ? 5 : 4,
-        };
-
-        if (isEditMode.value) {
-            await api.put(`/users/${formData.id}`, payload);
-        } else {
-            await api.post("/users", payload);
-        }
-
-        closeModal();
-        fetchUsers();
-    } catch (err) {
-        alert(err.response?.data?.message || "Gagal menyimpan data");
+    if (filterStatus.value) {
+        result = result.filter(item => item.status === filterStatus.value);
     }
-};
 
-const handleDelete = async (id) => {
-    if (confirm("Apakah anda yakin ingin menghapus peminjam ini secara permanen?")) {
+    if (startDate.value && endDate.value) {
         try {
-            await api.delete(`/users/${id}`);
-            fetchUsers();
-        } catch (err) {
-            alert("Gagal menghapus data");
+            const start = parseISO(startDate.value);
+            const end = endOfDay(parseISO(endDate.value));
+            result = result.filter(item => {
+                const pinjamDate = new Date(item.tanggal_pinjam);
+                return isWithinInterval(pinjamDate, { start, end });
+            });
+        } catch (e) {
+            console.error("Filter tanggal error:", e);
         }
+    }
+    return result;
+});
+
+const totalPages = computed(() => Math.ceil(filteredData.value.length / itemsPerPage.value) || 1);
+const paginatedData = computed(() => {
+    const startIdx = (currentPage.value - 1) * itemsPerPage.value;
+    const endIdx = startIdx + itemsPerPage.value;
+    return filteredData.value.slice(startIdx, endIdx);
+});
+
+watch([searchQuery, filterStatus, startDate, endDate, itemsPerPage], () => {
+    currentPage.value = 1;
+});
+
+const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+        return format(new Date(dateString), 'dd MMM yyyy', { locale: id });
+    } catch (error) {
+        return '-';
     }
 };
 
-// NAVIGASI
-const prevPage = () => {
-    if (currentPage.value > 1) {
-        currentPage.value--;
-        fetchUsers();
+const getImageUrl = (imagePath) => {
+    if (!imagePath) return 'https://placehold.co/150x150/f8fafc/94a3b8?text=No+Image';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:3000${imagePath}`; 
+};
+
+const getStatusBadgeClass = (status) => {
+    switch (status) {
+        case 'Menunggu': return 'bg-amber-50 text-amber-600 ring-amber-200';
+        case 'Disetujui': return 'bg-blue-50 text-blue-600 ring-blue-200';
+        case 'Dipinjam': return 'bg-indigo-50 text-indigo-600 ring-indigo-200';
+        case 'Selesai': return 'bg-emerald-50 text-emerald-600 ring-emerald-200';
+        case 'Dibatalkan':
+        case 'Ditolak': return 'bg-red-50 text-red-600 ring-red-200';
+        default: return 'bg-slate-50 text-slate-500 ring-slate-200';
     }
 };
-const nextPage = () => {
-    if (currentPage.value < totalPages.value) {
-        currentPage.value++;
-        fetchUsers();
-    }
+
+const openProcessModal = (item) => {
+    selectedData.value = item;
+    isModalOpen.value = true;
+};
+
+const updateStatus = (newStatus) => {
+    showAlert(
+        `Apakah Anda yakin ingin mengubah status peminjaman ini menjadi "${newStatus}"?`,
+        "confirm",
+        async () => {
+            try {
+                await api.put(`/admin/peminjaman/${selectedData.value.id}/status`, { status: newStatus });
+                showAlert(`Status berhasil diubah menjadi ${newStatus}`, 'success');
+                isModalOpen.value = false;
+                fetchPeminjaman();
+            } catch (error) {
+                console.error("Error Update Status:", error);
+                showAlert('Gagal mengubah status di server', 'error');
+            }
+        }
+    );
+};
+
+// --- EXPORT LOGIC ---
+const exportExcel = () => {
+    if (filteredData.value.length === 0) return showAlert('Data kosong, tidak ada yang bisa di-export', 'error');
+
+    const data = filteredData.value.map((item, index) => {
+        const listBarang = item.detail_barang?.map(d => `${d.barang?.nama_barang} (${d.jumlah_pinjam})`).join(', ') || '-';
+        
+        return {
+            'No': index + 1,
+            'Antrian': item.antrian || item.id,
+            'Nama Peminjam': item.nama_peminjam, // Langsung panggil variabel ini
+            'Kategori': item.kategori_kebutuhan || '-',
+            'Barang Dipinjam': listBarang,
+            'Mulai Pinjam': formatDate(item.tanggal_pinjam),
+            'Tgl Kembali': formatDate(item.tanggal_kembali),
+            'Status': item.status
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+    XLSX.writeFile(wb, `Laporan_Peminjaman_${startDate.value || 'All'}.xlsx`);
+    showAlert('File Excel berhasil diunduh', 'success');
+};
+
+const exportPDF = () => {
+    if (filteredData.value.length === 0) return showAlert('Data kosong, tidak ada yang bisa di-export', 'error');
+
+    const doc = new jsPDF('l', 'mm', 'a4');
+    doc.text('LAPORAN PEMINJAMAN BARANG LAB PLP TIK PNJ', 14, 15);
+
+    const subtitle = startDate.value && endDate.value
+        ? `Periode: ${formatDate(startDate.value)} s.d. ${formatDate(endDate.value)}`
+        : 'Periode: Semua Waktu';
+    doc.setFontSize(10);
+    doc.text(subtitle, 14, 22);
+
+    const rows = filteredData.value.map((item, i) => {
+        const listBarang = item.detail_barang?.map(d => `${d.barang?.nama_barang} (${d.jumlah_pinjam})`).join(',\n') || '-';
+        
+        return [
+            i + 1, 
+            item.antrian || item.id, 
+            item.nama_peminjam, // Langsung panggil variabel ini
+            listBarang,
+            formatDate(item.tanggal_pinjam),
+            formatDate(item.tanggal_kembali), 
+            item.status
+        ];
+    });
+
+    doc.autoTable({
+        head: [['No', 'Antrian', 'Peminjam', 'Barang (Jml)', 'Tgl Pinjam', 'Tgl Kembali', 'Status']],
+        body: rows,
+        startY: 30,
+        headStyles: { fillColor: [30, 64, 175] },
+        styles: { cellPadding: 2, fontSize: 8, overflow: 'linebreak' },
+        columnStyles: { 3: { cellWidth: 50 } }
+    });
+
+    doc.save(`Laporan_Lab_${format(new Date(), 'ddMMyy')}.pdf`);
+    showAlert('File PDF berhasil diunduh', 'success');
 };
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s, transform 0.2s;
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
 }
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-    transform: translateY(-10px);
-}
-::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-}
-::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 10px;
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>

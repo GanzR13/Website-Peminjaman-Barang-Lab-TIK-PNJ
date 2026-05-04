@@ -10,9 +10,26 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const refRoutes = require('./routes/refRoutes');
 const barangRoutes = require('./routes/barang');
+const userPeminjamanRoutes = require('./routes/userPeminjamanRoutes');
+const adminPeminjamanRoutes = require('./routes/adminPeminjamanRoutes');
 
 // INISIALISASI app
 const app = express();
+
+// --- CUSTOM LOG MANUAL (Ganti Morgan) ---
+app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        const status = res.statusCode;
+        // Warna log (Optional): 2xx = Hijau, 4xx/5xx = Merah
+        const color = status >= 400 ? '\x1b[31m' : '\x1b[32m';
+        const reset = '\x1b[0m';
+        
+        console.log(`${color}${req.method}${reset} ${req.originalUrl} ${color}${status}${reset} - ${duration}ms`);
+    });
+    next();
+});
 
 // 3. Setup Middleware
 app.use(
@@ -36,8 +53,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/ref', refRoutes);
 app.use('/api/barang', barangRoutes);
+app.use('/api/user/peminjaman', userPeminjamanRoutes);
+app.use('/api/admin/peminjaman', adminPeminjamanRoutes);
 
-// 5. REDIRECT Rute Utama ke Dokumentasi Postman
+// 5. REDIRECT Rute Utama
 app.get("/", (req, res) => {
     res.json({
         status: "success",
@@ -48,7 +67,7 @@ app.get("/", (req, res) => {
 
 // 6. Global Error Handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error(`\x1b[31m[ERROR]\x1b[0m ${err.stack}`);
     res.status(500).json({
         status: 'error',
         message: err.message || 'Terjadi kesalahan internal pada server'
@@ -62,12 +81,15 @@ db.sequelize
     .authenticate()
     .then(() => {
         console.log("✅ Koneksi PostgreSQL Berhasil.");
-        return db.sequelize.sync({ force: false }); 
+        return db.sequelize.sync({ force: false, logging: false });
     })
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
-            console.log(`📄 Dokumentasi API: https://documenter.getpostman.com/view/40256156/2sBXiqFpKy`);
+            console.log("-----------------------------------------");
+            console.log(`🕒 Waktu Server    : ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`);
+            console.log(`🚀 Server Berjalan : http://localhost:${PORT}`);
+            console.log(`📄 API Docs        : https://documenter.getpostman.com/view/40256156/2sBXiqFpKy`);
+            console.log("-----------------------------------------");
         });
     })
     .catch((err) => {

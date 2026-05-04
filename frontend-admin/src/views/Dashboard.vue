@@ -104,7 +104,7 @@
                                 <div class="flex justify-center items-center gap-2">
                                     <button 
                                         @click="openModalReview(aktivitas)"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors text-xs font-bold shadow-sm"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors text-xs font-bold shadow-sm cursor-pointer"
                                     >
                                         <EyeIcon class="w-4 h-4" /> 
                                         {{ aktivitas.status === 'Menunggu' ? 'Review' : 'Detail' }}
@@ -112,7 +112,7 @@
                                     
                                     <button 
                                         @click="deleteAktivitas(aktivitas.id)"
-                                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                         title="Hapus Riwayat"
                                     >
                                         <TrashIcon class="w-4 h-4" />
@@ -209,8 +209,10 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { EyeIcon, XMarkIcon, CubeIcon, CheckCircleIcon, XCircleIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/vue/24/outline';
+import { useAlert } from '../composables/useAlert'; // 1. Import Global Alert
 
-// --- DATA DUMMY STATE (Diperbanyak untuk test Paginasi) ---
+const { showAlert } = useAlert(); // 2. Ekstrak fungsi showAlert
+
 const aktivitasList = ref([
     { id: 1, peminjam: 'Andi Saputra', waktu: '10 Menit lalu', status: 'Menunggu', catatan: 'Praktikum mikrokontroler kelas TIK-4A', barang: [{ kode: 'EL-001', nama: 'Oscilloscope Rigol DS1054Z' }, { kode: 'EL-012', nama: 'Kabel Probe BNC' }] },
     { id: 2, peminjam: 'Budi Santoso', waktu: '1 Jam lalu', status: 'Dipinjam', catatan: '', barang: [{ kode: 'EL-005', nama: 'Multimeter Digital Fluke 17B+' }] },
@@ -221,12 +223,10 @@ const aktivitasList = ref([
     { id: 7, peminjam: 'Ayu Wandira', waktu: '3 Hari lalu', status: 'Kembali', catatan: '', barang: [{ kode: 'NTW-01', nama: 'Crimping Tool Oucheng' }, { kode: 'NTW-02', nama: 'LAN Tester' }] },
 ]);
 
-// --- STATE SEARCH & PAGINASI ---
 const searchQuery = ref('');
 const currentPage = ref(1);
-const itemsPerPage = 5; // Menampilkan 5 data per halaman
+const itemsPerPage = 5; 
 
-// --- LOGIKA PENCARIAN ---
 const filteredAktivitas = computed(() => {
     if (!searchQuery.value) return aktivitasList.value;
     const query = searchQuery.value.toLowerCase();
@@ -236,7 +236,6 @@ const filteredAktivitas = computed(() => {
     );
 });
 
-// --- LOGIKA PAGINASI ---
 const totalPages = computed(() => Math.ceil(filteredAktivitas.value.length / itemsPerPage));
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
 const endIndex = computed(() => startIndex.value + itemsPerPage);
@@ -252,19 +251,26 @@ const prevPage = () => {
     if (currentPage.value > 1) currentPage.value--;
 };
 
-// --- LOGIKA HAPUS DATA ---
+// --- LOGIKA HAPUS DATA DENGAN ALERT CONFIRM ---
 const deleteAktivitas = (id) => {
-    if(confirm('Apakah Anda yakin ingin menghapus riwayat aktivitas ini? Data yang dihapus tidak dapat dikembalikan.')) {
-        aktivitasList.value = aktivitasList.value.filter(a => a.id !== id);
-        
-        // Cek jika halaman saat ini jadi kosong setelah dihapus, mundur 1 halaman
-        if (paginatedAktivitas.value.length === 0 && currentPage.value > 1) {
-            currentPage.value--;
+    // Gunakan mode confirm dari useAlert
+    showAlert(
+        "Apakah Anda yakin ingin menghapus riwayat aktivitas ini? Data tidak dapat dikembalikan.",
+        "confirm",
+        () => {
+            // Callback jika di-klik "Ya"
+            aktivitasList.value = aktivitasList.value.filter(a => a.id !== id);
+            
+            if (paginatedAktivitas.value.length === 0 && currentPage.value > 1) {
+                currentPage.value--;
+            }
+
+            // Tampilkan alert success setelah berhasil dihapus
+            showAlert("Riwayat aktivitas berhasil dihapus.", "success");
         }
-    }
+    );
 };
 
-// --- LOGIKA MODAL REVIEW ---
 const isModalOpen = ref(false);
 const selectedRequest = ref(null);
 
@@ -278,29 +284,39 @@ const closeModal = () => {
     setTimeout(() => { selectedRequest.value = null; }, 300);
 };
 
-// --- LOGIKA APPROVAL ---
+// --- LOGIKA APPROVAL DENGAN ALERT SUCCESS ---
 const approveRequest = () => {
     const index = aktivitasList.value.findIndex(a => a.id === selectedRequest.value.id);
-    if (index !== -1) aktivitasList.value[index].status = 'Dipinjam';
+    if (index !== -1) {
+        aktivitasList.value[index].status = 'Dipinjam';
+    }
     closeModal();
+    
+    // Tampilkan pesan sukses
+    showAlert("Permintaan peminjaman berhasil disetujui.", "success");
 };
 
+// --- LOGIKA REJECT DENGAN ALERT SUCCESS ---
 const rejectRequest = () => {
+    // Prompt bawaan browser tetap digunakan untuk mengambil input alasan (teks)
     const alasan = prompt('Masukkan alasan penolakan (opsional):');
     if (alasan !== null) {
         const index = aktivitasList.value.findIndex(a => a.id === selectedRequest.value.id);
-        if (index !== -1) aktivitasList.value[index].status = 'Ditolak';
+        if (index !== -1) {
+            aktivitasList.value[index].status = 'Ditolak';
+        }
         closeModal();
+        
+        // Tampilkan pesan bahwa penolakan berhasil diproses
+        showAlert("Permintaan peminjaman telah ditolak.", "success");
     }
 };
 </script>
 
 <style scoped>
-/* Animasi transisi Modal */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; transform: scale(0.95); }
 
-/* Scrollbar Main & Modal */
 .overflow-y-auto::-webkit-scrollbar, .overflow-x-auto::-webkit-scrollbar { width: 6px; height: 6px; }
 .overflow-y-auto::-webkit-scrollbar-thumb, .overflow-x-auto::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 </style>

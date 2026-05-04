@@ -10,7 +10,7 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET || 'secret_key_kamu', (err, user) => {
     if (err) {
-      return res.status(403).json({ message: "Token tidak valid atau sudah kedaluwarsa." });
+      return res.status(403).json({ message: "Token tidak valid atau sudah kadaluwarsa." });
     }
     req.user = user;
     next();

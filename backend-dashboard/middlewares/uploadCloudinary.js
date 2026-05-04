@@ -9,27 +9,34 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 2. Setting Storage Cloudinary
+// 2. Setting Storage Cloudinary dengan Auto-Format & Resize
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'skripsi_lab',
-    allowed_formats: ['webp'], // Paksa Cloudinary hanya menerima webp
+    // Instruksikan Cloudinary untuk selalu mengubah hasil akhir menjadi webp
+    format: async (req, file) => 'webp', 
+    // Proses manipulasi gambar langsung di server Cloudinary
+    transformation: [
+      { width: 800, height: 800, crop: 'limit' }, // Maksimal 800x800px (tidak merusak rasio asli)
+      { quality: 80 } // Kompresi kualitas menjadi 80% agar ukuran file sangat kecil
+    ]
   }
 });
 
-// 3. Konfigurasi Multer dengan Filter & Limit
+// 3. Konfigurasi Multer
 const uploadCloud = multer({ 
   storage: storage,
   limits: { 
-    fileSize: 1 * 1024 * 1024 // Batas maksimal 1 MB (dalam bytes)
+    // Naikkan batas penerimaan mentah jadi 5MB agar kamera HP bisa masuk.
+    // Jangan khawatir, hasil akhirnya di database & Cloudinary akan sangat kecil (WEBP).
+    fileSize: 5 * 1024 * 1024 
   },
   fileFilter: (req, file, cb) => {
-    // Pengecekan tipe file dari sisi server sebelum diupload
-    if (file.mimetype === 'image/webp') {
-      cb(null, true); // Lolos filter
+    // Izinkan semua tipe gambar standar (JPG, JPEG, PNG, WEBP) masuk untuk diproses
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true); 
     } else {
-      // Tolak dengan mengirimkan pesan error khusus
       cb(new Error('FORMAT_TIDAK_VALID'), false); 
     }
   }

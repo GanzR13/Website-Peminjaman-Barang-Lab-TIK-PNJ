@@ -5,9 +5,9 @@ module.exports = {
     await queryInterface.createTable('detail_peminjaman', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        autoIncrement: true
       },
       peminjaman_id: {
         type: Sequelize.INTEGER,

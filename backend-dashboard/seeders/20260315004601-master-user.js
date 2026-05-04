@@ -1,13 +1,15 @@
 'use strict';
 const bcrypt = require('bcrypt');
+const { v4: uuidv4 } = require('uuid'); // 1. Import UUID
 
 module.exports = {
   async up (queryInterface, Sequelize) {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash('password123', saltRounds);
+    
     await queryInterface.bulkInsert('user', [
       {
-        id: 1, // ID diset manual agar mudah dihubungkan ke tabel profil
+        id: uuidv4(), // 2. Generate UUID otomatis
         email: 'kepalalab@pnj.ac.id',
         password: hashedPassword,
         no_telepon: '081234567890',
@@ -18,7 +20,7 @@ module.exports = {
         updatedAt: new Date()
       },
       {
-        id: 2,
+        id: uuidv4(),
         email: 'ketua@pnj.ac.id',
         password: hashedPassword,
         no_telepon: '081234567891',
@@ -29,7 +31,7 @@ module.exports = {
         updatedAt: new Date()
       },
       {
-        id: 3,
+        id: uuidv4(),
         email: 'staff@pnj.ac.id',
         password: hashedPassword,
         no_telepon: '081234567892',
@@ -40,7 +42,7 @@ module.exports = {
         updatedAt: new Date()
       },
       {
-        id: 4,
+        id: uuidv4(),
         email: 'dosen.tik@pnj.ac.id',
         password: hashedPassword,
         no_telepon: '081234567893',
@@ -51,7 +53,7 @@ module.exports = {
         updatedAt: new Date()
       },
       {
-        id: 5,
+        id: uuidv4(),
         email: 'mahasiswa.tik@mhsw.pnj.ac.id',
         password: hashedPassword,
         no_telepon: '081234567894',

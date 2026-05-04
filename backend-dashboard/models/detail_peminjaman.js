@@ -1,6 +1,25 @@
-// models/detail_peminjaman.js
+'use strict';
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
-  const DetailPeminjaman = sequelize.define("DetailPeminjaman", {
+  class DetailPeminjaman extends Model {
+    static associate(models) {
+      // Relasi ke Peminjaman
+      DetailPeminjaman.belongsTo(models.Peminjaman, {
+        foreignKey: "peminjaman_id",
+        as: "peminjaman"
+      });
+
+      // Relasi ke Barang - Pastikan models.Barang (Huruf Besar) 
+      // merujuk ke modelName yang ada di Barang.js
+      DetailPeminjaman.belongsTo(models.Barang, {
+        foreignKey: "barang_id",
+        as: "barang"
+      });
+    }
+  }
+
+  DetailPeminjaman.init({
     peminjaman_id: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -15,23 +34,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 1
     }
   }, {
+    sequelize,
     modelName: 'DetailPeminjaman',
-    tableName: "detail_peminjaman",
+    tableName: 'detail_peminjaman', // Huruf kecil sesuai database
     timestamps: true
   });
-
-  DetailPeminjaman.associate = function(models) {
-    // Relasi ke model Peminjaman yang baru kamu buat
-    DetailPeminjaman.belongsTo(models.Peminjaman, {
-      foreignKey: "peminjaman_id",
-      as: "peminjaman"
-    });
-    // Relasi ke model Barang
-    DetailPeminjaman.belongsTo(models.Barang, {
-      foreignKey: "barang_id",
-      as: "barang"
-    });
-  };
 
   return DetailPeminjaman;
 };

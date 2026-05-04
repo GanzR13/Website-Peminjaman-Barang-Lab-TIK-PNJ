@@ -4,7 +4,12 @@
       <component :is="Component" />
     </transition>
   </router-view>
+  <ToastAlert />
 </template>
+
+<script setup>
+import ToastAlert from './components/ToastAlert.vue';
+</script>
 
 <style>
 /* Reset dasar untuk memastikan Tailwind bekerja maksimal */

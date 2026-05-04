@@ -15,22 +15,22 @@
           <nav class="hidden md:flex space-x-8 h-full">
             <router-link 
               to="/dashboard" 
-              class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-colors"
-              :class="$route.path.includes('/dashboard') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'"
+              class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-colors text-gray-500 hover:text-gray-900 hover:border-gray-300"
+              active-class="!border-blue-600 !text-blue-600"
             >
               Beranda
             </router-link>
             <router-link 
               to="/catalog" 
-              class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-colors"
-              :class="$route.path.includes('/catalog') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'"
+              class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-colors text-gray-500 hover:text-gray-900 hover:border-gray-300"
+              active-class="!border-blue-600 !text-blue-600"
             >
               Katalog Alat
             </router-link>
             <router-link 
               to="/riwayat" 
-              class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-colors"
-              :class="$route.path.includes('/riwayat') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'"
+              class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-colors text-gray-500 hover:text-gray-900 hover:border-gray-300"
+              active-class="!border-blue-600 !text-blue-600"
             >
               Peminjaman Saya
             </router-link>
@@ -38,7 +38,7 @@
 
           <div class="flex items-center gap-3 md:gap-4">
             <div class="hidden md:flex flex-col text-right">
-              <span class="text-sm font-bold text-gray-900 leading-tight">{{ authStore.user?.nama || 'Pengguna' }}</span>
+              <span class="text-sm font-bold text-gray-900 leading-tight">{{ authStore.user?.nama || 'Rizki' }}</span>
               <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">{{ authStore.user?.level || 'Mahasiswa' }}</span>
             </div>
             
@@ -47,7 +47,7 @@
               class="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition-all cursor-pointer shadow-sm uppercase shrink-0"
               title="Lihat Profil Saya"
             >
-              {{ authStore.user?.nama?.charAt(0) || 'M' }}
+              {{ authStore.user?.nama?.charAt(0) || 'R' }}
             </router-link>
 
             <div class="hidden md:block w-px h-6 bg-gray-200 mx-1"></div>
@@ -67,14 +67,14 @@
       <transition name="fade">
         <div v-if="isMobileMenuOpen" class="md:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full">
           <div class="px-4 pt-2 pb-4 space-y-1">
-            <router-link @click="isMobileMenuOpen = false" to="/dashboard" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors">Beranda</router-link>
-            <router-link @click="isMobileMenuOpen = false" to="/catalog" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors">Katalog Alat</router-link>
-            <router-link @click="isMobileMenuOpen = false" to="/riwayat" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors">Peminjaman Saya</router-link>
+            <router-link @click="isMobileMenuOpen = false" to="/dashboard" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors" active-class="bg-blue-50 text-blue-600">Beranda</router-link>
+            <router-link @click="isMobileMenuOpen = false" to="/catalog" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors" active-class="bg-blue-50 text-blue-600">Katalog Alat</router-link>
+            <router-link @click="isMobileMenuOpen = false" to="/riwayat" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors" active-class="bg-blue-50 text-blue-600">Peminjaman Saya</router-link>
             
             <div class="my-2 border-t border-gray-100"></div>
             
-            <router-link @click="isMobileMenuOpen = false" to="/profile" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors">Profil Saya</router-link>
-            <button @click="handleLogout" class="w-full text-left block px-4 py-3 rounded-xl text-base font-bold text-red-600 hover:bg-red-50 transition-colors">Keluar Aplikasi</button>
+            <router-link @click="isMobileMenuOpen = false" to="/profile" class="block px-4 py-3 rounded-xl text-base font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors" active-class="bg-blue-50 text-blue-600">Profil Saya</router-link>
+            <button @click="handleLogout" class="w-full text-left block px-4 py-3 rounded-xl text-base font-bold text-red-600 hover:bg-red-50 transition-colors cursor-pointer">Keluar Aplikasi</button>
           </div>
         </div>
       </transition>
@@ -101,19 +101,26 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { useAlert } from '../composables/useAlert'; // 1. Import useAlert
 import { ArrowRightOnRectangleIcon, Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline';
 
-const router = useRouter();
 const authStore = useAuthStore();
 const isMobileMenuOpen = ref(false);
+const { showAlert } = useAlert(); // 2. Ekstrak showAlert
 
 const handleLogout = () => {
-    if (confirm('Apakah Anda yakin ingin keluar dari aplikasi?')) {
-        localStorage.clear();
-        router.replace('/login');
-    }
+    // 3. Tutup menu mobile terlebih dahulu (jika sedang terbuka)
+    isMobileMenuOpen.value = false;
+    
+    // 4. Tampilkan konfirmasi menggunakan Global Alert
+    showAlert(
+        "Apakah Anda yakin ingin keluar dari aplikasi?", 
+        "confirm", 
+        () => {
+            authStore.logout(); // authStore akan otomatis menghapus localStorage dan redirect ke login
+        }
+    );
 };
 </script>
 

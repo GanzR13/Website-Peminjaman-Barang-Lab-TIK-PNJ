@@ -10,20 +10,15 @@ const {
 } = require("../models");
 const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
 
 // Fungsi GET All Users (Admin Only)
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
             attributes: [
-                "id",
-                "email",
-                "role_id",
-                "no_telepon",
-                "tanggal_daftar",
-                "email_verified",
-                "createdAt",
-                "updatedAt",
+                "id", "email", "role_id", "no_telepon",
+                "tanggal_daftar", "email_verified", "createdAt", "updatedAt",
             ],
             include: [{ model: Role, attributes: ["nama_role", "level_akses"] }],
         });
@@ -137,34 +132,65 @@ exports.getPeminjam = async (req, res) => {
     }
 };
 
-// Fungsi CREATE User (Admin Only)
+// Fungsi CREATE User
 exports.createUser = async (req, res) => {
     try {
         const {
             email, password, no_telepon, role_id, 
             nama_lengkap, nip, nim, angkatan, prodi_id, kelas_id,
         } = req.body;
+
+        // 1. Validasi Backend Tambahan
+        if (parseInt(role_id) !== 5 && !nip) {
+            // Jika bukan mahasiswa (berarti Dosen/Admin), NIP wajib diisi!
+            return res.status(400).json({ message: "NIP wajib diisi untuk Dosen atau Teknisi." });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // 2. Buat User Utama
         const newUser = await User.create({
+            id: uuidv4(),
             email,
             password: hashedPassword,
             no_telepon,
             role_id,
         });
 
+        // 3. Pisahkan Data Berdasarkan Role
         if (parseInt(role_id) === 5) {
+            // Pembuatan Profil Mahasiswa
             await Mahasiswa.create({
+                id: uuidv4(), // Injeksi UUID
                 nama_mahasiswa: nama_lengkap,
-                nim, angkatan, prodi_id, kelas_id,
+                nim, 
+                angkatan, 
+                prodi_id, 
+                kelas_id,
                 user_id: newUser.id,
             });
         } else {
-            await Pegawai.create({ nama_lengkap, nip, user_id: newUser.id });
+            // Pembuatan Profil Pegawai (Dosen/Admin)
+            await Pegawai.create({ 
+                id: uuidv4(), // <-- INJEKSI UUID WAJIB DI SINI JUGA
+                nama_lengkap, 
+                nip, 
+                user_id: newUser.id 
+            });
         }
+
         res.status(201).json({ status: "success", message: "User berhasil dibuat" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Error Register:", error);
+
+        // Menangkap error 'Unique Constraint' jika Email atau NIP sudah terdaftar
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({ 
+                message: "Email atau NIP/NIM sudah terdaftar di sistem. Silakan gunakan yang lain." 
+            });
+        }
+
+        res.status(500).json({ message: error.message || "Terjadi kesalahan pada server." });
     }
 };
 
@@ -252,7 +278,6 @@ exports.getPegawaiById = async (req, res) => {
     }
 };
 
-// Fungsi Khusus Untuk Mencari Peminjam Berdasarkan ID (Bisa Mhs / Dosen)
 exports.getPeminjamById = async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id, {
@@ -295,7 +320,6 @@ exports.getPeminjamById = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        // req.user.id didapat dari middleware auth (JWT)
         const userId = req.user.id; 
 
         const user = await User.findByPk(userId, {

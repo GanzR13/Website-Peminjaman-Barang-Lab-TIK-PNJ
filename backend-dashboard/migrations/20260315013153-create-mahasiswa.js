@@ -5,27 +5,41 @@ module.exports = {
     await queryInterface.createTable('mahasiswa', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING, // UBAH: Menjadi STRING/UUID
+        // HAPUS: autoIncrement: true
       },
       nama_mahasiswa: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
       },
       nim: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true // UBAH: Tambahkan unique agar NIM tidak duplikat
       },
       angkatan: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       user_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING, // UBAH: Harus STRING karena ID User sekarang UUID
+        allowNull: false,
+        unique: true, // Satu akun user = satu mahasiswa
+        references: { // Sangat disarankan untuk menjaga integritas data
+          model: 'user', // Nama tabel referensi (huruf kecil)
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       prodi_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       kelas_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
@@ -39,6 +53,7 @@ module.exports = {
       }
     });
   },
+  
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('mahasiswa');
   }

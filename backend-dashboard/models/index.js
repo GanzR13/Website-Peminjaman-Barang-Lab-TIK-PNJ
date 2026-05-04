@@ -11,13 +11,21 @@ const db = {};
 
 let sequelize;
 if (config.use_env_variable) {
-    sequelize = new Sequelize(process.env[config.use_env_variable], config);
+    sequelize = new Sequelize(process.env[config.use_env_variable], {
+        ...config,
+        logging: false, // Matikan log SQL query di terminal
+        timezone: "+07:00" // Pastikan Sequelize menggunakan zona waktu Jakarta
+    });
 } else {
     sequelize = new Sequelize(
         config.database,
         config.username,
         config.password,
-        config,
+        {
+            ...config,
+            logging: false, // Matikan log SQL query di terminal
+            timezone: "+07:00" // Pastikan Sequelize menggunakan zona waktu Jakarta
+        }
     );
 }
 
@@ -38,7 +46,6 @@ fs.readdirSync(__dirname)
         db[model.name] = model;
     });
 
-// Mesin otomatis yang akan memanggil fungsi 'associate' di SETIAP file model
 Object.keys(db).forEach((modelName) => {
     if (db[modelName].associate) {
         db[modelName].associate(db);

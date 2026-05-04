@@ -10,7 +10,6 @@ const instance = axios.create({
 });
 
 // --- INTERCEPTOR REQUEST ---
-// Gunanya: Otomatis menempelkan Token di setiap request
 instance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -25,7 +24,6 @@ instance.interceptors.request.use(
 );
 
 // --- INTERCEPTOR RESPONSE ---
-// Gunanya: Menangani error secara global (misal: Token Expired)
 instance.interceptors.response.use(
   (response) => {
     return response;

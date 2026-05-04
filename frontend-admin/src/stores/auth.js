@@ -9,86 +9,94 @@ export const useAuthStore = defineStore("auth", {
     error: null,
   }),
   actions: {
-    // --- ACTION LOGIN (Tetap Sama) ---
-    async login(email, password) {
+    // --- ACTION LOGIN ---
+    // Ubah parameter menjadi 'payload' agar bisa menerima object { email, password, portal }
+    async login(payload) {
       this.loading = true;
       this.error = null;
+      
       try {
-        const response = await api.post("/auth/login", {
-          email,
-          password,
-          portal: "admin", 
-        });
+        const response = await api.post("/auth/login", payload);
 
         this.token = response.data.token;
         const userData = response.data.user;
 
+        // Mapping disesuaikan dengan response authController backend
         this.user = {
           id: userData.id,
-          email: userData.email,
-          nama: userData.nama || userData.nama_lengkap || 'Admin',
-          level: userData.level || userData.Role?.nama_role || 'Staff',
+          email: payload.email, // Ambil email dari form
+          nama: userData.nama,
+          level: userData.level, // 'peminjam', 'admin', 'super_admin'
+          role_name: userData.role_name, // 'Mahasiswa', 'Dosen', 'Kepala Lab', dll
           role_id: userData.role_id,
-          nip: userData.nip || userData.pegawai?.nip || '-',
-          no_telepon: userData.no_telepon || '-'
         };
 
         localStorage.setItem("token", this.token);
         localStorage.setItem("user", JSON.stringify(this.user));
         api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
         
-        return response.data;
+        return true;
       } catch (error) {
-        this.error = error.response?.data?.message || "Gagal login.";
+        // Tangkap pesan error dari backend
+        this.error = error.response?.data?.message || "Gagal login. Periksa koneksi Anda.";
         throw this.error;
       } finally {
         this.loading = false;
       }
     },
 
-    // --- ACTION BARU: FETCH ME ---
+    // --- ACTION FETCH ME ---
     async fetchMe() {
       if (!this.token) return;
       
       try {
-        // Pastikan header auth terpasang
         api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
         
         const response = await api.get("/auth/me");
         const userData = response.data.data;
 
-        // Update state user dengan data terbaru dari database
+        // Mapping disesuaikan dengan response authController.getMe backend
         this.user = {
           ...this.user,
           id: userData.id,
           email: userData.email,
-          nama: userData.nama_lengkap || userData.nama,
-          level: userData.Role?.nama_role || this.user.level,
+          nama: userData.nama_lengkap,
+          level: userData.level_akses, 
+          role_name: userData.nama_role, 
           role_id: userData.role_id,
-          nip: userData.pegawai?.nip || userData.nip || '-',
+          nip: userData.nip || '-',
+          nim: userData.nim || '-', // Tambahkan NIM untuk Mahasiswa
           no_telepon: userData.no_telepon || '-'
         };
 
-        // Update localStorage agar tetap sinkron saat refresh
         localStorage.setItem("user", JSON.stringify(this.user));
       } catch (error) {
         console.error("Session expired or invalid token");
-        // Jika token tidak valid (401), otomatis logout
         if (error.response?.status === 401) {
           this.logout();
         }
       }
     },
     
-    // --- ACTION LOGOUT (Tetap Sama) ---
+    // --- ACTION LOGOUT ---
     logout() {
+      // 1. Cek dulu user ini admin atau peminjam sebelum datanya dihapus
+      const isPeminjam = this.user?.level === 'peminjam';
+
+      // 2. Bersihkan State & Storage
       this.token = null;
       this.user = null;
       this.error = null;
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       delete api.defaults.headers.common['Authorization'];
-      window.location.href = "/admin/login"; 
+
+      // 3. Redirect Cerdas (Admin ke login admin, Peminjam ke login biasa)
+      if (isPeminjam) {
+        window.location.href = "/"; // Sesuaikan path login mahasiswa
+      } else {
+        window.location.href = "/admin/login"; 
+      }
     },
   },
 });

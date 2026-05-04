@@ -114,45 +114,47 @@
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
-import api from '../plugins/axios'; // Pastikan path ini mengarah ke file konfigurasi Axios kamu
+import api from '../plugins/axios';
 import { PencilIcon, UserIcon, LockClosedIcon, CheckCircleIcon, ArrowRightOnRectangleIcon } from '@heroicons/vue/24/outline';
+import { useAlert } from '../composables/useAlert'; // 1. Import useAlert
 
 const authStore = useAuthStore();
 const router = useRouter();
+const { showAlert } = useAlert(); // 2. Ekstrak showAlert
+
 const isLoading = ref(true);
 
 const fetchUserProfile = async () => {
   isLoading.value = true;
   try {
-    // Menarik data user dari backend Express.js
     const response = await api.get('/auth/me'); 
     
     if (response.data && response.data.status === 'success') {
       const userData = response.data.data;
       
-      // Update data di Pinia Store
       authStore.user = {
         ...authStore.user,
         id: userData.id,
         nama: userData.nama_lengkap || userData.nama,
         email: userData.email,
         no_telepon: userData.no_telepon,
-        // Karena portal User bisa untuk Mahasiswa atau Dosen, kita tampung NIM/NIP secara dinamis
         identitas: userData.mahasiswa?.nim || userData.pegawai?.nip || userData.nip || userData.nim, 
         level: userData.Role?.nama_role || authStore.user.level || 'Mahasiswa'
       };
       
-      // Timpa localStorage agar data tetap persisten jika halaman di-refresh
       localStorage.setItem("user", JSON.stringify(authStore.user));
     }
   } catch (error) {
     console.error("Gagal menarik data profil dari server:", error);
-    // Logika tambahan: jika error 401 (Unauthorized), bisa arahkan ke halaman login
+    
     if (error.response && error.response.status === 401) {
-      handleLogout();
+      // Tidak perlu alert panjang di sini jika 401, karena authStore akan melempar langsung ke login
+      authStore.logout();
+    } else {
+      // 3. Tampilkan alert error jika server bermasalah (bukan 401)
+      showAlert("Gagal memuat profil terbaru. Periksa koneksi Anda.", "error");
     }
   } finally {
-    // Matikan indikator loading
     isLoading.value = false;
   }
 };
@@ -161,12 +163,16 @@ onMounted(() => {
   fetchUserProfile();
 });
 
+// 4. Perbarui fungsi handleLogout
 const handleLogout = () => {
-  if (confirm('Apakah Anda yakin ingin keluar dari sistem?')) {
-    authStore.logout(); // Menghapus token di state Pinia (jika fungsi ini ada)
-    localStorage.clear(); // Hapus kredensial
-    router.replace('/login'); // Arahkan kembali ke portal login User
-  }
+  // Panggil mode 'confirm' dengan teks pesan dan callback (fungsi yang dijalankan jika di-klik "Ya")
+  showAlert(
+    "Apakah Anda yakin ingin keluar dari sistem?", 
+    "confirm", 
+    () => {
+      authStore.logout(); // authStore.logout() sudah meng-handle localStorage.clear() dan redirect!
+    }
+  );
 };
 </script>
 

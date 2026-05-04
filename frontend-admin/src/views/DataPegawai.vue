@@ -259,11 +259,13 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import { useAlert } from '../composables/useAlert';
 
 const users = ref([]);
 const searchQuery = ref("");
 const isLoading = ref(true);
 const error = ref(null);
+const { showAlert } = useAlert();
 
 // Paginasi
 const currentPage = ref(1);
@@ -330,15 +332,15 @@ const closeModal = () => { showModal.value = false; };
 
 const saveData = async () => {
     try {
-        if (isEditMode.value) alert("Fungsi Update Frontend berjalan! (Menunggu Backend)");
-        else alert("Fungsi Create Frontend berjalan! (Menunggu Backend)");
+        if (isEditMode.value) showAlert("Fungsi Update Frontend berjalan! (Menunggu Backend)");
+        else showAlert("Fungsi Create Frontend berjalan! (Menunggu Backend)");
         closeModal();
-    } catch (err) { alert("Gagal menyimpan data"); }
+    } catch (err) { showAlert("Gagal menyimpan data"); }
 };
 
 const deleteUser = async (id) => {
     if (confirm("Apakah Anda yakin ingin menghapus data pegawai ini?")) {
-        try { alert("Fungsi Delete Frontend berjalan! (Menunggu Backend)"); } catch (err) {}
+        try { showAlert("Fungsi Delete Frontend berjalan! (Menunggu Backend)"); } catch (err) {}
     }
 };
 

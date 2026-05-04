@@ -1,27 +1,28 @@
 'use strict';
-// PERHATIAN: Tambahkan 'Op' di sini untuk fungsi pencarian berdasarkan rentang waktu
-const { Model, Op } = require('sequelize'); 
+const { Model, Op } = require('sequelize'); // Pastikan ini tidak error, jika error gunakan: const { Op } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class Peminjaman extends Model {
     static associate(models) {
-      // Relasi: 1 Peminjaman dimiliki oleh 1 User (Peminjam)
       Peminjaman.belongsTo(models.User, { 
         foreignKey: 'user_id', 
         as: 'peminjam' 
       });
       
-      // Relasi ke tabel pivot (DetailPeminjaman) untuk mencatat barang apa saja yang dipinjam
-      // Peminjaman.hasMany(models.DetailPeminjaman, { foreignKey: 'peminjaman_id' });
+      Peminjaman.hasMany(models.DetailPeminjaman, {
+        foreignKey: 'peminjaman_id',
+        as: 'detail_barang',
+        onDelete: 'CASCADE',
+        hooks: true
+      });
     }
   }
   
   Peminjaman.init({
     user_id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false
     },
-    // ---> INI ATRIBUT ANTRIAN BARU <---
     antrian: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -34,7 +35,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    // --- KHUSUS NON-AKADEMIK (Boleh Kosong) ---
     nama_acara: {
       type: DataTypes.STRING,
       allowNull: true
@@ -47,7 +47,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
-    // --- WAKTU & STATUS ---
     tanggal_pinjam: {
       type: DataTypes.DATE,
       allowNull: false
@@ -69,29 +68,6 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'Peminjaman',
     tableName: 'peminjaman',
     freezeTableName: true,
-    
-    // ---> LOGIKA RESET ANTRIAN HARIAN <---
-    hooks: {
-      beforeValidate: async (peminjaman, options) => {
-        // 1. Tentukan rentang waktu hari ini (Jam 00:00:00 - 23:59:59)
-        const today = new Date();
-        const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-        const endOfDay = new Date(today.setHours(23, 59, 59, 999));
-
-        // 2. Cari data peminjaman terakhir pada hari ini
-        const lastPeminjaman = await sequelize.models.Peminjaman.findOne({
-          where: {
-            createdAt: {
-              [Op.between]: [startOfDay, endOfDay]
-            }
-          },
-          order: [['antrian', 'DESC']] // Ambil nomor antrian paling besar
-        });
-
-        // 3. Set nomor antrian: Jika sudah ada antrian hari ini, tambah 1. Jika belum, mulai dari 1.
-        peminjaman.antrian = lastPeminjaman && lastPeminjaman.antrian ? lastPeminjaman.antrian + 1 : 1;
-      }
-    }
   });
   
   return Peminjaman;

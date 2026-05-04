@@ -28,16 +28,16 @@ const routes = [
       },
       { 
         path: '/users/pegawai',
-        name: 'ManagementPegawai', 
-        component: () => import('../views/ManagementPegawai.vue')
+        name: 'DataPegawai', 
+        component: () => import('../views/DataPegawai.vue')
       },
       {
         path: '/users/peminjam', 
-        name: 'ManagementPeminjam', 
-        component: () => import('../views/ManagementPeminjam.vue')
+        name: 'DataPeminjam', 
+        component: () => import('../views/DataPeminjam.vue')
       },
       {
-        path: '/profile',
+        path: '/admin/profile',
         name: 'Profile',
         component: () => import('../views/Profile.vue')
       },
@@ -45,7 +45,13 @@ const routes = [
         path: '/barang',
         name: 'Barang',
         component: () => import('../views/Barang.vue')
+      },
+      {
+        path: '/peminjaman',
+        name: 'ManagementPeminjam',
+        component: () => import('../views/ManagementPeminjam.vue')
       }
+
     ]
   }
 ];
@@ -72,7 +78,7 @@ router.beforeEach((to, from) => {
   // Jika sudah login pakai akun Mahasiswa tapi mencoba masuk rute Admin
   if (to.meta.requiresAuth && isAuthenticated && !isAdmin) {
     localStorage.clear(); // Tendang tokennya
-    alert("Akses Ditolak: Halaman ini hanya untuk Admin/Pegawai");
+    ShowAlert("Akses Ditolak: Halaman ini hanya untuk Admin/Pegawai");
     return { name: 'AdminLogin' }; 
   }
 
