@@ -1,122 +1,210 @@
 <template>
-    <div class="p-8 relative h-full flex flex-col bg-gray-50 overflow-y-auto">
-        <div class="mb-8">
-            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Dashboard Overview</h2>
-            <p class="text-gray-600 mt-1 text-sm">Ringkasan sistem manajemen barang dan aktivitas terbaru.</p>
-        </div>
+    <div class="p-8 relative h-full flex flex-col bg-slate-50 lg:overflow-y-auto custom-scrollbar">
+        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <span
+                    class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-lg mb-2 border border-blue-200">
+                    Sistem Penunjang Keputusan (SPK)
+                </span>
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Data Analitik Pengadaan Tahunan</h2>
+                <p class="text-slate-500 mt-1 text-sm font-medium">Rekomendasi pengadaan alat laboratorium berbasis
+                    Rule-Based Analytics.</p>
+            </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl">
-                    124
+            <div class="flex items-center gap-3">
+                <div class="relative w-40">
+                    <select v-model="selectedYear"
+                        class="w-full pl-4 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-bold text-slate-700 cursor-pointer appearance-none shadow-sm">
+                        <option v-for="year in availableYears" :key="year" :value="year">Tahun {{ year }}</option>
+                    </select>
+                    <ChevronDownIcon
+                        class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                 </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total User</p>
-                    <p class="text-sm font-medium text-gray-600">Terdaftar</p>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xl">
-                    42
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Jenis Alat</p>
-                    <p class="text-sm font-medium text-gray-600">Dalam Katalog</p>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold text-xl">
-                    3
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Alat Rusak</p>
-                    <p class="text-sm font-medium text-gray-600">Perlu Perbaikan</p>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
-                    12
-                </div>
-                <div>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Peminjaman</p>
-                    <p class="text-sm font-medium text-gray-600">Sedang Aktif</p>
-                </div>
+
+                <button @click="exportReport"
+                    class="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-200 hover:bg-slate-900 transition-all active:scale-95 cursor-pointer">
+                    <DocumentArrowDownIcon class="w-5 h-5" />
+                    Cetak Laporan
+                </button>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col overflow-hidden min-h-125">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             
-            <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800">Aktivitas & Permintaan</h2>
-                    <p class="text-sm text-gray-500">Kelola persetujuan dan riwayat peminjaman.</p>
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 hover:border-indigo-300 transition-colors">
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <UsersIcon class="w-6 h-6" />
                 </div>
-                
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Peminjam</p>
+                    <p v-if="isLoadingUser" class="text-xl font-black text-slate-300 animate-pulse">...</p>
+                    <p v-else class="text-xl font-black text-slate-800">{{ totalUser }} <span
+                            class="text-xs font-semibold text-slate-500">Akun</span></p>
+                </div>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 hover:border-blue-300 transition-colors">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <ChartBarIcon class="w-6 h-6" />
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Transaksi</p>
+                    <p v-if="isLoading" class="text-xl font-black text-slate-300 animate-pulse">...</p>
+                    <p v-else class="text-xl font-black text-slate-800">{{ totalPeminjamanTahunIni }} <span
+                            class="text-xs font-semibold text-slate-500">Peminjaman</span></p>
+                </div>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 hover:border-emerald-300 transition-colors">
+                <div
+                    class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <ArchiveBoxArrowDownIcon class="w-6 h-6" />
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prioritas Pengadaan</p>
+                    <p v-if="isLoading" class="text-xl font-black text-slate-300 animate-pulse">...</p>
+                    <p v-else class="text-xl font-black text-slate-800">{{ prioritasTinggiCount }} <span
+                            class="text-xs font-semibold text-slate-500">Jenis Alat</span></p>
+                </div>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4 hover:border-red-300 transition-colors">
+                <div class="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+                    <WrenchScrewdriverIcon class="w-6 h-6" />
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Kendala & Rusak Total</p>
+                    <p v-if="isLoading" class="text-xl font-black text-slate-300 animate-pulse">...</p>
+                    <p v-else class="text-xl font-black text-slate-800">{{ totalMasalahTahunIni }} <span
+                            class="text-xs font-semibold text-slate-500">Kasus</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Top 5 Alat Sering Dipinjam & Bermasalah ({{
+                    selectedYear }})</h3>
+
+                <div v-if="isLoading" class="h-64 flex flex-col items-center justify-center text-slate-400">
+                    <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-3">
+                    </div>
+                    <p class="font-medium text-sm">Menyiapkan grafik analitik...</p>
+                </div>
+                <div v-else-if="top5Data.length === 0"
+                    class="h-64 flex items-center justify-center text-slate-400 font-medium">
+                    Tidak ada data peminjaman di tahun ini.
+                </div>
+                <div v-else class="h-64 relative w-full">
+                    <Bar :data="chartData" :options="chartOptions" />
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-2xl p-6 text-white shadow-lg flex flex-col justify-center">
+                <div class="flex items-center gap-3 mb-4 border-b border-slate-600 pb-4">
+                    <div class="p-3 bg-white/10 rounded-xl">
+                        <BeakerIcon class="w-6 h-6 text-blue-300" />
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Rule-Based Matrix</h3>
+                </div>
+                <ul class="space-y-3 text-sm font-medium text-slate-300">
+                    <li class="flex items-start gap-2">
+                        <span class="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
+                        <p><strong class="text-white">Kritis:</strong> Dipinjam > 50x DAN Kendala (Rusak/Hilang/Rusak Total) > 2x. (Ganti & Tambah)</p>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></span>
+                        <p><strong class="text-white">Prioritas:</strong> Dipinjam > 50x DAN Sisa Stok < 5. (Tambah Stok)</p>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0"></span>
+                        <p><strong class="text-white">Menengah:</strong> Dipinjam > 50x TAPI Sisa Stok Aman. (Tambah Cadangan)</p>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
+                        <p><strong class="text-white">Aman:</strong> Permintaan rendah, stok dan kondisi terkendali. (Tidak Perlu Pengadaan)</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div
+            class="bg-white rounded-2xl shadow-sm border border-slate-200 flex-1 flex flex-col overflow-hidden min-h-125">
+            <div
+                class="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
+                <div>
+                    <h2 class="text-lg font-black text-slate-800">Tabel Rekomendasi Pengadaan {{ selectedYear + 1 }}
+                    </h2>
+                </div>
                 <div class="relative w-full md:w-72">
-                    <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input 
-                        v-model="searchQuery"
-                        @input="currentPage = 1"
-                        type="text" 
-                        placeholder="Cari nama peminjam..." 
-                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm"
-                    />
+                    <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input v-model="searchQuery" type="text" placeholder="Cari nama alat..."
+                        class="w-full pl-10 pr-4 py-2 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium" />
                 </div>
             </div>
 
             <div class="overflow-x-auto flex-1">
                 <table class="w-full text-left">
                     <thead>
-                        <tr class="bg-gray-50/50 text-[11px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                            <th class="py-4 px-6">Peminjam</th>
-                            <th class="py-4 px-6">Total Barang</th>
-                            <th class="py-4 px-6">Status</th>
-                            <th class="py-4 px-6">Waktu</th>
-                            <th class="py-4 px-6 text-center">Aksi</th>
+                        <tr class="bg-white text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                            <th class="py-4 px-6 min-w-50">Nama Alat / Barang</th>
+                            <th class="py-4 px-6 text-center bg-blue-50/30">Total Dipinjam</th>
+                            <th class="py-4 px-6 text-center bg-red-50/30">Kerusakan</th>
+                            <th class="py-4 px-6 text-center bg-orange-50/30">Kehilangan</th>
+                            <th class="py-4 px-6 text-center bg-slate-100/50">Rusak Total</th>
+                            <th class="py-4 px-6 text-center bg-emerald-50/30">Sisa Stok</th>
+                            <th class="py-4 px-6 min-w-62.5 border-l border-slate-100">Rekomendasi (Rule-Based)</th>
                         </tr>
                     </thead>
-                    <tbody class="text-sm divide-y divide-gray-50">
-                        <tr v-if="paginatedAktivitas.length === 0">
-                            <td colspan="5" class="py-12 text-center text-gray-500">
-                                Tidak ada data aktivitas yang ditemukan.
+                    <tbody class="text-sm divide-y divide-slate-100">
+
+                        <tr v-if="isLoading">
+                            <td colspan="7" class="py-12 text-center">
+                                <div class="animate-pulse flex flex-col items-center">
+                                    <div class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                                    <p class="text-slate-500 font-medium">Sinkronisasi data analitik...</p>
+                                </div>
                             </td>
                         </tr>
 
-                        <tr v-for="aktivitas in paginatedAktivitas" :key="aktivitas.id" class="hover:bg-blue-50/30 transition-colors">
-                            <td class="py-4 px-6 font-bold text-gray-900">{{ aktivitas.peminjam }}</td>
-                            <td class="py-4 px-6 text-gray-600 font-bold">
-                                {{ aktivitas.barang.length }} <span class="font-normal text-xs text-gray-400">Item</span>
+                        <tr v-else-if="filteredAnalitik.length === 0">
+                            <td colspan="7" class="py-12 text-center text-slate-500 font-medium">
+                                Data alat tidak ditemukan atau belum ada aktivitas pada tahun {{ selectedYear }}.
                             </td>
+                        </tr>
+
+                        <tr v-else v-for="item in filteredAnalitik" :key="item.kode"
+                            class="hover:bg-slate-50 transition-colors">
                             <td class="py-4 px-6">
-                                <span 
-                                    class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider"
-                                    :class="{
-                                        'bg-amber-100 text-amber-700 ring-1 ring-amber-200': aktivitas.status === 'Menunggu',
-                                        'bg-blue-100 text-blue-700 ring-1 ring-blue-200': aktivitas.status === 'Dipinjam',
-                                        'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200': aktivitas.status === 'Kembali',
-                                        'bg-red-100 text-red-700 ring-1 ring-red-200': aktivitas.status === 'Ditolak'
-                                    }">
-                                    {{ aktivitas.status }}
-                                </span>
+                                <p class="font-bold text-slate-900">{{ item.nama }}</p>
+                                <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }}</p>
                             </td>
-                            <td class="py-4 px-6 text-gray-500 text-xs font-medium">{{ aktivitas.waktu }}</td>
-                            <td class="py-4 px-6 text-center">
-                                <div class="flex justify-center items-center gap-2">
-                                    <button 
-                                        @click="openModalReview(aktivitas)"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors text-xs font-bold shadow-sm cursor-pointer"
-                                    >
-                                        <EyeIcon class="w-4 h-4" /> 
-                                        {{ aktivitas.status === 'Menunggu' ? 'Review' : 'Detail' }}
-                                    </button>
-                                    
-                                    <button 
-                                        @click="deleteAktivitas(aktivitas.id)"
-                                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                                        title="Hapus Riwayat"
-                                    >
-                                        <TrashIcon class="w-4 h-4" />
-                                    </button>
+                            <td class="py-4 px-6 text-center font-black text-slate-700 bg-blue-50/10">{{ item.total_dipinjam }}x</td>
+
+                            <td class="py-4 px-6 text-center font-black bg-red-50/10"
+                                :class="item.rusak > 0 ? 'text-red-600' : 'text-slate-400'">{{ item.rusak }}x</td>
+
+                            <td class="py-4 px-6 text-center font-black bg-orange-50/10"
+                                :class="item.hilang > 0 ? 'text-orange-600' : 'text-slate-400'">{{ item.hilang }}x</td>
+
+                            <td class="py-4 px-6 text-center font-black bg-slate-50"
+                                :class="item.rusak_total > 0 ? 'text-slate-800' : 'text-slate-400'">{{ item.rusak_total }}x</td>
+
+                            <td class="py-4 px-6 text-center font-black bg-emerald-50/10"
+                                :class="item.stok_saat_ini < 5 ? 'text-amber-600' : 'text-slate-700'">{{ item.stok_saat_ini }} Unit</td>
+
+                            <td class="py-4 px-6 border-l border-slate-100">
+                                <div class="flex flex-col items-start gap-1">
+                                    <span
+                                        class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1"
+                                        :class="getBadgeClass(item.rekomendasi.type)">
+                                        {{ item.rekomendasi.label }}
+                                    </span>
+                                    <p class="text-xs font-bold text-slate-600 mt-1">{{ item.rekomendasi.action }}</p>
                                 </div>
                             </td>
                         </tr>
@@ -124,199 +212,217 @@
                 </table>
             </div>
 
-            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
-                <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                    Menampilkan <span class="text-blue-600">{{ startIndex + 1 }}</span> - 
-                    <span class="text-blue-600">{{ Math.min(endIndex, filteredAktivitas.length) }}</span> 
-                    dari {{ filteredAktivitas.length }} data
-                </span>
-                
-                <div class="flex gap-2">
-                    <button 
-                        @click="prevPage" 
-                        :disabled="currentPage === 1" 
-                        class="px-3 py-1.5 border border-gray-200 rounded-lg bg-white text-sm font-bold text-gray-600 hover:text-blue-600 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm">
-                        Sebelumnya
-                    </button>
-                    <button 
-                        @click="nextPage" 
-                        :disabled="currentPage === totalPages || totalPages === 0" 
-                        class="px-3 py-1.5 border border-gray-200 rounded-lg bg-white text-sm font-bold text-gray-600 hover:text-blue-600 hover:border-blue-300 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm">
-                        Selanjutnya
-                    </button>
-                </div>
+            <div class="bg-slate-50 px-6 py-4 border-t border-slate-200">
+                <p class="text-xs font-medium text-slate-500 text-center">Data descriptive di atas difilter berdasarkan
+                    aktivitas laboratorium pada tahun {{ selectedYear }}.</p>
             </div>
         </div>
-
-        <transition name="fade">
-            <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-0 overflow-hidden">
-                    
-                    <div class="bg-gray-50 p-6 border-b border-gray-100 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-black text-gray-900">
-                                {{ selectedRequest.status === 'Menunggu' ? 'Review Permintaan Peminjaman' : 'Detail Peminjaman' }}
-                            </h3>
-                            <p class="text-xs text-gray-500 mt-1 font-medium">Oleh: <span class="font-bold text-blue-600">{{ selectedRequest.peminjam }}</span></p>
-                        </div>
-                        <button @click="closeModal" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors cursor-pointer">
-                            <XMarkIcon class="w-6 h-6" />
-                        </button>
-                    </div>
-
-                    <div class="p-6 max-h-[50vh] overflow-y-auto">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Daftar Alat/Barang:</p>
-                        <ul class="space-y-3">
-                            <li v-for="(item, index) in selectedRequest.barang" :key="index" class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-white shadow-sm">
-                                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                                    <CubeIcon class="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p class="font-bold text-sm text-gray-900">{{ item.nama }}</p>
-                                    <p class="text-xs font-mono text-gray-500 mt-0.5">Kode: {{ item.kode }}</p>
-                                </div>
-                            </li>
-                        </ul>
-
-                        <div class="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-100" v-if="selectedRequest.catatan">
-                            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Catatan Peminjam:</p>
-                            <p class="text-sm text-amber-800 font-medium">"{{ selectedRequest.catatan }}"</p>
-                        </div>
-                    </div>
-
-                    <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-                        <button @click="closeModal" class="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer">
-                            Tutup
-                        </button>
-                        
-                        <template v-if="selectedRequest.status === 'Menunggu'">
-                            <button @click="rejectRequest" class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-red-600 bg-red-100 hover:bg-red-200 border border-red-200 rounded-xl transition-colors active:scale-95 cursor-pointer">
-                                <XCircleIcon class="w-5 h-5" /> Tolak
-                            </button>
-                            <button @click="approveRequest" class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-200 transition-colors active:scale-95 cursor-pointer">
-                                <CheckCircleIcon class="w-5 h-5" /> Setujui Peminjaman
-                            </button>
-                        </template>
-                    </div>
-
-                </div>
-            </div>
-        </transition>
 
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { EyeIcon, XMarkIcon, CubeIcon, CheckCircleIcon, XCircleIcon, MagnifyingGlassIcon, TrashIcon } from '@heroicons/vue/24/outline';
-import { useAlert } from '../composables/useAlert'; // 1. Import Global Alert
+import { ref, computed, watch, onMounted } from 'vue';
+import {
+    MagnifyingGlassIcon, ChartBarIcon, ArchiveBoxArrowDownIcon,
+    WrenchScrewdriverIcon, DocumentArrowDownIcon, BeakerIcon, ChevronDownIcon, UsersIcon
+} from '@heroicons/vue/24/outline';
+import { useAlert } from '../composables/useAlert';
+import api from '../plugins/axios';
 
-const { showAlert } = useAlert(); // 2. Ekstrak fungsi showAlert
+import { Bar } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
 
-const aktivitasList = ref([
-    { id: 1, peminjam: 'Andi Saputra', waktu: '10 Menit lalu', status: 'Menunggu', catatan: 'Praktikum mikrokontroler kelas TIK-4A', barang: [{ kode: 'EL-001', nama: 'Oscilloscope Rigol DS1054Z' }, { kode: 'EL-012', nama: 'Kabel Probe BNC' }] },
-    { id: 2, peminjam: 'Budi Santoso', waktu: '1 Jam lalu', status: 'Dipinjam', catatan: '', barang: [{ kode: 'EL-005', nama: 'Multimeter Digital Fluke 17B+' }] },
-    { id: 3, peminjam: 'Siti Aminah', waktu: 'Kemarin', status: 'Kembali', catatan: 'Solder sedikit tumpul', barang: [{ kode: 'EL-008', nama: 'Solder Station Hakko FX-888D' }] },
-    { id: 4, peminjam: 'Rizky Maulana', waktu: 'Kemarin', status: 'Menunggu', catatan: 'Pinjam proyektor untuk presentasi skripsi', barang: [{ kode: 'PRJ-01', nama: 'Proyektor Epson EB-X05' }] },
-    { id: 5, peminjam: 'Dina Lestari', waktu: '2 Hari lalu', status: 'Ditolak', catatan: '', barang: [{ kode: 'EL-015', nama: 'Power Supply Zhaoxin' }] },
-    { id: 6, peminjam: 'Fajar Nugraha', waktu: '2 Hari lalu', status: 'Dipinjam', catatan: 'Untuk lomba robotik', barang: [{ kode: 'RBT-02', nama: 'Kit Arduino Mega 2560' }, { kode: 'RBT-03', nama: 'Sensor Ultrasonik HC-SR04' }] },
-    { id: 7, peminjam: 'Ayu Wandira', waktu: '3 Hari lalu', status: 'Kembali', catatan: '', barang: [{ kode: 'NTW-01', nama: 'Crimping Tool Oucheng' }, { kode: 'NTW-02', nama: 'LAN Tester' }] },
-]);
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
+const { showAlert } = useAlert();
 const searchQuery = ref('');
-const currentPage = ref(1);
-const itemsPerPage = 5; 
+const isLoading = ref(true);
+const isLoadingUser = ref(true);
 
-const filteredAktivitas = computed(() => {
-    if (!searchQuery.value) return aktivitasList.value;
-    const query = searchQuery.value.toLowerCase();
-    return aktivitasList.value.filter(a => 
-        a.peminjam.toLowerCase().includes(query) || 
-        a.status.toLowerCase().includes(query)
-    );
-});
+const currentYear = new Date().getFullYear();
+const availableYears = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
+const selectedYear = ref(currentYear);
 
-const totalPages = computed(() => Math.ceil(filteredAktivitas.value.length / itemsPerPage));
-const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
-const endIndex = computed(() => startIndex.value + itemsPerPage);
+const rawDataAnalitik = ref([]);
+const totalUser = ref(0);
 
-const paginatedAktivitas = computed(() => {
-    return filteredAktivitas.value.slice(startIndex.value, endIndex.value);
-});
+// --- FETCH 1: Analitik Pengadaan ---
+const fetchAnalitikData = async () => {
+    isLoading.value = true;
+    try {
+        const response = await api.get('/dataanalitik/pengadaan', {
+            params: { tahun: selectedYear.value }
+        });
 
-const nextPage = () => {
-    if (currentPage.value < totalPages.value) currentPage.value++;
-};
-const prevPage = () => {
-    if (currentPage.value > 1) currentPage.value--;
-};
-
-// --- LOGIKA HAPUS DATA DENGAN ALERT CONFIRM ---
-const deleteAktivitas = (id) => {
-    // Gunakan mode confirm dari useAlert
-    showAlert(
-        "Apakah Anda yakin ingin menghapus riwayat aktivitas ini? Data tidak dapat dikembalikan.",
-        "confirm",
-        () => {
-            // Callback jika di-klik "Ya"
-            aktivitasList.value = aktivitasList.value.filter(a => a.id !== id);
-            
-            if (paginatedAktivitas.value.length === 0 && currentPage.value > 1) {
-                currentPage.value--;
-            }
-
-            // Tampilkan alert success setelah berhasil dihapus
-            showAlert("Riwayat aktivitas berhasil dihapus.", "success");
+        if (response.data.status === 'success') {
+            rawDataAnalitik.value = response.data.data.map(item => ({
+                kode: item.kode || '-',
+                nama: item.nama || 'Tanpa Nama',
+                stok_saat_ini: Number(item.stok_saat_ini || 0),
+                total_dipinjam: Number(item.total_dipinjam || 0),
+                rusak: Number(item.rusak || 0),
+                hilang: Number(item.hilang || 0),
+                rusak_total: Number(item.rusak_total || 0)
+            }));
         }
-    );
-};
-
-const isModalOpen = ref(false);
-const selectedRequest = ref(null);
-
-const openModalReview = (aktivitas) => {
-    selectedRequest.value = aktivitas;
-    isModalOpen.value = true;
-};
-
-const closeModal = () => {
-    isModalOpen.value = false;
-    setTimeout(() => { selectedRequest.value = null; }, 300);
-};
-
-// --- LOGIKA APPROVAL DENGAN ALERT SUCCESS ---
-const approveRequest = () => {
-    const index = aktivitasList.value.findIndex(a => a.id === selectedRequest.value.id);
-    if (index !== -1) {
-        aktivitasList.value[index].status = 'Dipinjam';
+    } catch (error) {
+        console.error("Gagal memuat data analitik:", error);
+        showAlert("Gagal menarik data dari server.", "error");
+        rawDataAnalitik.value = [];
+    } finally {
+        isLoading.value = false;
     }
-    closeModal();
+};
+
+// --- FETCH 2: Total User Peminjam ---
+const fetchTotalUser = async () => {
+    isLoadingUser.value = true;
+    try {
+        // Cukup tarik limit=1 agar backend merespon sangat cepat, kita hanya butuh properti "totalItems"
+        const res = await api.get('/users/peminjam?page=1&limit=1');
+        totalUser.value = res.data.pagination.totalItems;
+    } catch (err) {
+        console.error("Gagal memuat total user:", err);
+        totalUser.value = 0;
+    } finally {
+        isLoadingUser.value = false;
+    }
+};
+
+onMounted(() => {
+    fetchAnalitikData();
+    fetchTotalUser();
+});
+
+watch(selectedYear, () => fetchAnalitikData());
+
+const generateRecommendation = (item) => {
+    const thresholdDemandTinggi = 50;
+    const thresholdStokRendah = 5;
+    const thresholdMasalahTinggi = 2;
+
+    const isHighDemand = item.total_dipinjam >= thresholdDemandTinggi;
+    const isLowStock = item.stok_saat_ini <= thresholdStokRendah;
+    const totalKendala = item.rusak + item.hilang + item.rusak_total;
+    const isHighProblem = totalKendala >= thresholdMasalahTinggi;
+
+    if (isHighDemand && isHighProblem) return { type: 'kritis', label: 'Status Kritis', action: 'Ganti Unit Lama & Tambah Pengadaan Baru' };
+    if (isHighDemand && isLowStock) return { type: 'prioritas_tinggi', label: 'Prioritas Tinggi', action: 'Wajib Pengadaan / Tambah Stok' };
+    if (isHighDemand && !isLowStock) return { type: 'prioritas_menengah', label: 'Prioritas Menengah', action: 'Stok Aman, Tambah Cadangan Jika Dana Tersedia' };
     
-    // Tampilkan pesan sukses
-    showAlert("Permintaan peminjaman berhasil disetujui.", "success");
+    return { type: 'aman', label: 'Status Aman', action: 'Tidak Perlu Pengadaan Baru' };
 };
 
-// --- LOGIKA REJECT DENGAN ALERT SUCCESS ---
-const rejectRequest = () => {
-    // Prompt bawaan browser tetap digunakan untuk mengambil input alasan (teks)
-    const alasan = prompt('Masukkan alasan penolakan (opsional):');
-    if (alasan !== null) {
-        const index = aktivitasList.value.findIndex(a => a.id === selectedRequest.value.id);
-        if (index !== -1) {
-            aktivitasList.value[index].status = 'Ditolak';
+const analitikWithRekomendasi = computed(() => {
+    return rawDataAnalitik.value
+        .filter(item => item.total_dipinjam > 0 || item.rusak > 0 || item.hilang > 0 || item.rusak_total > 0)
+        .map(item => ({
+            ...item,
+            rekomendasi: generateRecommendation(item)
+        })).sort((a, b) => b.total_dipinjam - a.total_dipinjam);
+});
+
+const filteredAnalitik = computed(() => {
+    if (!searchQuery.value) return analitikWithRekomendasi.value;
+    const query = searchQuery.value.toLowerCase();
+    return analitikWithRekomendasi.value.filter(a => a.nama.toLowerCase().includes(query));
+});
+
+const totalPeminjamanTahunIni = computed(() => rawDataAnalitik.value.reduce((sum, item) => sum + item.total_dipinjam, 0));
+
+const totalMasalahTahunIni = computed(() => {
+    return rawDataAnalitik.value.reduce((sum, item) => sum + item.rusak + item.hilang + item.rusak_total, 0);
+});
+
+const prioritasTinggiCount = computed(() => analitikWithRekomendasi.value.filter(a => a.rekomendasi.type === 'prioritas_tinggi' || a.rekomendasi.type === 'kritis').length);
+
+const top5Data = computed(() => [...analitikWithRekomendasi.value].slice(0, 5));
+
+const chartData = computed(() => ({
+    labels: top5Data.value.map(item => item.nama.length > 15 ? item.nama.substring(0, 15) + '...' : item.nama),
+    datasets: [
+        {
+            label: 'Total Dipinjam',
+            backgroundColor: '#3b82f6', 
+            borderRadius: 6,
+            data: top5Data.value.map(item => item.total_dipinjam)
+        },
+        {
+            label: 'Kerusakan',
+            backgroundColor: '#ef4444', 
+            borderRadius: 6,
+            data: top5Data.value.map(item => item.rusak)
+        },
+        {
+            label: 'Kehilangan',
+            backgroundColor: '#f59e0b', 
+            borderRadius: 6,
+            data: top5Data.value.map(item => item.hilang)
+        },
+        {
+            label: 'Rusak Total',
+            backgroundColor: '#1e293b', 
+            borderRadius: 6,
+            data: top5Data.value.map(item => item.rusak_total)
         }
-        closeModal();
-        
-        // Tampilkan pesan bahwa penolakan berhasil diproses
-        showAlert("Permintaan peminjaman telah ditolak.", "success");
+    ]
+}));
+
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { position: 'top', align: 'end' },
+        tooltip: {
+            backgroundColor: '#1e293b',
+            padding: 12,
+            cornerRadius: 8,
+        }
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            border: { dash: [4, 4] },
+            ticks: { precision: 0 }
+        },
+        x: {
+            grid: { display: false }
+        }
     }
+};
+
+const getBadgeClass = (type) => {
+    switch (type) {
+        case 'kritis': return 'bg-red-100 text-red-700 ring-red-300';
+        case 'prioritas_tinggi': return 'bg-blue-100 text-blue-700 ring-blue-300';
+        case 'prioritas_menengah': return 'bg-amber-100 text-amber-700 ring-amber-300';
+        case 'aman': return 'bg-emerald-100 text-emerald-700 ring-emerald-300';
+        default: return 'bg-slate-100 text-slate-700 ring-slate-300';
+    }
+};
+
+const exportReport = () => {
+    showAlert(`Mengekspor Laporan Pengadaan untuk tahun ${selectedYear.value}...`, "success");
 };
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; transform: scale(0.95); }
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
 
-.overflow-y-auto::-webkit-scrollbar, .overflow-x-auto::-webkit-scrollbar { width: 6px; height: 6px; }
-.overflow-y-auto::-webkit-scrollbar-thumb, .overflow-x-auto::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
 </style>

@@ -19,6 +19,7 @@ exports.checkoutPeminjaman = async (req, res) => {
 			nama_acara,
 			organisasi_penyelenggara,
 			dosen_penanggung_jawab,
+			jenis_khusus,
 			tanggal_pinjam,
 			tanggal_kembali,
 			keranjang_barang,
@@ -87,6 +88,7 @@ exports.checkoutPeminjaman = async (req, res) => {
 				user_id,
 				antrian: nomorAntrianBaru, // <-- Masukkan nomor antrian ke sini
 				kategori_kebutuhan,
+				jenis_khusus: jenis_khusus || null,
 				tujuan_peminjaman,
 				nama_acara: nama_acara || null,
 				organisasi_penyelenggara: organisasi_penyelenggara || null,
@@ -166,22 +168,22 @@ exports.batalkanPeminjaman = async (req, res) => {
         const { id } = req.params; // ID Peminjaman dari URL
         const user_id = req.user.id; // ID User dari middleware auth
 
-        // 1. Cari data peminjaman beserta detail barangnya
+        // 1. Cari data peminjaman HANYA berdasarkan ID dan User_id
+        // (Kita pisahkan Include-nya sementara agar pencarian utama tidak terganggu jika alias salah)
         const peminjaman = await Peminjaman.findOne({
-            where: { id, user_id },
-            include: [{ 
-                model: DetailPeminjaman, 
-                as: 'detail_barang' // Pastikan alias sesuai dengan model Peminjaman
-            }],
+            where: { 
+                id: id, 
+                user_id: user_id 
+            },
             transaction: t
         });
 
-        // 2. Validasi keberadaan data
+        // 2. Validasi keberadaan data (Inilah yang melempar 404 sebelumnya)
         if (!peminjaman) {
             await t.rollback();
             return res.status(404).json({ 
                 status: "error", 
-                message: "Data peminjaman tidak ditemukan." 
+                message: "Data peminjaman tidak ditemukan atau Anda tidak memiliki akses ke data ini." 
             });
         }
 
@@ -190,16 +192,23 @@ exports.batalkanPeminjaman = async (req, res) => {
             await t.rollback();
             return res.status(400).json({ 
                 status: "error", 
-                message: "Peminjaman tidak dapat dibatalkan karena sedang/sudah diproses." 
+                message: "Peminjaman tidak dapat dibatalkan karena sedang atau sudah diproses oleh Admin." 
             });
         }
 
-        // 4. KEMBALIKAN STOK: Iterasi setiap barang dalam detail_barang
-        if (peminjaman.detail_barang && peminjaman.detail_barang.length > 0) {
-            for (const item of peminjaman.detail_barang) {
+        // 4. Tarik data DetailPeminjaman secara manual (Aman dari error alias Include)
+        const detailBarang = await DetailPeminjaman.findAll({
+            where: { peminjaman_id: id },
+            transaction: t
+        });
+
+        // 5. KEMBALIKAN STOK: Iterasi setiap barang dalam detail
+        if (detailBarang && detailBarang.length > 0) {
+            for (const item of detailBarang) {
                 const barangLokal = await Barang.findByPk(item.barang_id, { transaction: t });
+                
                 if (barangLokal) {
-                    // Menambahkan kembali stok yang sebelumnya dikurangi saat meminjam
+                    // Menambahkan kembali stok yang sebelumnya dikurangi (Hold)
                     await barangLokal.increment('stok', { 
                         by: item.jumlah_pinjam, 
                         transaction: t 
@@ -208,32 +217,34 @@ exports.batalkanPeminjaman = async (req, res) => {
             }
         }
 
-        // 5. HAPUS DATA (Urutan penting untuk menghindari Foreign Key Error)
+        // 6. HAPUS DATA (Urutan anak lalu induk sangat krusial di PostgreSQL)
         
         // Hapus detailnya dulu (anak)
         await DetailPeminjaman.destroy({
-            where: { peminjaman_id: id }, // Menggunakan variabel 'id' yang sudah didefinisikan di atas
+            where: { peminjaman_id: id },
             transaction: t
         });
 
         // Hapus data peminjaman utama (induk)
         await peminjaman.destroy({ transaction: t });
 
-        // 6. Simpan semua perubahan ke database
+        // 7. Simpan semua perubahan (Commit)
         await t.commit();
 
-        res.status(200).json({ 
+        return res.status(200).json({ 
             status: "success", 
-            message: "Permohonan berhasil dibatalkan dan stok telah dikembalikan." 
+            message: "Permohonan berhasil dibatalkan dan stok alat telah dikembalikan." 
         });
 
     } catch (error) {
-        // Jika ada error (seperti 'id is not defined' sebelumnya), batalkan semua proses
+        // Jika ada error (misal: UUID tidak valid), rollback dan tangkap errornya
         if (t) await t.rollback();
-        console.error("Error Detail Backend:", error);
-        res.status(500).json({ 
+        console.error("❌ Error Batalkan Peminjaman:", error);
+        
+        return res.status(500).json({ 
             status: "error", 
-            message: error.message 
+            message: "Terjadi kesalahan server saat membatalkan peminjaman.",
+            error_detail: error.message // Berguna untuk melihat pesan error asli dari Sequelize
         });
     }
 };

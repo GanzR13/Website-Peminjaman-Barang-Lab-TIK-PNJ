@@ -1,64 +1,79 @@
 <template>
-    <BaseModal :isOpen="isOpen" maxWidth="max-w-xl" paddingClass="p-8 md:p-10" @close="closeModal">
-        <div class="mb-8">
-            <h2 class="text-2xl font-black text-slate-900">{{ isEditMode ? 'Edit Barang' : 'Tambah Barang Baru' }}</h2>
-            <p class="text-slate-500 text-sm font-medium mt-1">Edit data di bawah dengan data yang valid.</p>
-        </div>
-
-        <form @submit.prevent="submitData" class="space-y-6">
-            <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-200 border-dashed hover:border-blue-300 transition-colors">
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">Foto / Gambar Barang</label>
-                <div class="flex items-center gap-5">
-                    <div class="w-20 h-20 shrink-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
-                        <img :src="form.gambarPreview || 'https://placehold.co/150x150/f8fafc/94a3b8?text=Upload'" class="w-full h-full object-cover" />
-                    </div>
-                    <div class="flex-1">
-                        <input type="file" @change="onFileChange" accept="image/jpeg, image/png, image/webp" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition-colors outline-none" />
-                        <p class="text-[10px] text-slate-400 font-medium mt-2">* Format jpg/png/webp, Maks. 5 MB. (Otomatis dioptimasi)</p>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="isEditMode" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-100/50 border border-slate-200 rounded-xl">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ID Barang (UUID)</label>
-                    <input v-model="form.id" type="text" readonly class="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none text-xs font-mono text-slate-500 bg-slate-100/50 cursor-not-allowed select-all focus:ring-2 focus:ring-blue-100" />
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">URL Cloudinary</label>
-                    <input v-model="form.gambar" type="text" readonly class="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none text-xs font-mono text-slate-500 bg-slate-100/50 cursor-not-allowed select-all focus:ring-2 focus:ring-blue-100" />
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="md:col-span-2">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Nama Barang <span class="text-red-500">*</span></label>
-                    <input v-model="form.nama_barang" type="text" required placeholder="Contoh: Oscilloscope Rigol" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white transition-colors" />
-                </div>
+    <Teleport to="body">
+        <transition name="fade">
+            <div v-if="isOpen" class="fixed inset-0 z-999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" @click.self="closeModal">
                 
-                <div class="md:col-span-2">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Jumlah Stok Fisik <span class="text-red-500">*</span></label>
-                    <input v-model.number="form.stok" type="number" min="0" required placeholder="0" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white transition-colors" />
+                <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl p-0 overflow-hidden flex flex-col max-h-[95vh] lg:max-h-[85vh]">
+                    
+                    <form @submit.prevent="submitData" class="flex flex-col w-full h-full overflow-hidden">
+                        
+                        <div class="p-6 md:p-8 pb-4 border-b border-slate-100 bg-white shrink-0 z-10">
+                            <h2 class="text-2xl font-black text-slate-900">{{ isEditMode ? 'Edit Barang' : 'Tambah Barang Baru' }}</h2>
+                            <p class="text-slate-500 text-sm font-medium mt-1">Edit data di bawah dengan data yang valid.</p>
+                        </div>
+
+                        <div class="p-6 md:p-8 overflow-y-auto custom-scrollbar space-y-6 bg-white flex-1">
+                            
+                            <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-200 border-dashed hover:border-blue-300 transition-colors">
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">Foto / Gambar Barang</label>
+                                <div class="flex items-center gap-5">
+                                    <div class="w-20 h-20 shrink-0 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                                        <img :src="form.gambarPreview || 'https://placehold.co/150x150/f8fafc/94a3b8?text=Upload'" class="w-full h-full object-cover" />
+                                    </div>
+                                    <div class="flex-1">
+                                        <input type="file" @change="onFileChange" accept="image/jpeg, image/png, image/webp" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition-colors outline-none" />
+                                        <p class="text-[10px] text-slate-400 font-medium mt-2">* Format jpg/png/webp, Maks. 5 MB. (Otomatis dioptimasi)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="isEditMode" class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-100/50 border border-slate-200 rounded-xl">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ID Barang (UUID)</label>
+                                    <input v-model="form.id" type="text" readonly class="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none text-xs font-mono text-slate-500 bg-slate-100/50 cursor-not-allowed select-all focus:ring-2 focus:ring-blue-100" />
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">URL Cloudinary</label>
+                                    <input v-model="form.gambar" type="text" readonly class="w-full px-3 py-2 border border-slate-200 rounded-lg outline-none text-xs font-mono text-slate-500 bg-slate-100/50 cursor-not-allowed select-all focus:ring-2 focus:ring-blue-100" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="md:col-span-2">
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Nama Barang <span class="text-red-500">*</span></label>
+                                    <input v-model="form.nama_barang" type="text" required placeholder="Contoh: Oscilloscope Rigol" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white transition-colors" />
+                                </div>
+                                
+                                <div class="md:col-span-2">
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Jumlah Stok Fisik <span class="text-red-500">*</span></label>
+                                    <input v-model.number="form.stok" type="number" min="0" required placeholder="0" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white transition-colors" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Deskripsi & Spesifikasi</label>
+                                <textarea v-model="form.deskripsi" rows="6" placeholder="Tulis spesifikasi lengkap barang di sini..." class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white leading-relaxed transition-colors resize-y min-h-37.5"></textarea>
+                            </div>
+                            
+                        </div>
+
+                        <div class="p-5 md:p-6 bg-slate-50/80 border-t border-slate-100 shrink-0 flex justify-end gap-3 z-10 backdrop-blur-sm">
+                            <button type="button" @click="closeModal" class="px-6 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-8 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 active:scale-95 cursor-pointer">
+                                {{ isEditMode ? 'Simpan Perubahan' : 'Upload Barang Baru' }}
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
             </div>
-
-            <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Deskripsi & Spesifikasi</label>
-                <textarea v-model="form.deskripsi" rows="3" placeholder="Tulis spesifikasi singkat barang di sini..." class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white leading-relaxed transition-colors"></textarea>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-6 mt-2 border-t border-slate-100">
-                <button type="button" @click="closeModal" class="px-6 py-3 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer">Batal</button>
-                <button type="submit" class="px-8 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 active:scale-95 cursor-pointer">
-                    {{ isEditMode ? 'Simpan Perubahan' : 'Upload Barang Baru' }}
-                </button>
-            </div>
-        </form>
-    </BaseModal>
+        </transition>
+    </Teleport>
 </template>
 
 <script setup>
-import BaseModal from './BaseModal.vue';
 import { ref, watch } from 'vue';
 import api from '../plugins/axios';
 import { useAlert } from '../composables/useAlert';
@@ -67,7 +82,6 @@ const props = defineProps({ isOpen: Boolean, isEditMode: Boolean, dataEdit: Obje
 const emit = defineEmits(['close', 'refresh-data']);
 const { showAlert } = useAlert();
 
-// Tambahkan kembali properti 'gambar' di default form
 const defaultForm = { id: null, nama_barang: '', stok: 0, deskripsi: '', gambar: '', gambarPreview: null, fileUpload: null };
 const form = ref({ ...defaultForm });
 
@@ -84,7 +98,7 @@ watch(() => props.isOpen, (newVal) => {
                 nama_barang: props.dataEdit.nama_barang,
                 stok: props.dataEdit.stok,
                 deskripsi: props.dataEdit.deskripsi,
-                gambar: props.dataEdit.gambar, // Ambil URL utuh dari database
+                gambar: props.dataEdit.gambar, 
                 gambarPreview: getImageUrl(props.dataEdit.gambar),
                 fileUpload: null
             };
@@ -126,3 +140,26 @@ const submitData = async () => {
     }
 };
 </script>
+
+<style scoped>
+/* Transisi Modal Utama */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s, transform 0.2s;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+}
+
+/* Menyembunyikan scrollbar tapi tetap bisa di-scroll di browser */
+.custom-scrollbar {
+    -ms-overflow-style: none;  /* Untuk Internet Explorer dan Edge */
+    scrollbar-width: none;  /* Untuk Firefox */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    display: none; /* Untuk Chrome, Safari, dan Opera */
+}
+</style>

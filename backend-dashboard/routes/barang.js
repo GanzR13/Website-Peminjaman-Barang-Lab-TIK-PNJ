@@ -2,21 +2,24 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const barangController = require('../controllers/barangController');
-const { uploadCloud } = require('../middlewares/uploadCloudinary');
+
+// 1. IMPORT DISESUAIKAN: Gunakan uploadBarang dari factory function yang baru dibuat
+const { uploadBarang } = require('../middlewares/uploadCloudinary'); // Sesuaikan nama file path-nya
 
 const handleUpload = (req, res, next) => {
-  const upload = uploadCloud.single('gambar');
+  // 2. PANGGIL uploadBarang
+  const upload = uploadBarang.single('gambar');
   
   upload(req, res, function (err) {
     if (err instanceof multer.MulterError) {
-      // Jika error karena ukuran file (lebih dari 1 MB)
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ status: 'error', message: 'Ukuran gambar terlalu besar! Maksimal 1 MB.' });
+        // 3. PESAN DISESUAIKAN: Maksimal 5 MB sesuai config
+        return res.status(400).json({ status: 'error', message: 'Ukuran gambar terlalu besar! Maksimal 5 MB.' });
       }
     } else if (err) {
-      // Jika error karena format file bukan WEBP
       if (err.message === 'FORMAT_TIDAK_VALID') {
-        return res.status(400).json({ status: 'error', message: 'Format gambar wajib .webp!' });
+        // 4. PESAN DISESUAIKAN: Penjelasan yang lebih tepat
+        return res.status(400).json({ status: 'error', message: 'Format file ditolak! Harap unggah file gambar (JPG, JPEG, PNG, WEBP).' });
       }
       return res.status(500).json({ status: 'error', message: err.message });
     }

@@ -10,15 +10,25 @@ let timeoutId = null;
 const onConfirmCallback = ref(null);
 const onCancelCallback = ref(null);
 
+// TAMBAHAN STATE BARU UNTUK UI DINAMIS
+const confirmText = ref('Ya, Lanjutkan');
+const confirmColor = ref('blue');
+
 export const useAlert = () => {
-    // Tambahkan parameter onConfirm dan onCancel
-    const showAlert = (msg, type = 'success', onConfirm = null, onCancel = null) => {
+    // Tambahkan parameter btnText dan btnColor di akhir
+    const showAlert = (msg, type = 'success', onConfirm = null, onCancel = null, btnText = 'Ya, Lanjutkan', btnColor = 'blue') => {
         message.value = msg;
         alertType.value = type;
         isOpen.value = true;
         
         onConfirmCallback.value = onConfirm;
         onCancelCallback.value = onCancel;
+
+        // Set teks dan warna dinamis khusus untuk tipe confirm
+        if (type === 'confirm') {
+            confirmText.value = btnText;
+            confirmColor.value = btnColor;
+        }
 
         if (timeoutId) {
             clearTimeout(timeoutId);
@@ -51,6 +61,8 @@ export const useAlert = () => {
         isOpen,
         message,
         alertType,
+        confirmText,
+        confirmColor,
         showAlert,
         closeAlert,
         confirmAction // Ekspor fungsi ini untuk tombol "Ya"

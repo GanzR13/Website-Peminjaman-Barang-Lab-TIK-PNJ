@@ -14,10 +14,6 @@
                         <p class="text-sm text-gray-500 font-medium">
                             © 2026 Laboratorium PLP TIK Politeknik Negeri Jakarta.
                         </p>
-                        <div class="flex gap-6 text-sm font-bold text-gray-400 justify-center md:justify-start">
-                            <a href="#" class="hover:text-blue-600 transition-colors">Bantuan Admin</a>
-                            <a href="#" class="hover:text-blue-600 transition-colors">Versi 1.0.0</a>
-                        </div>
                     </div>
                 </footer>
 

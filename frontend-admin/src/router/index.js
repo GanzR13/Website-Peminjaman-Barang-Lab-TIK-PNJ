@@ -50,8 +50,13 @@ const routes = [
         path: '/peminjaman',
         name: 'ManagementPeminjam',
         component: () => import('../views/ManagementPeminjam.vue')
+      },
+      // ---> RUTE BARU: LAPORAN MASALAH (KENDALA & PERBAIKAN) <---
+      {
+        path: '/laporan-masalah',
+        name: 'LaporanMasalah',
+        component: () => import('../views/LaporanMasalah.vue') // Pastikan kamu membuat file ini nanti!
       }
-
     ]
   }
 ];
@@ -78,7 +83,11 @@ router.beforeEach((to, from) => {
   // Jika sudah login pakai akun Mahasiswa tapi mencoba masuk rute Admin
   if (to.meta.requiresAuth && isAuthenticated && !isAdmin) {
     localStorage.clear(); // Tendang tokennya
-    ShowAlert("Akses Ditolak: Halaman ini hanya untuk Admin/Pegawai");
+    
+    // Catatan: Pastikan ShowAlert di-import jika ingin digunakan di luar file .vue
+    // Jika error "ShowAlert is not defined", ganti dengan alert biasa:
+    alert("Akses Ditolak: Halaman ini hanya untuk Admin/Pegawai");
+    
     return { name: 'AdminLogin' }; 
   }
 

@@ -12,6 +12,8 @@ const refRoutes = require('./routes/refRoutes');
 const barangRoutes = require('./routes/barang');
 const userPeminjamanRoutes = require('./routes/userPeminjamanRoutes');
 const adminPeminjamanRoutes = require('./routes/adminPeminjamanRoutes');
+const dataanalitikRoutes = require('./routes/dataanalitikRoutes');
+const adminLaporanRoutes = require('./routes/adminLaporanRoutes');
 
 // INISIALISASI app
 const app = express();
@@ -49,12 +51,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // 4. Daftarkan Routes Utama
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/ref', refRoutes);
 app.use('/api/barang', barangRoutes);
 app.use('/api/user/peminjaman', userPeminjamanRoutes);
 app.use('/api/admin/peminjaman', adminPeminjamanRoutes);
+app.use('/api/dataanalitik', dataanalitikRoutes);
+app.use('/api/admin/laporan', adminLaporanRoutes);
+
 
 // 5. REDIRECT Rute Utama
 app.get("/", (req, res) => {

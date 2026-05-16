@@ -9,37 +9,41 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 2. Setting Storage Cloudinary dengan Auto-Format & Resize
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'skripsi_lab',
-    // Instruksikan Cloudinary untuk selalu mengubah hasil akhir menjadi webp
-    format: async (req, file) => 'webp', 
-    // Proses manipulasi gambar langsung di server Cloudinary
-    transformation: [
-      { width: 800, height: 800, crop: 'limit' }, // Maksimal 800x800px (tidak merusak rasio asli)
-      { quality: 80 } // Kompresi kualitas menjadi 80% agar ukuran file sangat kecil
-    ]
-  }
-});
-
-// 3. Konfigurasi Multer
-const uploadCloud = multer({ 
-  storage: storage,
-  limits: { 
-    // Naikkan batas penerimaan mentah jadi 5MB agar kamera HP bisa masuk.
-    // Jangan khawatir, hasil akhirnya di database & Cloudinary akan sangat kecil (WEBP).
-    fileSize: 5 * 1024 * 1024 
-  },
-  fileFilter: (req, file, cb) => {
-    // Izinkan semua tipe gambar standar (JPG, JPEG, PNG, WEBP) masuk untuk diproses
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true); 
-    } else {
-      cb(new Error('FORMAT_TIDAK_VALID'), false); 
+// 2. Fungsi Pembuat Storage Dinamis (Factory Function)
+const createUploader = (folderName) => {
+  const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: folderName, // Nama folder akan menyesuaikan parameter yang dikirim
+      format: async (req, file) => 'webp', 
+      transformation: [
+        { width: 800, height: 800, crop: 'limit' }, 
+        { quality: 80 } 
+      ]
     }
-  }
-});
+  });
 
-module.exports = { uploadCloud, cloudinary };
+  return multer({ 
+    storage: storage,
+    limits: { 
+      fileSize: 5 * 1024 * 1024 // Batas 5MB
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true); 
+      } else {
+        cb(new Error('FORMAT_TIDAK_VALID'), false); 
+      }
+    }
+  });
+};
+
+// 3. Eksekusi Fungsi untuk Masing-masing Kebutuhan Folder
+const uploadBarang = createUploader('barang');
+const uploadLaporan = createUploader('laporan_masalah');
+
+module.exports = { 
+  uploadBarang, 
+  uploadLaporan, 
+  cloudinary 
+};

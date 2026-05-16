@@ -26,6 +26,10 @@ module.exports = {
         type: Sequelize.ENUM('Akademik', 'Non-Akademik'),
         allowNull: false
       },
+      jenis_khusus: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
       tujuan_peminjaman: {
         type: Sequelize.TEXT,
         allowNull: false

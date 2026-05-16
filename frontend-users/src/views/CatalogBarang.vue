@@ -123,38 +123,57 @@
                                     <p class="font-bold text-slate-800">Keranjang masih kosong</p>
                                     <p class="text-sm text-slate-500 font-medium">Silakan pilih alat dari katalog.</p>
                                 </div>
-                                <button @click="isCartOpen = false" class="px-5 py-2.5 bg-blue-50 text-blue-600 font-bold rounded-xl mt-2 hover:bg-blue-100 transition-colors">Mulai Memilih</button>
+                                <button @click="isCartOpen = false" class="px-5 py-2.5 bg-blue-50 text-blue-600 font-bold rounded-xl mt-2 hover:bg-blue-100 transition-colors cursor-pointer">Mulai Memilih</button>
                             </div>
 
                             <div v-else class="space-y-4">
-                                <div v-for="item in cart" :key="item.id" class="flex flex-col gap-3 p-4 border border-slate-200 rounded-2xl bg-white shadow-sm hover:border-blue-200 transition-colors">
+                                <!-- PERBAIKAN: Menambahkan indikator visual saat stok habis -->
+                                <div v-for="item in cart" :key="item.id" 
+                                    class="flex flex-col gap-3 p-4 border rounded-2xl shadow-sm transition-colors"
+                                    :class="item.stok === 0 ? 'bg-slate-50 border-red-200 opacity-80' : 'bg-white border-slate-200 hover:border-blue-200'">
+                                    
                                     <div class="flex gap-4">
-                                        <img :src="getImageUrl(item.gambar)" class="w-16 h-16 rounded-xl object-cover bg-slate-50 border border-slate-100" />
+                                        <img :src="getImageUrl(item.gambar)" class="w-16 h-16 rounded-xl object-cover bg-white border border-slate-200" :class="{'grayscale opacity-60': item.stok === 0}" />
                                         <div class="flex-1">
-                                            <h4 class="font-bold text-slate-800 text-sm leading-snug line-clamp-2">{{ item.nama_barang }}</h4>
+                                            <h4 class="font-bold text-sm leading-snug line-clamp-2" :class="item.stok === 0 ? 'text-slate-500 line-through' : 'text-slate-800'">
+                                                {{ item.nama_barang }}
+                                            </h4>
+                                            
+                                            <!-- BADGE PERINGATAN STOK -->
+                                            <span v-if="item.stok === 0" class="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-black rounded-md border border-red-200">
+                                                Habis Dipinjam
+                                            </span>
+                                            <span v-else-if="item.jumlah === item.stok" class="inline-block mt-1 px-2 py-0.5 bg-amber-50 text-amber-600 text-[10px] font-black rounded-md border border-amber-200">
+                                                Stok Maksimal
+                                            </span>
                                         </div>
-                                        <button @click="removeFromCart(item.id)" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg h-fit transition-colors">
+                                        <button @click="removeFromCart(item.id)" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg h-fit transition-colors cursor-pointer">
                                             <TrashIcon class="w-5 h-5" />
                                         </button>
                                     </div>
                                     
-                                    <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                    <div class="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-100 shadow-xs">
                                         <span class="text-xs font-bold text-slate-500 ml-2">Jumlah Pinjam:</span>
                                         <div class="flex items-center gap-3">
-                                            <button @click="item.jumlah > 1 && item.jumlah--" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-md text-slate-600 font-bold hover:bg-slate-100">-</button>
-                                            <span class="text-sm font-black w-4 text-center">{{ item.jumlah }}</span>
-                                            <button @click="item.jumlah < item.stok && item.jumlah++" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded-md text-slate-600 font-bold hover:bg-slate-100">+</button>
+                                            <button @click="item.jumlah > 1 && item.jumlah--" :disabled="item.stok === 0" class="w-7 h-7 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-md text-slate-600 font-bold hover:bg-slate-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">-</button>
+                                            <span class="text-sm font-black w-4 text-center" :class="item.stok === 0 ? 'text-slate-400' : 'text-slate-800'">{{ item.jumlah }}</span>
+                                            <button @click="item.jumlah < item.stok && item.jumlah++" :disabled="item.stok === 0 || item.jumlah >= item.stok" class="w-7 h-7 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-md text-slate-600 font-bold hover:bg-slate-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">+</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- PERBAIKAN TOMBOL CHECKOUT: Hanya aktif jika ada barang yang valid -->
                         <div v-if="cart.length > 0" class="p-6 border-t border-slate-100 bg-white shrink-0">
-                            <button @click="openCheckoutModal"
-                                class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 hover:-translate-y-0.5 transition-all active:scale-95 cursor-pointer text-base">
-                                Lanjut Formulir Peminjaman
+                            <button @click="openCheckoutModal" :disabled="validCartItems.length === 0"
+                                class="w-full py-4 text-white font-black rounded-2xl shadow-xl transition-all active:scale-95 cursor-pointer text-base disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                                :class="validCartItems.length > 0 ? 'bg-blue-600 shadow-blue-600/20 hover:bg-blue-700 hover:-translate-y-0.5' : 'bg-slate-500 shadow-none hover:translate-y-0'">
+                                {{ validCartItems.length > 0 ? 'Lanjut Formulir Peminjaman' : 'Semua Barang Habis' }}
                             </button>
+                            <p v-if="validCartItems.length !== cart.length && validCartItems.length > 0" class="text-[10px] text-amber-600 font-bold text-center mt-3">
+                                *Barang yang habis tidak akan diikutkan saat checkout.
+                            </p>
                         </div>
                     </div>
                 </transition>
@@ -170,9 +189,10 @@
             @remove="removeFromCart"
         />
 
+        <!-- PERBAIKAN: Hanya melempar barang yang stoknya lebih dari 0 ke form checkout -->
         <ModalCheckout 
             :isOpen="isCheckoutOpen" 
-            :cart="cart"
+            :cart="validCartItems"
             @close="isCheckoutOpen = false"
             @back="isCheckoutOpen = false; isCartOpen = true"
             @success="onCheckoutSuccess"
@@ -204,15 +224,23 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const limit = ref(12);
 
-const cart = ref([]);
+// --- INISIALISASI KERANJANG DARI LOCAL STORAGE ---
+const savedCart = localStorage.getItem('cart_peminjaman');
+const cart = ref(savedCart ? JSON.parse(savedCart) : []);
+
+// Array yang berisi keranjang yang VALID saja (Stok > 0 dan Jumlah > 0)
+const validCartItems = computed(() => {
+    return cart.value.filter(item => item.stok > 0 && item.jumlah > 0);
+});
+
+watch(cart, (newCart) => {
+    localStorage.setItem('cart_peminjaman', JSON.stringify(newCart));
+}, { deep: true }); 
+
 const isCartOpen = ref(false);
 const isDetailOpen = ref(false);
 const selectedBarang = ref({});
 const isCheckoutOpen = ref(false);
-
-// State untuk fungsi submitPeminjaman (jika masih digunakan di komponen ini)
-const isSubmitting = ref(false);
-const formCheckout = ref({});
 
 watch(searchQuery, () => {
     clearTimeout(searchTimeout); 
@@ -224,6 +252,82 @@ watch(searchQuery, () => {
 
 const filteredBarang = computed(() => barangList.value);
 
+// --- SINKRONISASI STOK LOKAL DENGAN SERVER ---
+const syncCartWithServerData = (serverDataList) => {
+    let hasChanges = false;
+    serverDataList.forEach(serverItem => {
+        const cartItem = cart.value.find(c => c.id === serverItem.id);
+        if (cartItem) {
+            // Jika ada perbedaan stok
+            if (cartItem.stok !== serverItem.stok) {
+                cartItem.stok = serverItem.stok;
+                hasChanges = true;
+            }
+            
+            // Logika koreksi jumlah
+            if (cartItem.stok === 0 && cartItem.jumlah !== 0) {
+                cartItem.jumlah = 0; // Set 0 jika stok habis
+                hasChanges = true;
+            } else if (cartItem.stok > 0 && cartItem.jumlah > cartItem.stok) {
+                cartItem.jumlah = cartItem.stok; // Turunkan jumlah jika stok server lebih sedikit
+                hasChanges = true;
+            } else if (cartItem.stok > 0 && cartItem.jumlah === 0) {
+                cartItem.jumlah = 1; // Pulihkan otomatis jika barang direstock
+                hasChanges = true;
+            }
+        }
+    });
+    return hasChanges;
+};
+
+// Cek satu-satu barang di keranjang saat keranjang dibuka (agar akurat 100%)
+const validateCartStock = async () => {
+    if (cart.value.length === 0) return;
+    let hasChanges = false;
+    
+    for (let i = 0; i < cart.value.length; i++) {
+        try {
+            const res = await api.get(`/barang/${cart.value[i].id}`);
+            const freshStok = res.data.data.stok;
+            
+            if (cart.value[i].stok !== freshStok) {
+                cart.value[i].stok = freshStok;
+                hasChanges = true;
+            }
+            
+            if (freshStok === 0 && cart.value[i].jumlah !== 0) {
+                cart.value[i].jumlah = 0;
+                hasChanges = true;
+            } else if (freshStok > 0 && cart.value[i].jumlah > freshStok) {
+                cart.value[i].jumlah = freshStok;
+                hasChanges = true;
+            } else if (freshStok > 0 && cart.value[i].jumlah === 0) {
+                cart.value[i].jumlah = 1;
+                hasChanges = true;
+            }
+        } catch (err) {
+            // Jika barang dihapus oleh admin (404)
+            if (err.response?.status === 404 && cart.value[i].stok !== 0) {
+                cart.value[i].stok = 0;
+                cart.value[i].jumlah = 0;
+                hasChanges = true;
+            }
+        }
+    }
+    
+    if (hasChanges) {
+        showAlert('Stok di keranjang Anda telah disesuaikan dengan kondisi gudang terbaru.', 'warning');
+    }
+};
+
+// Validasi otomatis saat keranjang ditarik dari pinggir
+watch(isCartOpen, (newVal) => {
+    if (newVal) {
+        validateCartStock();
+    }
+});
+
+
 const fetchBarang = async () => {
     isLoading.value = true;
     try {
@@ -233,6 +337,9 @@ const fetchBarang = async () => {
         if (response.data.status === 'success') {
             barangList.value = response.data.data;
             totalPages.value = response.data.pagination.totalPages;
+            
+            // Sinkronisasi ringan setiap kali list katalog termuat
+            syncCartWithServerData(response.data.data);
         }
     } catch (error) {
         showAlert('Gagal memuat katalog', 'error');
@@ -244,7 +351,6 @@ const fetchBarang = async () => {
 const getImageUrl = (imagePath) => {
     if (!imagePath) return 'https://placehold.co/400x300/f8fafc/94a3b8?text=Gambar+Not+Found';
     if (imagePath.startsWith('http')) return imagePath; 
-    // Menggunakan port 3000 menyesuaikan backend Anda
     return `http://localhost:3000${imagePath}`; 
 };
 
@@ -266,55 +372,24 @@ const removeFromCart = (id) => { cart.value = cart.value.filter(item => item.id 
 const isInCart = (id) => cart.value.some(item => item.id === id);
 
 const openDetailModal = (barang) => { selectedBarang.value = barang; isDetailOpen.value = true; };
-const closeDetailModal = () => isDetailOpen.value = false;
 
 const openCheckoutModal = () => {
     isCartOpen.value = false;
     setTimeout(() => { isCheckoutOpen.value = true; }, 300);
 };
 
-// FUNGSI INI YANG DIUBAH
 const onCheckoutSuccess = () => {
     cart.value = [];
     isCheckoutOpen.value = false;
-    // router.push('/user/riwayat'); <-- Dihapus
     
     showAlert('Peminjaman berhasil! Silakan cek di Riwayat Peminjaman.', 'success');
-    // Refresh katalog agar stok barang yang baru dipinjam langsung berkurang di tampilan
     fetchBarang();
-};
-
-// FUNGSI INI JUGA DIUBAH (Hanya sebagai fallback jika tombol submit ada di page ini)
-const submitPeminjaman = async () => {
-    isSubmitting.value = true;
-    try {
-        const payload = {
-            ...formCheckout.value,
-            keranjang_barang: cart.value.map(item => ({
-                barang_id: item.id,
-                jumlah: item.jumlah
-            }))
-        };
-
-        const response = await api.post('/user/peminjaman/checkout', payload);
-        
-        showAlert(response.data.message, 'success');
-        cart.value = [];
-        isCheckoutOpen.value = false;
-        
-        // router.push('/user/riwayat'); <-- Dihapus
-        
-        // Refresh katalog
-        fetchBarang();
-    } catch (error) {
-        showAlert(error.response?.data?.message || 'Gagal mengirim permohonan', 'error');
-    } finally {
-        isSubmitting.value = false;
-    }
 };
 
 onMounted(() => {
     fetchBarang();
+    // Validasi satu kali saat halaman diload
+    validateCartStock();
 });
 </script>
 

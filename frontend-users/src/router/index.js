@@ -3,25 +3,21 @@ import { createRouter, createWebHistory } from 'vue-router';
 // 1. Import Layout Topbar
 import UserLayout from '../layouts/UserLayout.vue'; 
 
-// 2. Import Views
-import Home from '../views/HomePage.vue'; // <-- IMPORT HOMEPAGE BARU
+// 2. Import Views (HomePage dihapus)
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
-import Dashboard from '../views/Dashboard.vue';
+import Beranda from '../views/Beranda.vue';
 import Profile from '../views/Profile.vue';
 import CatalogBarang from '../views/CatalogBarang.vue';
 import RiwayatPeminjaman from '../views/RiwayatPeminjaman.vue';
 
 const routes = [
   // ==========================================
-  // RUTE PUBLIK (Bisa diakses siapa saja)
+  // RUTE AWAL (Mengarahkan langsung ke Beranda)
   // ==========================================
   {
     path: '/',
-    name: 'Home',
-    component: Home, 
-    // Tidak pakai meta guestOnly agar user yang sudah login pun 
-    // tetap bisa melihat landing page jika mereka mengetik URL '/'
+    redirect: '/beranda' // Langsung arahkan ke beranda saat web pertama dibuka
   },
 
   // ==========================================
@@ -44,14 +40,14 @@ const routes = [
   // RUTE USER (Dibungkus dengan UserLayout)
   // ==========================================
   {
-    path: '/user', // Opsional: Diberi prefix agar rapi, tapi path children tetap
+    path: '/user', 
     component: UserLayout, 
     meta: { requiresAuth: true }, // Semua children otomatis butuh login
     children: [
       {
-        path: '/dashboard', // Menggunakan '/' di awal agar URL tetap /dashboard
-        name: 'Dashboard',
-        component: Dashboard,
+        path: '/beranda', 
+        name: 'Beranda',
+        component: Beranda,
       },
       {
         path: '/profile',
@@ -74,7 +70,7 @@ const routes = [
   // CATCH ALL (Jika user mengetik URL ngawur)
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/' // Arahkan ke Homepage, bukan dashboard
+    redirect: '/beranda' // Arahkan kembali ke Beranda
   }
 ];
 
@@ -91,7 +87,7 @@ router.beforeEach((to, from) => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAuthenticated = !!token;
 
-  // PERBAIKAN: Mahasiswa (5) dan Dosen/Teknisi (4) masuk sebagai peminjam
+  // Mahasiswa (5) dan Dosen/Teknisi (4) masuk sebagai peminjam
   // Admin dan Super Admin biasanya memiliki Role ID 1, 2, atau 3.
   const isPeminjam = user.role_id === 4 || user.role_id === 5;
 
@@ -111,7 +107,7 @@ router.beforeEach((to, from) => {
   // 3. Jika user SUDAH login tapi mencoba buka halaman Login / Register
   if (to.meta.guestOnly && isAuthenticated) {
     if (isPeminjam) {
-      return { name: 'Dashboard' }; // Kembalikan ke dashboard user
+      return { name: 'Beranda' }; // PERBAIKAN: Sesuaikan dengan nama rute 'Beranda'
     } else {
       // Jika ternyata admin yang iseng buka /login milik user, usir kembali
       localStorage.clear();

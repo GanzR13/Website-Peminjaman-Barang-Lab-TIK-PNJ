@@ -47,19 +47,14 @@ const goToRegister = () => {
 	<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
 		<div class="max-w-md w-full space-y-8 bg-white p-10 rounded-3xl shadow-xl border border-gray-100">
 			<div class="text-center">
-				<div
-					class="mx-auto h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 mb-4">
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
-						stroke="currentColor">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-							d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-					</svg>
+				<div>
+					<img src="../assets/logo_pnj.png" alt="Logo PNJ" class="mx-auto h-20 w-auto mb-4 drop-shadow-md" />
 				</div>
 				<h2 class="text-3xl font-black text-gray-900 tracking-tight">
 					SI-LAB TIK
 				</h2>
 				<p class="mt-2 text-sm text-gray-500 font-medium">
-					Sistem Peminjam Barang Laboratorium
+					Sistem Informasi Manajemen Barang Laboratorium
 				</p>
 			</div>
 
