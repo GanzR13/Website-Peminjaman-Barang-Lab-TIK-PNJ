@@ -65,6 +65,6 @@ export const useAlert = () => {
         confirmColor,
         showAlert,
         closeAlert,
-        confirmAction // Ekspor fungsi ini untuk tombol "Ya"
+        confirmAction
     };
 };

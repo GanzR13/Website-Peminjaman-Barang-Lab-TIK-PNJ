@@ -394,15 +394,21 @@ const handleRegister = async () => {
     }
 
     try {
+        // MENDAPATKAN TANGGAL HARI INI (FORMAT YYYY-MM-DD)
+        const today = new Date().toISOString().split('T')[0];
+
         const payload = {
             ...form,
             role_id: form.kategori === "Mahasiswa" ? 5 : 4,
+            tanggal_daftar: today // <--- INJEKSI TANGGAL DAFTAR DI SINI
         };
 
         await authStore.register(payload);
 
         // Alert sukses menggunakan Toast Global
-        showAlert("Registrasi berhasil! Silakan masuk.", "success");
+        showAlert("Registrasi berhasil! Silakan masuk dengan akun Anda.", "success");
+        
+        // Langsung arahkan kembali ke halaman login (tanpa mampir ke verify-notice)
         router.push("/login");
 
     } catch (err) {

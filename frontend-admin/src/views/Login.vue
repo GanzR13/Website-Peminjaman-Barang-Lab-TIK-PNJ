@@ -1,82 +1,81 @@
 <template>
-	<div class="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-200 px-4">
-		<div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-			<div class="text-center mb-8">
-				<div>
-					<div>
-						<img src="../assets/logo_pnj.png" alt="Logo PNJ" class="mx-auto h-20 w-auto mb-4 drop-shadow-md" />
-					</div>
-				</div>
+    <div class="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-200 px-4 py-8 sm:px-6 lg:px-8">
+        <div class="w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 border border-slate-100">
+            
+            <div class="text-center mb-6 sm:mb-8">
+                <div>
+                    <img src="../assets/logo_pnj.png" alt="Logo PNJ" class="mx-auto h-16 sm:h-20 w-auto mb-4 drop-shadow-md" />
+                </div>
 
-				<h2 class="text-3xl font-black text-gray-900 tracking-tight">SI-LAB ADMIN</h2>
-				<p class="text-sm text-gray-500 mt-1">Dashboard Admin Lab PLP TIK</p>
-			</div>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">SI-LAB ADMIN</h2>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Dashboard Admin Lab PLP TIK</p>
+            </div>
 
-			<form @submit.prevent="handleLogin" class="space-y-5">
-				<div>
-					<label class="block text-sm font-bold text-gray-700 mb-1 ml-1" for="email">
-						Email PNJ<span class="text-red-500"> *</span>
-					</label>
-					<input id="email" v-model="email" type="email" required placeholder="admin.tik@pnj.ac.id"
-						class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-500 outline-none transition" />
-				</div>
+            <form @submit.prevent="handleLogin" class="space-y-4 sm:space-y-5">
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1 ml-1" for="email">
+                        Email PNJ<span class="text-red-500"> *</span>
+                    </label>
+                    <input id="email" v-model="email" type="email" required placeholder="admin.tik@pnj.ac.id"
+                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium text-slate-800" />
+                </div>
 
-				<div>
-					<label class="block text-sm font-bold text-gray-700 mb-1 ml-1" for="password">
-						Password<span class="text-red-500"> *</span>
-					</label>
-					<div class="relative">
-						<input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
-							placeholder="••••••••"
-							class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-slate-500 outline-none transition pr-12" />
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1 ml-1" for="password">
+                        Password<span class="text-red-500"> *</span>
+                    </label>
+                    <div class="relative">
+                        <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
+                            placeholder="••••••••"
+                            class="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition pr-12 text-sm font-medium text-slate-800" />
 
-						<button type="button" @click="showPassword = !showPassword"
-							class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-slate-600 focus:outline-none transition-colors">
-							<svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-								viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-									d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-									d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-							</svg>
-							<svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-								viewBox="0 0 24 24" stroke="currentColor">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-									d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-							</svg>
-						</button>
-					</div>
-				</div>
+                        <button type="button" @click="showPassword = !showPassword"
+                            class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-blue-600 focus:outline-none transition-colors cursor-pointer active:scale-95">
+                            <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
 
-				<button type="submit" :disabled="authStore.loading"
-					class="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-black transition shadow-lg shadow-slate-200 disabled:opacity-50 mt-4 cursor-pointer">
-					<span v-if="authStore.loading" class="flex items-center justify-center">
-						<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-							fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-							</circle>
-							<path class="opacity-75" fill="currentColor"
-								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-							</path>
-						</svg>
-						Memproses...
-					</span>
-					<span v-else>Masuk ke Sistem</span>
-				</button>
-			</form>
+                <button type="submit" :disabled="authStore.loading"
+                    class="w-full py-3.5 sm:py-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-black transition shadow-lg shadow-slate-200 disabled:opacity-50 mt-4 cursor-pointer active:scale-95 text-sm sm:text-base flex justify-center items-center gap-2">
+                    <span v-if="authStore.loading" class="flex items-center justify-center gap-2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        Memproses...
+                    </span>
+                    <span v-else>Masuk ke Sistem</span>
+                </button>
+            </form>
 
-			<p class="text-center text-[10px] text-gray-400 mt-6 uppercase tracking-widest font-bold">
-				© 2026 LAB PLP TIK Politeknik Negeri Jakarta
-			</p>
-		</div>
-	</div>
+            <p class="text-center text-[9px] sm:text-[10px] text-slate-400 mt-6 sm:mt-8 uppercase tracking-widest font-bold">
+                © 2026 LAB PLP TIK Politeknik Negeri Jakarta
+            </p>
+        </div>
+    </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
-import { useAlert } from "../composables/useAlert"; // 1. Import Composable Alert
+import { useAlert } from "../composables/useAlert";
 
 const email = ref("");
 const password = ref("");
@@ -84,30 +83,27 @@ const showPassword = ref(false);
 
 const router = useRouter();
 const authStore = useAuthStore();
-const { showAlert } = useAlert(); // 2. Ekstrak fungsi showAlert
+
+// 2. Ekstrak helper
+const { showAlert } = useAlert(); 
 
 const handleLogin = async () => {
-	// 3. Gunakan alert untuk validasi form kosong
-	if (!email.value || !password.value) {
-		showAlert("Email dan password wajib diisi.", "error");
-		return;
-	}
+    if (!email.value || !password.value) {
+        showAlert("Email dan password wajib diisi.", "error");
+        return;
+    }
 
-	try {
-		// Catatan: Pastikan payload sesuai dengan controller backend
-		// Karena ini Admin, kamu mungkin perlu mengirim 'portal: admin' jika diperlukan backend
-		await authStore.login({
-			email: email.value,
-			password: password.value,
-			portal: 'admin' // Sesuaikan jika backend butuh validasi portal
-		});
+    try {
+        await authStore.login({
+            email: email.value,
+            password: password.value,
+            portal: 'admin' 
+        });
 
-		// 4. Alert sukses
-		showAlert("Login berhasil!", "success");
-		router.push("/admin/dashboard");
-	} catch (error) {
-		// 5. Alert error (ambil pesan error dari backend via authStore atau tangkap langsung)
-		showAlert(authStore.error || "Login gagal, silakan periksa kredensial Anda.", "error");
-	}
+        showAlert("Login berhasil!", "success");
+        router.push("/admin/dashboard");
+    } catch (error) {
+        showAlert(authStore.error || "Login gagal, silakan periksa kredensial Anda.", "error");
+    }
 };
 </script>

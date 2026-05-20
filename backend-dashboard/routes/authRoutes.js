@@ -14,7 +14,7 @@ router.post('/login', validateLogin, authController.login);
 /**
  * @route   POST /api/auth/register
  * @desc    Registrasi user baru (Publik/Self-service)
- * Catatan: Untuk admin nambah user, gunakan POST di userRoutes
+ * Catatan: Untuk admin tambah user, gunakan POST di userRoutes
  */
 router.post('/register', validateRegister, userController.createUser);
 

@@ -2,10 +2,9 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-// 1. Import Database
+
 const db = require("./models"); 
 
-// 2. Import Routes
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const refRoutes = require('./routes/refRoutes');
@@ -15,25 +14,22 @@ const adminPeminjamanRoutes = require('./routes/adminPeminjamanRoutes');
 const dataanalitikRoutes = require('./routes/dataanalitikRoutes');
 const adminLaporanRoutes = require('./routes/adminLaporanRoutes');
 
-// INISIALISASI app
 const app = express();
 
-// --- CUSTOM LOG MANUAL (Ganti Morgan) ---
+// CUSTOM LOG MANUAL
 app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
         const duration = Date.now() - start;
         const status = res.statusCode;
-        // Warna log (Optional): 2xx = Hijau, 4xx/5xx = Merah
         const color = status >= 400 ? '\x1b[31m' : '\x1b[32m';
         const reset = '\x1b[0m';
-        
         console.log(`${color}${req.method}${reset} ${req.originalUrl} ${color}${status}${reset} - ${duration}ms`);
     });
     next();
 });
 
-// 3. Setup Middleware
+// Setup Middleware
 app.use(
     cors({
         origin: [
@@ -50,7 +46,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// 4. Daftarkan Routes Utama
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/ref', refRoutes);
@@ -60,8 +56,7 @@ app.use('/api/admin/peminjaman', adminPeminjamanRoutes);
 app.use('/api/dataanalitik', dataanalitikRoutes);
 app.use('/api/admin/laporan', adminLaporanRoutes);
 
-
-// 5. REDIRECT Rute Utama
+// REDIRECT Rute Utama
 app.get("/", (req, res) => {
     res.json({
         status: "success",
@@ -70,7 +65,7 @@ app.get("/", (req, res) => {
     });
 });
 
-// 6. Global Error Handler
+// Global Error Handler
 app.use((err, req, res, next) => {
     console.error(`\x1b[31m[ERROR]\x1b[0m ${err.stack}`);
     res.status(500).json({
@@ -79,7 +74,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 7. Tentukan PORT & Jalankan Server
 const PORT = process.env.PORT || 3000;
 
 db.sequelize

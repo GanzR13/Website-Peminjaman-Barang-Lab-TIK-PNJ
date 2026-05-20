@@ -1,21 +1,17 @@
 const { Barang } = require("../models");
-// 1. IMPORT CLOUDINARY (Pastikan path ke file middleware-mu benar)
 const { cloudinary } = require("../middlewares/uploadCloudinary");
 const { Op } = require("sequelize");
 
-// (Modul 'fs' dan 'path' sudah dihapus karena tidak dipakai lagi)
-
 // --- FUNGSI BANTUAN UNTUK MENGHAPUS GAMBAR DI CLOUDINARY ---
-// Cloudinary butuh "Public ID" (nama folder + nama file tanpa ekstensi) untuk menghapus gambar
 const getPublicIdFromUrl = (url) => {
 	if (!url) return null;
 	const splitUrl = url.split("/");
-	const folderAndFile = splitUrl.slice(-2).join("/"); // Contoh: skripsi_lab/barang-123.jpg
-	return folderAndFile.split(".")[0]; // Menghilangkan .jpg -> skripsi_lab/barang-123
+	const folderAndFile = splitUrl.slice(-2).join("/");
+	return folderAndFile.split(".")[0]; 
 };
 
 const barangController = {
-	// 1. Mengambil Semua Data Barang (Dengan Paginasi)
+	// 1. Mengambil Semua Data Barang (Dengan Paginasi & Filter)
 	getAllBarang: async (req, res) => {
 		try {
 			const page = parseInt(req.query.page) || 1;
@@ -23,14 +19,24 @@ const barangController = {
 			const offset = (page - 1) * limit;
 
 			const search = req.query.search || "";
+            const filterStok = req.query.stok; // Menangkap parameter 'stok' dari frontend
 
 			let whereCondition = {};
+            
+            // Logika Pencarian Teks
 			if (search) {
-				whereCondition = {
-					nama_barang: { [Op.iLike]: `%${search}%` },
-				};
+				whereCondition.nama_barang = { [Op.iLike]: `%${search}%` };
 			}
 
+            // Logika Filter Stok
+            if (filterStok === 'tersedia') {
+                whereCondition.stok = { [Op.gt]: 0 }; // Stok lebih dari 0
+            } else if (filterStok === 'habis') {
+                // Dianggap habis jika 0 atau null (mencegah error jika data kosong)
+                whereCondition.stok = { [Op.or]: [0, null] }; 
+            }
+
+            // Query Data sesuai Filter
 			const { count: filteredCount, rows } = await Barang.findAndCountAll({
 				where: whereCondition,
 				limit: limit,
@@ -38,29 +44,28 @@ const barangController = {
 				order: [["id", "DESC"]],
 			});
 
-			// 2. Hitung statistik GLOBAL (TIDAK terpengaruh pencarian)
-			// Menghitung seluruh isi tabel barang tanpa klausa WHERE
+			// Hitung statistik GLOBAL (TIDAK terpengaruh pencarian & filter)
 			const globalTotal = await Barang.count();
-
 			const globalHabis = await Barang.count({
 				where: {
 					stok: { [Op.or]: [0, null] },
 				},
 			});
-
 			const globalTersedia = Math.max(0, globalTotal - globalHabis);
+            
+            // Hitung total halaman berdasarkan data yang sudah difilter
 			const totalPages = Math.ceil(filteredCount / limit);
 
 			return res.status(200).json({
 				status: "success",
 				data: rows,
 				summary: {
-					total: globalTotal, // <--- Tambahkan variabel total global di sini
+					total: globalTotal, 
 					tersedia: globalTersedia,
 					habis: globalHabis,
 				},
 				pagination: {
-					totalItems: filteredCount, // <--- Ini tetap pakai filteredCount agar paginasi tidak rusak
+					totalItems: filteredCount, 
 					totalPages: totalPages,
 					currentPage: page,
 					itemsPerPage: limit,
@@ -95,9 +100,7 @@ const barangController = {
 		try {
 			const { nama_barang, stok, deskripsi } = req.body;
 
-			// PERUBAHAN: Gunakan req.file.path dari Cloudinary yang mengembalikan URL HTTPS langsung
 			const gambarUrl = req.file ? req.file.path : null;
-
 			const stokAwal = stok !== undefined && stok !== "" ? Number(stok) : 0;
 
 			const newBarang = await Barang.create({
@@ -136,7 +139,7 @@ const barangController = {
 
 			// Jika user mengupload file gambar baru
 			if (req.file) {
-				// PERUBAHAN: Hapus file lama di Cloudinary secara Asynchronous
+				// Hapus file lama di Cloudinary
 				if (barang.gambar && barang.gambar.includes("cloudinary")) {
 					const publicId = getPublicIdFromUrl(barang.gambar);
 					if (publicId) {
@@ -150,7 +153,7 @@ const barangController = {
 						}
 					}
 				}
-				// Set path gambar baru dengan URL dari Cloudinary
+				// Set path gambar baru
 				gambarUrl = req.file.path;
 			}
 
@@ -190,7 +193,7 @@ const barangController = {
 					.json({ status: "error", message: "Barang tidak ditemukan" });
 			}
 
-			// PERUBAHAN: Hapus file gambar dari Cloudinary sebelum menghapus data dari database
+			// Hapus file gambar dari Cloudinary
 			if (barang.gambar && barang.gambar.includes("cloudinary")) {
 				const publicId = getPublicIdFromUrl(barang.gambar);
 				if (publicId) {

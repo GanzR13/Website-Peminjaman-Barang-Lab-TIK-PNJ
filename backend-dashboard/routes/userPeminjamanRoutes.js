@@ -10,30 +10,25 @@ const { uploadCloud } = require('../middlewares/uploadCloudinary');
 router.use(authenticateToken);
 
 // ==========================================
-// RUTE PEMINJAMAN (SISI USER / MAHASISWA)
+// Route Peminjaman(User)
 // Base URL asumsi: /api/user/peminjaman
 // ==========================================
 
 // Checkout (Submit Keranjang Peminjaman)
-// Method: POST
 router.post('/checkout', peminjamanUserController.checkoutPeminjaman);
 
-// Lihat Riwayat Peminjaman Pribadi
-// Method: GET
+// Lihat Riwayat Peminjaman
 router.get('/riwayat', peminjamanUserController.getRiwayatSaya);
 
-// Batalkan Peminjaman (Hanya jika masih "Menunggu")
-// Method: DELETE
+// Batalkan Peminjaman (Hanya jika status masih "Menunggu")
 router.delete('/:id/batal', peminjamanUserController.batalkanPeminjaman);
 
 router.put('/:id/edit', peminjamanUserController.updatePeminjamanSaya);
 
 // ==========================================
-// RUTE LAPORAN MASALAH (RUSAK / HILANG)
+// Route Laporan Masalah (RUSAK / HILANG)
 // ==========================================
 
-// Gunakan uploadCloud.single('foto_bukti')
-// Tambahkan error handler kecil jika upload gagal karena format/ukuran
 router.post('/laporan', (req, res, next) => {
     const upload = uploadCloud.single('foto_bukti');
     upload(req, res, function (err) {

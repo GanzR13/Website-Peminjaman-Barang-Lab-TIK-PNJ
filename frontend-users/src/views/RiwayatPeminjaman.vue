@@ -1,109 +1,204 @@
 <template>
-    <div class="p-4 md:p-8 h-full flex flex-col relative animate-fade-in max-w-5xl mx-auto">
-        <div class="mb-8">
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Riwayat Peminjaman</h2>
-            <p class="text-slate-500 mt-1 text-sm font-medium">Pantau status permohonan dan riwayat peminjaman alat lab Anda di sini.</p>
+    <div class="animate-fade-in pb-10">
+        <!-- Header -->
+        <div class="mb-6">
+            <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                Riwayat Peminjaman
+            </h2>
+            <p class="text-slate-500 mt-1 text-xs md:text-sm font-medium">
+                Pantau status dan riwayat peminjaman alat lab Anda.
+            </p>
         </div>
 
+        <!-- Loading -->
         <div v-if="isLoading" class="flex flex-col items-center justify-center py-20">
-            <div class="animate-spin inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
-            <p class="text-slate-500 font-bold animate-pulse">Memuat riwayat Anda...</p>
+            <div
+                class="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4">
+            </div>
+            <p class="text-slate-500 font-bold text-sm animate-pulse">
+                Memuat riwayat Anda...
+            </p>
         </div>
 
-        <div v-else-if="riwayatList.length === 0" class="text-center py-24 bg-white/50 rounded-3xl border border-slate-100 border-dashed">
-            <ClipboardDocumentListIcon class="w-20 h-20 text-slate-300 mx-auto" />
-            <h3 class="text-xl font-bold text-slate-700 mt-6">Belum Ada Riwayat</h3>
-            <p class="text-slate-500 mt-2 text-sm font-medium">Anda belum pernah melakukan permohonan peminjaman barang.</p>
-            <router-link to="/catalog" class="inline-block mt-6 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 hover:-translate-y-0.5 transition-all shadow-lg shadow-blue-600/20 active:scale-95">
-                Lihat Katalog Barang
+        <!-- Empty -->
+        <div
+            v-else-if="riwayatList.length === 0"
+            class="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200 shadow-sm"
+        >
+            <ClipboardDocumentListIcon class="w-16 h-16 text-slate-300 mx-auto" />
+
+            <h3 class="text-lg font-bold text-slate-700 mt-6">
+                Belum Ada Riwayat
+            </h3>
+
+            <p class="text-slate-500 mt-2 text-sm px-6">
+                Anda belum pernah melakukan permohonan peminjaman barang.
+            </p>
+
+            <router-link
+                to="/catalog"
+                class="inline-block mt-6 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all active:scale-95 text-sm shadow-lg shadow-blue-600/20"
+            >
+                Lihat Katalog
             </router-link>
         </div>
 
-        <div v-else class="space-y-6 pb-8">
-            <div v-for="transaksi in riwayatList" :key="transaksi.id" 
-                class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                
-                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center gap-3 mb-1">
-                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Transaksi #{{ transaksi.antrian || transaksi.id }}</span>
-                            <span :class="getStatusBadgeClass(transaksi.status)" class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ring-1 shadow-sm">
-                                {{ transaksi.status }}
-                            </span>
+        <!-- List -->
+        <div v-else class="space-y-4">
+            <div
+                v-for="transaksi in riwayatList"
+                :key="transaksi.id"
+                class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+            >
+                <!-- Header Kartu -->
+                <div class="px-4 py-3.5 border-b border-slate-100 bg-slate-50">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    #{{ transaksi.antrian || shortId(transaksi.id) }}
+                                </span>
+
+                                <span
+                                    :class="getStatusBadgeClass(transaksi.status)"
+                                    class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase ring-1 shadow-sm"
+                                >
+                                    {{ transaksi.status }}
+                                </span>
+                            </div>
+
+                            <p class="text-xs font-bold text-slate-700">
+                                <CalendarIcon class="w-3 h-3 inline mr-1 text-slate-400" />
+                                {{ formatDate(transaksi.tanggal_pinjam) }}
+                                <span class="text-slate-400 mx-1 font-normal">s/d</span>
+                                {{ formatDate(transaksi.tanggal_kembali) }}
+                            </p>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-800">
-                            {{ formatDate(transaksi.tanggal_pinjam) }} <span class="text-slate-400 font-normal mx-1">s/d</span> {{ formatDate(transaksi.tanggal_kembali) }}
-                        </h3>
-                    </div>
-                    <div class="flex flex-col sm:flex-row items-center gap-2 mt-2 sm:mt-0">
-                        
-                        <button v-if="transaksi.kategori_kebutuhan === 'Khusus' && transaksi.status === 'Disetujui'" 
-                            @click="cetakSurat(transaksi)"
-                            class="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-all active:scale-95 text-xs shadow-md w-full sm:w-auto cursor-pointer">
-                            <PrinterIcon class="w-4 h-4" />
-                            Cetak Surat
-                        </button>
 
-                        <button v-if="transaksi.status === 'Dipinjam'" 
-                            @click="openLaporModal(transaksi)"
-                            class="flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 border border-orange-200 font-bold rounded-xl hover:bg-orange-100 hover:border-orange-300 transition-all active:scale-95 text-xs w-full sm:w-auto shadow-sm cursor-pointer">
-                            <ExclamationTriangleIcon class="w-4 h-4" />
-                            Lapor Masalah
-                        </button>
-
-                        <button v-if="transaksi.status === 'Menunggu'" 
-                            @click="handleCancelConfirmation(transaksi.id)"
-                            :disabled="cancelingId === transaksi.id"
-                            class="flex items-center justify-center gap-2 px-4 py-2 bg-white text-red-600 border border-red-200 font-bold rounded-xl hover:bg-red-50 hover:border-red-300 transition-all active:scale-95 text-xs disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shadow-sm cursor-pointer">
-                            <div v-if="cancelingId === transaksi.id" class="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                            <XMarkIcon v-else class="w-4 h-4" />
-                            {{ cancelingId === transaksi.id ? 'Membatalkan...' : 'Batalkan Permohonan' }}
-                        </button>
+                        <span
+                            class="px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider shrink-0"
+                            :class="transaksi.kategori_kebutuhan === 'Khusus'
+                                ? 'bg-purple-50 text-purple-600 ring-1 ring-purple-200'
+                                : 'bg-blue-50 text-blue-600 ring-1 ring-blue-200'"
+                        >
+                            {{ transaksi.kategori_kebutuhan || 'Harian' }}
+                        </span>
                     </div>
+
+                    <p class="text-[11px] text-slate-500 font-medium mt-2 line-clamp-1">
+                        {{ transaksi.tujuan_peminjaman || 'Tidak ada tujuan peminjaman' }}
+                    </p>
                 </div>
-                
-                <div class="p-6">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Daftar Barang yang Dipinjam</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div v-for="detail in transaksi.detail_barang" :key="detail.id" 
-                            class="flex items-center gap-4 p-3 rounded-xl border border-slate-100 bg-slate-50/50">
-                            
-                            <img :src="getImageUrl(detail.barang?.gambar)" :alt="detail.barang?.nama_barang"
-                                class="w-14 h-14 rounded-lg object-cover border border-slate-200 bg-white" />
-                            
-                            <div class="flex-1">
-                                <h4 class="text-sm font-bold text-slate-800 line-clamp-1" :title="detail.barang?.nama_barang">
+
+                <!-- Daftar Barang -->
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Barang Dipinjam
+                        </p>
+
+                        <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
+                            {{ transaksi.detail_barang?.length || 0 }} barang
+                        </span>
+                    </div>
+
+                    <div
+                        v-if="transaksi.detail_barang?.length"
+                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
+                    >
+                        <div
+                            v-for="detail in transaksi.detail_barang"
+                            :key="detail.id"
+                            class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition"
+                        >
+                            <img
+                                :src="getImageUrl(detail.barang?.gambar)"
+                                :alt="detail.barang?.nama_barang || 'Barang'"
+                                class="w-11 h-11 rounded-lg object-cover bg-white border border-slate-200 shrink-0"
+                            />
+
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-xs font-bold text-slate-800 truncate">
                                     {{ detail.barang?.nama_barang || 'Barang Dihapus' }}
                                 </h4>
-                                <p class="text-xs font-medium text-slate-500 mt-0.5">Jumlah: <span class="font-bold text-slate-700">{{ detail.jumlah_pinjam }} Unit</span></p>
+
+                                <p class="text-[10px] text-slate-500 font-medium mt-0.5">
+                                    Jumlah:
+                                    <span class="font-black text-slate-700">
+                                        {{ detail.jumlah_pinjam || 0 }}
+                                    </span>
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori & Tujuan</p>
-                        <p class="text-xs font-medium text-slate-700 mt-1">
-                            <span class="font-bold text-blue-600">{{ transaksi.kategori_kebutuhan }}</span> - {{ transaksi.tujuan_peminjaman }}
+
+                    <div
+                        v-else
+                        class="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center"
+                    >
+                        <p class="text-xs font-bold text-slate-400">
+                            Tidak ada data barang.
                         </p>
                     </div>
-                    <div v-if="transaksi.catatan_admin" class="bg-yellow-50 px-3 py-2 rounded-lg border border-yellow-100 w-full md:w-auto">
-                        <p class="text-[10px] font-black text-yellow-600 uppercase tracking-widest">Catatan Admin</p>
-                        <p class="text-xs font-medium text-yellow-800 mt-0.5">{{ transaksi.catatan_admin }}</p>
+                </div>
+
+                <!-- Catatan Admin -->
+                <div v-if="transaksi.catatan_admin" class="px-4 pb-3">
+                    <div class="bg-yellow-50 px-3 py-2.5 rounded-xl border border-yellow-100">
+                        <p class="text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-0.5">
+                            Catatan Admin
+                        </p>
+
+                        <p class="text-xs font-medium text-yellow-800">
+                            {{ transaksi.catatan_admin }}
+                        </p>
                     </div>
+                </div>
+
+                <!-- Tombol Aksi -->
+                <div class="px-4 pb-4 flex flex-wrap gap-2">
+                    <button
+                        v-if="canPrintSurat(transaksi)"
+                        @click="cetakSurat(transaksi)"
+                        class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-all active:scale-95 text-xs cursor-pointer shadow-md"
+                    >
+                        <PrinterIcon class="w-3.5 h-3.5" />
+                        Cetak Surat
+                    </button>
+
+                    <button
+                        v-if="transaksi.status === 'Dipinjam'"
+                        @click="openLaporModal(transaksi)"
+                        class="flex items-center gap-1.5 px-3 py-2 bg-orange-50 text-orange-600 border border-orange-200 font-bold rounded-xl hover:bg-orange-100 transition-all active:scale-95 text-xs cursor-pointer"
+                    >
+                        <ExclamationTriangleIcon class="w-3.5 h-3.5" />
+                        Lapor Masalah
+                    </button>
+
+                    <button
+                        v-if="transaksi.status === 'Menunggu'"
+                        @click="handleCancelConfirmation(transaksi.id)"
+                        :disabled="cancelingId === transaksi.id"
+                        class="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 border border-red-200 font-bold rounded-xl hover:bg-red-100 transition-all active:scale-95 text-xs cursor-pointer disabled:opacity-50"
+                    >
+                        <div
+                            v-if="cancelingId === transaksi.id"
+                            class="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"
+                        ></div>
+
+                        <XCircleIcon v-else class="w-3.5 h-3.5" />
+
+                        {{ cancelingId === transaksi.id ? 'Membatalkan...' : 'Batalkan' }}
+                    </button>
                 </div>
             </div>
         </div>
 
-        <ModalLaporMasalah 
-            :is-open="isLaporModalOpen" 
+        <ModalLaporMasalah
+            :is-open="isLaporModalOpen"
             :transaksi="selectedPeminjaman"
             @close="closeLaporModal"
-            @success="handleLaporSuccess"
         />
-
     </div>
 </template>
 
@@ -111,15 +206,22 @@
 import { ref, onMounted } from 'vue';
 import api from '../plugins/axios';
 import { useAlert } from '../composables/useAlert';
+import { useConfirm } from '../composables/useConfirm';
 import { format } from 'date-fns';
-import { id as idLocale } from 'date-fns/locale'; 
-import { ClipboardDocumentListIcon, XMarkIcon, PrinterIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline'; 
+import { id as idLocale } from 'date-fns/locale';
+import {
+    ClipboardDocumentListIcon,
+    PrinterIcon,
+    ExclamationTriangleIcon,
+    CalendarIcon,
+    XCircleIcon
+} from '@heroicons/vue/24/outline';
+import ModalLaporMasalah from '../components/ModalLaporMasalah.vue';
 import { generateSuratPDF } from '../utils/printSurat';
 
-// Import Komponen Modal yang baru dibuat
-import ModalLaporMasalah from '../components/ModalLaporMasalah.vue';
-
 const { showAlert } = useAlert();
+const { showConfirm } = useConfirm();
+
 const riwayatList = ref([]);
 const isLoading = ref(true);
 const cancelingId = ref(null);
@@ -129,49 +231,52 @@ const selectedPeminjaman = ref(null);
 
 const fetchRiwayat = async () => {
     isLoading.value = true;
+
     try {
-        const response = await api.get('/user/peminjaman/riwayat'); 
+        const response = await api.get('/user/peminjaman/riwayat');
+
         if (response.data.status === 'success') {
-            riwayatList.value = response.data.data;
+            riwayatList.value = response.data.data || [];
         }
     } catch (error) {
-        console.error("Gagal mengambil riwayat:", error);
         if (error.response?.status !== 404) {
-            showAlert('Gagal memuat riwayat peminjaman', 'error');
+            showAlert('Gagal memuat riwayat.', 'error');
         }
     } finally {
         isLoading.value = false;
     }
 };
 
-onMounted(() => fetchRiwayat());
+onMounted(() => {
+    fetchRiwayat();
+});
 
 const handleCancelConfirmation = (id) => {
-    showAlert('Apakah Anda yakin ingin membatalkan permohonan ini? Stok akan dikembalikan otomatis.', 'confirm', () => batalkanPesanan(id));
+    showConfirm('Batalkan permohonan ini?', () => batalkanPesanan(id));
 };
 
 const batalkanPesanan = async (id) => {
-    if (cancelingId.value !== null) return;
     cancelingId.value = id;
+
     try {
-        const response = await api.delete(`/user/peminjaman/${id}/batal`);
-        if (response.data.status === 'success') {
-            showAlert('Permohonan berhasil dibatalkan.', 'success');
-            await fetchRiwayat(); 
-        }
+        await api.delete(`/user/peminjaman/${id}/batal`);
+        showAlert('Berhasil dibatalkan.', 'success');
+        await fetchRiwayat();
     } catch (error) {
-        const msg = error.response?.data?.message || 'Gagal membatalkan permohonan';
-        showAlert(msg, 'error');
+        showAlert(error.response?.data?.message || 'Gagal membatalkan.', 'error');
     } finally {
         cancelingId.value = null;
     }
+};
+
+const canPrintSurat = (transaksi) => {
+    return transaksi.kategori_kebutuhan === 'Khusus' && transaksi.status === 'Disetujui';
 };
 
 const cetakSurat = (transaksi) => {
     generateSuratPDF(transaksi, showAlert);
 };
 
-// --- Fungsi Kontrol Modal ---
 const openLaporModal = (transaksi) => {
     selectedPeminjaman.value = transaksi;
     isLaporModalOpen.value = true;
@@ -182,40 +287,72 @@ const closeLaporModal = () => {
     selectedPeminjaman.value = null;
 };
 
-const handleLaporSuccess = () => {
-    // Bisa tambahkan refresh data di sini jika laporan memengaruhi status peminjaman
-    // fetchRiwayat();
+const shortId = (id) => {
+    if (!id) return '-';
+    return String(id).slice(0, 8);
 };
 
-// --- Utilities ---
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    try { return format(new Date(dateString), 'dd MMM yyyy', { locale: idLocale }); } 
-    catch (e) { return '-'; }
+const parseLocalDate = (dateValue) => {
+    if (!dateValue) return null;
+
+    if (dateValue instanceof Date) {
+        return Number.isNaN(dateValue.getTime()) ? null : dateValue;
+    }
+
+    const dateString = String(dateValue);
+    const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (match) {
+        const [, year, month, day] = match;
+        return new Date(Number(year), Number(month) - 1, Number(day));
+    }
+
+    const parsed = new Date(dateString);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
-const getImageUrl = (imagePath) => {
-    if (!imagePath) return 'https://placehold.co/150x150/f8fafc/94a3b8?text=No+Image';
-    if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:3000${imagePath}`; 
+const formatDate = (dateValue) => {
+    const date = parseLocalDate(dateValue);
+
+    return date ? format(date, 'dd MMM yyyy', { locale: idLocale }) : '-';
+};
+
+const getImageUrl = (path) => {
+    if (!path) {
+        return 'https://placehold.co/150x150/f8fafc/94a3b8?text=No+Image';
+    }
+
+    return path.startsWith('http') ? path : `http://localhost:3000${path}`;
 };
 
 const getStatusBadgeClass = (status) => {
-    switch (status) {
-        case 'Menunggu': return 'bg-amber-100 text-amber-700 ring-amber-200';
-        case 'Disetujui': return 'bg-blue-100 text-blue-700 ring-blue-200';
-        case 'Dipinjam': return 'bg-indigo-100 text-indigo-700 ring-indigo-200';
-        case 'Selesai': return 'bg-emerald-100 text-emerald-700 ring-emerald-200';
-        case 'Ditolak': return 'bg-red-100 text-red-700 ring-red-200';
-        default: return 'bg-slate-100 text-slate-700 ring-slate-200';
-    }
+    const map = {
+        Menunggu: 'bg-amber-100 text-amber-700 ring-amber-200',
+        Disetujui: 'bg-blue-100 text-blue-700 ring-blue-200',
+        Dipinjam: 'bg-indigo-100 text-indigo-700 ring-indigo-200',
+        Selesai: 'bg-emerald-100 text-emerald-700 ring-emerald-200',
+        Ditolak: 'bg-red-100 text-red-700 ring-red-200',
+        Dibatalkan: 'bg-slate-100 text-slate-500 ring-slate-200'
+    };
+
+    return map[status] || 'bg-slate-100 text-slate-700 ring-slate-200';
 };
 </script>
 
 <style scoped>
-.animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 </style>

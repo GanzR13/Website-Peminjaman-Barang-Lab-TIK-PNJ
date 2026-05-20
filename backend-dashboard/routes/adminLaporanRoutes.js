@@ -13,8 +13,7 @@ const {
 } = require("../models");
 
 // ==========================================
-// RUTE LAPORAN MASALAH (SISI ADMIN)
-// Asumsi Base URL di index.js: /api/admin/laporan
+// Route Laporan Masalah (Admin)
 // ==========================================
 
 // Mengambil semua data laporan

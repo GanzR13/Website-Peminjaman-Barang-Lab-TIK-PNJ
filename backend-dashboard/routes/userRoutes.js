@@ -4,23 +4,23 @@ const userController = require('../controllers/userController');
 const { authenticateToken } = require('../middlewares/authMiddleware');
 const { validateRegister } = require('../middlewares/authValidator');
 
-// --- DAFTAR RUTE USER ---
+// Daftar Route User
 
-// 1. Ambil Semua User (General)
+// Ambil Semua User
 router.get('/', authenticateToken, userController.getAllUsers);
 
-// 2. Ambil Data Spesifik (Grup)
+// Ambil Data Spesifik
 router.get('/pegawai', authenticateToken, userController.getPegawai);
 router.get('/peminjam', authenticateToken, userController.getPeminjam);
 
-// 3. Ambil Data Detail per ID
+// Ambil Data Detail per ID
 router.get('/pegawai/:id', authenticateToken, userController.getPegawaiById);
 router.get('/peminjam/:id', authenticateToken, userController.getPeminjamById);
 
-// 4. Tambah User Baru (Gunakan POST / untuk createUser)
+// Tambah User Baru
 router.post('/', authenticateToken, validateRegister, userController.createUser);
 
-// 5. Update & Delete
+// Update & Delete Data User
 router.put('/:id', authenticateToken, userController.updateUser);
 router.delete('/:id', authenticateToken, userController.deleteUser);
 
