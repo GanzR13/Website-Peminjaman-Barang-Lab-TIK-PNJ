@@ -1,10 +1,88 @@
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth";
+import { useAlert } from "../composables/useAlert";
+
+const email = ref("");
+const password = ref("");
+const showPassword = ref(false);
+
+const router = useRouter();
+const authStore = useAuthStore();
+const { showAlert } = useAlert();
+
+// STATE UX ERROR
+const loginError = ref(false);
+const errorMessage = ref("");
+
+// Ref untuk memanipulasi elemen input di HTML
+const passwordInputRef = ref(null);
+const emailInputRef = ref(null);
+
+// HELPER: Penanganan Error Terpusat
+const triggerError = (msg) => {
+    errorMessage.value = msg;
+    loginError.value = true;
+
+    // Tahan popup password Chrome
+    setTimeout(() => {
+        if (passwordInputRef.value) {
+            passwordInputRef.value.select();
+        }
+    }, 50);
+};
+
+const handleLogin = async () => {
+    // Reset state saat tombol kembali ditekan
+    loginError.value = false;
+    errorMessage.value = "";
+
+    if (!email.value || !password.value) {
+        triggerError("Email dan password wajib diisi lengkap.");
+        return;
+    }
+
+    try {
+        const success = await authStore.login({
+            email: email.value,
+            password: password.value,
+            portal: 'admin'
+        });
+
+        if (success) {
+            // Trik lepas fokus untuk memicu Chrome Save Password
+            if (emailInputRef.value) emailInputRef.value.blur();
+            if (passwordInputRef.value) passwordInputRef.value.blur();
+
+            showAlert("Login berhasil!", "success");
+            await router.push("/admin/dashboard");
+        } else {
+            // Gagal tapi tidak lempar exception (contoh: error dari store)
+            triggerError(authStore.error || "Email atau password yang Anda masukkan salah.");
+        }
+    } catch (err) {
+		console.error("Login Catch Error:", err);
+
+		const msg = err.response?.data?.errors
+			|| err.response?.data?.message
+			|| authStore.error
+			|| "Gagal terhubung ke server. Periksa koneksi Anda.";
+
+		triggerError(msg);
+	}
+};
+</script>
+
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-200 px-4 py-8 sm:px-6 lg:px-8">
+    <div
+        class="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-200 px-4 py-8 sm:px-6 lg:px-8">
         <div class="w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 border border-slate-100">
-            
+
             <div class="text-center mb-6 sm:mb-8">
                 <div>
-                    <img src="../assets/logo_pnj.png" alt="Logo PNJ" class="mx-auto h-16 sm:h-20 w-auto mb-4 drop-shadow-md" />
+                    <img src="../assets/logo_pnj.png" alt="Logo PNJ"
+                        class="mx-auto h-16 sm:h-20 w-auto mb-4 drop-shadow-md" />
                 </div>
 
                 <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">SI-LAB ADMIN</h2>
@@ -13,24 +91,31 @@
 
             <form @submit.prevent="handleLogin" class="space-y-4 sm:space-y-5">
                 <div>
-                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1 ml-1" for="email">
+                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1 ml-1" for="email"
+                        :class="{ 'text-red-500': loginError }">
                         Email PNJ<span class="text-red-500"> *</span>
                     </label>
-                    <input id="email" v-model="email" type="email" required placeholder="admin.tik@pnj.ac.id"
-                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium text-slate-800" />
+                    <input id="email" name="email" ref="emailInputRef" v-model="email" type="email" required
+                        autocomplete="username" placeholder="admin.tik@pnj.ac.id"
+                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl border focus:outline-none transition text-sm font-medium text-slate-800"
+                        :class="loginError ? 'border-red-400 focus:ring-2 focus:ring-red-500 bg-red-50/30' : 'border-slate-200 focus:ring-2 focus:ring-blue-500'" />
                 </div>
 
                 <div>
-                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1 ml-1" for="password">
+                    <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-1 ml-1" for="password"
+                        :class="{ 'text-red-500': loginError }">
                         Password<span class="text-red-500"> *</span>
                     </label>
                     <div class="relative">
-                        <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
+                        <input id="password" name="password" ref="passwordInputRef" v-model="password"
+                            :type="showPassword ? 'text' : 'password'" required autocomplete="current-password"
                             placeholder="••••••••"
-                            class="w-full px-4 py-3 sm:py-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition pr-12 text-sm font-medium text-slate-800" />
+                            class="w-full px-4 py-3 sm:py-3.5 rounded-xl border focus:outline-none transition pr-12 text-sm font-medium text-slate-800"
+                            :class="loginError ? 'border-red-400 focus:ring-2 focus:ring-red-500 bg-red-50/30' : 'border-slate-200 focus:ring-2 focus:ring-blue-500'" />
 
                         <button type="button" @click="showPassword = !showPassword"
-                            class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-blue-600 focus:outline-none transition-colors cursor-pointer active:scale-95">
+                            class="absolute inset-y-0 right-0 px-3 flex items-center transition-colors cursor-pointer active:scale-95"
+                            :class="loginError ? 'text-red-400 hover:text-red-600' : 'text-slate-400 hover:text-blue-600'">
                             <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -47,11 +132,24 @@
                     </div>
                 </div>
 
+                <div v-show="loginError"
+                    class="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 shadow-sm transition-all duration-300 transform"
+                    :class="loginError ? 'scale-100 opacity-100' : 'scale-95 opacity-0'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500 mt-0.5 shrink-0" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-[11px] sm:text-xs font-bold text-red-600 leading-snug">
+                        {{ errorMessage || "Kredensial tidak valid." }}
+                    </p>
+                </div>
+
                 <button type="submit" :disabled="authStore.loading"
                     class="w-full py-3.5 sm:py-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-black transition shadow-lg shadow-slate-200 disabled:opacity-50 mt-4 cursor-pointer active:scale-95 text-sm sm:text-base flex justify-center items-center gap-2">
                     <span v-if="authStore.loading" class="flex items-center justify-center gap-2">
-                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
                             <path class="opacity-75" fill="currentColor"
@@ -64,46 +162,24 @@
                 </button>
             </form>
 
-            <p class="text-center text-[9px] sm:text-[10px] text-slate-400 mt-6 sm:mt-8 uppercase tracking-widest font-bold">
+            <p
+                class="text-center text-[9px] sm:text-[10px] text-slate-400 mt-6 sm:mt-8 uppercase tracking-widest font-bold">
                 © 2026 LAB PLP TIK Politeknik Negeri Jakarta
             </p>
         </div>
     </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { useAuthStore } from "../stores/auth";
-import { useAlert } from "../composables/useAlert";
+<style scoped>
+/* Transisi (Jika diperlukan untuk elemen lain) */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
 
-const email = ref("");
-const password = ref("");
-const showPassword = ref(false);
-
-const router = useRouter();
-const authStore = useAuthStore();
-
-// 2. Ekstrak helper
-const { showAlert } = useAlert(); 
-
-const handleLogin = async () => {
-    if (!email.value || !password.value) {
-        showAlert("Email dan password wajib diisi.", "error");
-        return;
-    }
-
-    try {
-        await authStore.login({
-            email: email.value,
-            password: password.value,
-            portal: 'admin' 
-        });
-
-        showAlert("Login berhasil!", "success");
-        router.push("/admin/dashboard");
-    } catch (error) {
-        showAlert(authStore.error || "Login gagal, silakan periksa kredensial Anda.", "error");
-    }
-};
-</script>
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(-5px);
+}
+</style>

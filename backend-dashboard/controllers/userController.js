@@ -240,10 +240,11 @@ exports.updateUser = async (req, res) => {
     const t = await sequelize.transaction();
     
     try {
-        const { id } = req.params;
+        const { id } = req.params; // Mengambil UUID dari parameter URL
         const {
             email, no_telepon, nama_lengkap, nip, nim, 
-            angkatan, prodi_id, kelas_id, email_verified
+            angkatan, prodi_id, kelas_id, email_verified, 
+            role_id // 1. TANGKAP ROLE ID DARI REQUEST
         } = req.body;
         
         const user = await User.findByPk(id, { include: [Role], transaction: t });
@@ -253,10 +254,17 @@ exports.updateUser = async (req, res) => {
             return res.status(404).json({ status: "error", message: "User tidak ditemukan" });
         }
 
-        // 1. Update data akun utama
-        await user.update({ email, no_telepon, email_verified }, { transaction: t });
+        // 2. Update data akun utama
+        const updateAkunUtama = { email, no_telepon, email_verified };
+        
+        // 3. Masukkan role_id ke dalam update jika Super Admin mengubah otoritas user lain
+        if (role_id) {
+            updateAkunUtama.role_id = role_id; 
+        }
 
-        // 2. Update data profil secara dinamis (Hanya update yang tidak kosong)
+        await user.update(updateAkunUtama, { transaction: t });
+
+        // 4. Update data profil secara dinamis (Hanya update yang tidak kosong)
         if (user.Role.nama_role === "Mahasiswa") {
             const updateMahasiswa = { nama_mahasiswa: nama_lengkap };
             if (nim) updateMahasiswa.nim = nim;
@@ -275,8 +283,8 @@ exports.updateUser = async (req, res) => {
         await t.commit();
         res.status(200).json({
             status: "success",
-            message: "Data user berhasil diperbarui",
-            data: { id, email, nama_lengkap },
+            message: "Data user dan otoritas berhasil diperbarui",
+            data: { id, email, nama_lengkap, role_id },
         });
     } catch (error) {
         await t.rollback();
@@ -287,57 +295,58 @@ exports.updateUser = async (req, res) => {
 
 // Fungsi DELETE User
 exports.deleteUser = async (req, res) => {
-	const t = await sequelize.transaction();
+    const t = await sequelize.transaction();
 
-	try {
-		const { id } = req.params;
+    try {
+        const { id } = req.params; // UUID
 
-		const user = await User.findByPk(id);
-		if (!user) {
-			await t.rollback();
-			return res
-				.status(404)
-				.json({ status: "error", message: "User tidak ditemukan" });
-		}
+        const user = await User.findByPk(id);
+        if (!user) {
+            await t.rollback();
+            return res
+                .status(404)
+                .json({ status: "error", message: "User tidak ditemukan" });
+        }
 
-		// Hapus detail peminjaman
-		const peminjamanList = await Peminjaman.findAll({
-			where: { user_id: id },
-			attributes: ["id"],
-			transaction: t,
-		});
-		const peminjamanIds = peminjamanList.map((p) => p.id);
+        // Hapus detail peminjaman terlebih dahulu untuk menghindari constraint error
+        const peminjamanList = await Peminjaman.findAll({
+            where: { user_id: id },
+            attributes: ["id"],
+            transaction: t,
+        });
+        const peminjamanIds = peminjamanList.map((p) => p.id);
 
-		if (peminjamanIds.length > 0) {
-			await DetailPeminjaman.destroy({
-				where: { peminjaman_id: peminjamanIds },
-				transaction: t,
-			});
-		}
+        if (peminjamanIds.length > 0) {
+            await DetailPeminjaman.destroy({
+                where: { peminjaman_id: peminjamanIds },
+                transaction: t,
+            });
+        }
 
-		// Hapus relasi lainnya berurutan
-		await Peminjaman.destroy({ where: { user_id: id }, transaction: t });
-		await Pegawai.destroy({ where: { user_id: id }, transaction: t });
-		await Mahasiswa.destroy({ where: { user_id: id }, transaction: t });
-		await User.destroy({ where: { id }, transaction: t });
+        // Hapus relasi lainnya secara berurutan
+        await Peminjaman.destroy({ where: { user_id: id }, transaction: t });
+        await Pegawai.destroy({ where: { user_id: id }, transaction: t });
+        await Mahasiswa.destroy({ where: { user_id: id }, transaction: t });
+        
+        // Hapus akun utama (User)
+        await User.destroy({ where: { id }, transaction: t });
 
-		await t.commit();
+        await t.commit();
 
-		res.status(200).json({
-			status: "success",
-			message:
-				"User dan semua data profil terkait berhasil dihapus secara permanen.",
-			deletedId: id,
-		});
-	} catch (error) {
-		await t.rollback();
-		console.error("Error Delete User:", error);
-		res.status(500).json({
-			status: "error",
-			message: "Gagal menghapus user secara permanen dari server.",
-			error: error.message,
-		});
-	}
+        res.status(200).json({
+            status: "success",
+            message: "User dan semua data profil terkait berhasil dihapus secara permanen.",
+            deletedId: id,
+        });
+    } catch (error) {
+        await t.rollback();
+        console.error("Error Delete User:", error);
+        res.status(500).json({
+            status: "error",
+            message: "Gagal menghapus user secara permanen dari server.",
+            error: error.message,
+        });
+    }
 };
 
 // --- Fungsi Tambahan Sesuai Router ---
@@ -444,7 +453,7 @@ exports.getMe = async (req, res) => {
 		const responseData = {
 			id: user.id,
 			email: user.email,
-			email_verified: user.email_verified, // Sekarang akan berfungsi
+			email_verified: user.email_verified,
 			no_telepon: user.no_telepon,
 			role_id: user.role_id,
 			nama_role: user.Role.nama_role,
@@ -470,4 +479,48 @@ exports.getMe = async (req, res) => {
 	} catch (error) {
 		res.status(500).json({ status: "error", message: error.message });
 	}
+};
+
+exports.updatePassword = async (req, res) => {
+    try {
+        const { id } = req.params; // UUID dari user yang sedang login
+        const { old_password, new_password } = req.body;
+
+        // 1. Cari user di database
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ 
+                status: "error", 
+                message: "User tidak ditemukan di sistem." 
+            });
+        }
+
+        // 2. Cek kecocokan password lama menggunakan bcrypt
+        const isMatch = await bcrypt.compare(old_password, user.password);
+        if (!isMatch) {
+            // Menggunakan format { errors: ... } agar ditangkap presisi oleh validasi Vue kamu
+            return res.status(400).json({ 
+                status: "fail",
+                errors: "Kata sandi lama yang Anda masukkan salah." 
+            });
+        }
+
+        // 3. Enkripsi (Hash) password baru
+        const hashedNewPassword = await bcrypt.hash(new_password, 10);
+
+        // 4. Update password ke database
+        await user.update({ password: hashedNewPassword });
+
+        res.status(200).json({
+            status: "success",
+            message: "Kata sandi berhasil diperbarui."
+        });
+
+    } catch (error) {
+        console.error("Error Update Password:", error);
+        res.status(500).json({ 
+            status: "error", 
+            message: error.message || "Terjadi kesalahan pada server." 
+        });
+    }
 };

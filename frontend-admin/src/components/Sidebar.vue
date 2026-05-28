@@ -55,11 +55,11 @@
         <span class="font-medium text-sm">Data Barang</span>
       </router-link>
 
-      <div class="pt-4 mt-2 mb-1">
+      <div class="pt-4 mt-2 mb-1" v-if="authStore.user?.level === 'super_admin'">
         <p class="px-3 text-[10px] font-black tracking-widest text-slate-500 uppercase">Manajemen Pengguna</p>
       </div>
 
-      <router-link to="/users/peminjam"
+      <router-link v-if="authStore.user?.level === 'super_admin'" to="/users/peminjam"
         class="flex items-center space-x-3 p-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-400 hover:text-white"
         active-class="!bg-blue-600 !text-white shadow-lg shadow-blue-900/50">
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,23 +111,31 @@
 <script setup>
 import { useAuthStore } from '../stores/auth';
 import { useAlert } from '../composables/useAlert';
+import { useConfirm } from '../composables/useConfirm';
 
 // Definisikan emit agar komponen induk (Layout Utama) bisa menangkap sinyal penutupan
 defineEmits(['close-mobile']);
 
 const authStore = useAuthStore();
 const { showAlert } = useAlert();
+const { showConfirm } = useConfirm();
 
 const handleLogout = () => {
-  showAlert(
-    "Apakah Anda yakin ingin mengakhiri sesi dan keluar dari sistem?",
-    "confirm",
-    () => {
+  showConfirm(
+    'Apakah Anda yakin ingin keluar dari aplikasi?',
+    async () => {
       authStore.logout();
+
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('cart_peminjaman');
+
+      await router.push('/login');
     },
     null,
-    "Ya, Keluar",
-    "red"
+    'Ya, Keluar',
+    'red',
+    'Konfirmasi Logout'
   );
 };
 </script>

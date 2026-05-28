@@ -41,7 +41,7 @@
                                 class="w-1 h-1 rounded-full bg-red-500"></span>{{ errors.nama_lengkap }}</p>
                     </div>
 
-                    <div v-if="form.kategori === 'Mahasiswa'">
+                    <div v-if="form.kategori === 'Mahasiswa'" key="nim-input">
                         <label
                             class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">NIM
                             <span class="text-red-500">*</span></label>
@@ -55,7 +55,7 @@
                                 class="w-1 h-1 rounded-full bg-red-500"></span>{{ errors.nim }}</p>
                     </div>
 
-                    <div v-else class="md:col-span-1">
+                    <div v-else class="md:col-span-1" key="nip-input">
                         <label
                             class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">NIP
                             <span class="text-red-500">*</span></label>
@@ -333,11 +333,19 @@ watch(() => form.password, (val) => {
 });
 
 watch(() => form.email, (val) => {
+    // 1. Regex dasar untuk format email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (val.length > 0 && !emailRegex.test(val)) {
-        errors.email = "Format email institusi tidak valid.";
-    } else {
+    
+    if (val.length === 0) {
         errors.email = "";
+    } else if (!emailRegex.test(val)) {
+        errors.email = "Format email tidak valid";
+    } 
+    // 2. Validasi Khusus PNJ
+    else if (!val.toLowerCase().endsWith('pnj.ac.id')) {
+        errors.email = "Wajib menggunakan email institusi pnj.ac.id";
+    } else {
+        errors.email = ""; // Error hilang jika valid
     }
 });
 
@@ -346,22 +354,40 @@ const pilihKelas = (k) => { form.kelas_id = k.id; errors.kelas_id = ""; activeDr
 const pilihAngkatan = (y) => { form.angkatan = y; activeDropdown.value = null; };
 
 const gantiKategori = (kategoriBaru) => {
+    // 1. Mencegah error jika user mengklik tombol yang sudah aktif
+    if (form.kategori === kategoriBaru) return; 
+
     form.kategori = kategoriBaru;
+    
+    // 2. Kosongkan semua data yang spesifik dengan role
     form.nim = "";
     form.nip = "";
-    // Reset semua error saat ganti kategori
+    form.prodi_id = "";
+    form.kelas_id = "";
+    form.angkatan = currentYear;
+
+    // 3. Reset semua pesan error saat pindah kategori
     Object.keys(errors).forEach(key => errors[key] = "");
+    
     activeDropdown.value = null;
 };
 
 onMounted(async () => {
     try {
         const [resProdi, resKelas] = await Promise.all([api.get("/ref/prodi"), api.get("/ref/kelas")]);
-        ref_prodi.value = resProdi.data;
-        ref_kelas.value = resKelas.data;
+        
+        // PERBAIKAN: Ambil properti 'data' di dalam 'data' (jika backend mengirim { status: "success", data: [...] })
+        // Gunakan fallback (|| resProdi.data) untuk berjaga-jaga jika backend memang mengirim Array secara langsung
+        ref_prodi.value = resProdi.data.data || resProdi.data || [];
+        ref_kelas.value = resKelas.data.data || resKelas.data || [];
+        
     } catch (err) {
         console.error("Gagal memuat data referensi:", err);
+        // Pastikan nilainya tetap array agar template tidak crash saat API gagal
+        ref_prodi.value = [];
+        ref_kelas.value = [];
     }
+    
     window.addEventListener("click", (e) => {
         if (!e.target.closest(".custom-select")) activeDropdown.value = null;
     });
@@ -407,7 +433,7 @@ const handleRegister = async () => {
 
         // Alert sukses menggunakan Toast Global
         showAlert("Registrasi berhasil! Silakan masuk dengan akun Anda.", "success");
-        
+
         // Langsung arahkan kembali ke halaman login (tanpa mampir ke verify-notice)
         router.push("/login");
 

@@ -16,7 +16,7 @@
             <div>
               <img src="../assets/logo_pnj.png" alt="Logo PNJ" class="mx-auto h-8 sm:h-10 w-auto drop-shadow-md" />
             </div>
-            <h1 class="font-black text-slate-800 text-lg tracking-tight">SI-Lab PLP TIK</h1>
+            <h1 class="font-black text-slate-800 text-lg tracking-tight">SI-LAB PLP TIK</h1>
           </div>
 
           <nav class="hidden md:flex space-x-6 lg:space-x-8 h-full">

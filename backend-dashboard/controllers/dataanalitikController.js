@@ -28,6 +28,8 @@ const dataanalitikController = {
         try {
             const { tahun, startOfYear, endOfYear } = getYearRange(req.query.tahun);
 
+            const limit = parseInt(req.query.limit, 10) || null;
+
             const semuaBarang = await Barang.findAll({
                 attributes: ["id", "nama_barang", "stok"],
                 order: [["nama_barang", "ASC"]],
@@ -81,7 +83,7 @@ const dataanalitikController = {
                 attributes: ["barang_id", "jenis_laporan", "status", "jumlah"],
             });
 
-            const hasilAnalitik = semuaBarang.map((barang) => {
+            let hasilAnalitik = semuaBarang.map((barang) => {
                 const transaksiBarangIni = detailPeminjamanTahunIni.filter(
                     (detail) => Number(detail.barang_id) === Number(barang.id)
                 );
@@ -125,6 +127,7 @@ const dataanalitikController = {
                 };
             });
 
+            // Sorting dari yang paling banyak dipinjam
             hasilAnalitik.sort((a, b) => {
                 if (b.total_dipinjam !== a.total_dipinjam) {
                     return b.total_dipinjam - a.total_dipinjam;
@@ -135,6 +138,11 @@ const dataanalitikController = {
 
                 return kendalaB - kendalaA;
             });
+
+            // ✅ PERBAIKAN: Potong array sesuai nilai limit yang diminta Postman
+            if (limit && limit > 0) {
+                hasilAnalitik = hasilAnalitik.slice(0, limit);
+            }
 
             return res.status(200).json({
                 status: "success",

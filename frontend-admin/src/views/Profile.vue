@@ -69,8 +69,7 @@
                 <div class="space-y-4">
                   <div class="flex flex-col bg-slate-50 p-4 rounded-2xl border border-slate-100">
                     <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">NIP</span>
-                    <span class="text-slate-900 font-bold font-mono">{{ authStore.user?.identitas || authStore.user?.nip
-                      || '-' }}</span>
+                    <span class="text-slate-900 font-bold font-mono">{{ authStore.user?.identitas || authStore.user?.nip || '-' }}</span>
                   </div>
                   <div class="flex flex-col bg-slate-50 p-4 rounded-2xl border border-slate-100">
                     <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Nomor

@@ -52,7 +52,7 @@ exports.getRiwayatLaporan = async (req, res) => {
                 { 
                     model: Barang, 
                     as: 'barang', 
-                    attributes: ['nama_barang', 'kode_barang', 'gambar'] 
+                    attributes: ['nama_barang', 'id', 'gambar'] 
                 },
                 {
                     model: Peminjaman,
@@ -81,7 +81,7 @@ exports.getDetailLaporan = async (req, res) => {
                 { 
                     model: Barang, 
                     as: 'barang', 
-                    attributes: ['nama_barang', 'kode_barang', 'gambar'] 
+                    attributes: ['nama_barang', 'id', 'gambar'] 
                 },
                 {
                     model: Peminjaman,

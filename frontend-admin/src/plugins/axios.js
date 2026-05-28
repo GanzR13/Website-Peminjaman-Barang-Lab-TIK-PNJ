@@ -29,9 +29,22 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Jika error 401 (Unauthorized), hapus data & tendang ke login
-      localStorage.clear();
-      window.location.href = '/admin/login';
+      // Cek apakah user sedang berada di halaman login/register (baik user biasa maupun admin)
+      const path = window.location.pathname;
+      const isAuthPage = path === '/login' || path === '/register' || path === '/admin/login';
+
+      // Hanya lakukan auto-logout / tendang ke halaman login JIKA BUKAN berada di halaman auth
+      if (!isAuthPage) {
+        localStorage.clear();
+        
+        // Arahkan ke login yang sesuai (Admin ke admin, User ke user)
+        if (path.startsWith('/admin')) {
+            window.location.href = '/admin/login';
+        } else {
+            window.location.href = '/login';
+        }
+      }
+      // Jika di halaman auth, diam saja dan biarkan error diteruskan agar banner merah muncul
     }
     return Promise.reject(error);
   }

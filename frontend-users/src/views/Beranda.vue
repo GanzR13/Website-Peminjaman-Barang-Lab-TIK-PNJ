@@ -4,8 +4,6 @@
     <section class="flex flex-col gap-5 md:gap-8">
       <div
         class="relative -mx-4 sm:mx-0 min-h-80 sm:min-h-90 md:min-h-105 bg-slate-900 sm:rounded-4xl shadow-md sm:shadow-2xl overflow-hidden group"
-        @mouseenter="pauseCarousel"
-        @mouseleave="startCarousel"
       >
         <transition name="slide-fade" mode="out-in">
           <div
@@ -179,7 +177,7 @@ const slides = computed(() => [
     tag: 'Selamat Datang',
     icon: markRaw(SparklesIcon),
     title: `Halo, ${namaPengguna.value}!`,
-    desc: 'Temukan alat ukur, mikrokontroler, dan komponen elektronik untuk praktikum, proyek, lomba, PBL, atau skripsi.',
+    desc: 'Temukan alat ukur, mikrokontroler, dan komponen elektronik untuk praktikum, proyek, PBL, atau skripsi.',
     bg: 'from-blue-600 via-indigo-700 to-slate-900'
   },
   {

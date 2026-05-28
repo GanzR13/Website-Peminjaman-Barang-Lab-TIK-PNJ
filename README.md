@@ -28,4 +28,4 @@ Duplikat file `.env.example` menjadi `.env` di masing-masing folder dan sesuaika
 Cara termudah untuk menjalankan keseluruhan sistem (Database, Backend, dan Frontend) secara bersamaan.
 Di terminal root proyek, jalankan:
 ```bash
-docker-compose up -d
+docker compose up -d

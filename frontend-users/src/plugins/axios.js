@@ -30,9 +30,16 @@ instance.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Jika token tidak valid atau expired, paksa logout
-      localStorage.clear();
-      window.location.href = '/login';
+      // PERBAIKAN: Cek lokasi url saat ini
+      const isAuthPage = window.location.pathname === '/login' || window.location.pathname === '/register';
+
+      // Hanya lakukan auto-logout / reload JIKA user BUKAN di halaman login
+      if (!isAuthPage) {
+        localStorage.clear();
+        window.location.href = '/login';
+      }
+      // Jika user ada di halaman login, Interceptor diam saja. 
+      // Biarkan error-nya diteruskan ke blok 'catch' di Login.vue
     }
     return Promise.reject(error);
   }

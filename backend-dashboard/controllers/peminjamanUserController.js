@@ -19,6 +19,7 @@ exports.checkoutPeminjaman = async (req, res) => {
 			nama_acara,
 			organisasi_penyelenggara,
 			dosen_penanggung_jawab,
+			nip_dosen_pj,
 			jenis_khusus,
 			tanggal_pinjam,
 			tanggal_kembali,
@@ -93,6 +94,7 @@ exports.checkoutPeminjaman = async (req, res) => {
 				nama_acara: nama_acara || null,
 				organisasi_penyelenggara: organisasi_penyelenggara || null,
 				dosen_penanggung_jawab: dosen_penanggung_jawab || null,
+				nip_dosen_pj: nip_dosen_pj || null,
 				tanggal_pinjam,
 				tanggal_kembali,
 				status: "Menunggu",
@@ -264,9 +266,10 @@ exports.updatePeminjamanSaya = async (req, res) => {
 			nama_acara,
 			organisasi_penyelenggara,
 			dosen_penanggung_jawab,
+			nip_dosen_pj,
 			tanggal_pinjam,
 			tanggal_kembali,
-			keranjang_barang, // Array barang baru: [{ barang_id: 1, jumlah: 2 }, ...]
+			keranjang_barang,
 		} = req.body;
 
 		// 1. Cari peminjaman milik user ini
@@ -305,9 +308,9 @@ exports.updatePeminjamanSaya = async (req, res) => {
 				nama_acara: nama_acara || null,
 				organisasi_penyelenggara: organisasi_penyelenggara || null,
 				dosen_penanggung_jawab: dosen_penanggung_jawab || null,
+				nip_dosen_pj: nip_dosen_pj || null,
 				tanggal_pinjam,
 				tanggal_kembali,
-				// Status tetap dibiarkan "Menunggu"
 			},
 			{ transaction: t },
 		);

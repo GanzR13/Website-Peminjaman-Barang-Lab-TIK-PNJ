@@ -24,4 +24,6 @@ router.post('/', authenticateToken, validateRegister, userController.createUser)
 router.put('/:id', authenticateToken, userController.updateUser);
 router.delete('/:id', authenticateToken, userController.deleteUser);
 
+router.put('/password/:id', userController.updatePassword);
+
 module.exports = router;

@@ -1,101 +1,180 @@
 import { defineStore } from "pinia";
 import api from "../plugins/axios";
 
+const safeParseUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    localStorage.removeItem("user");
+    return null;
+  }
+};
+
+const normalizeRole = (userData = {}) => {
+  const role = userData.Role || userData.role || {};
+
+  return {
+    role_id: userData.role_id || role.id || null,
+    role_name:
+      userData.nama_role ||
+      userData.role_name ||
+      role.nama_role ||
+      role.name ||
+      "User",
+    level:
+      userData.level_akses ||
+      userData.level ||
+      role.level_akses ||
+      "peminjam",
+    role: {
+      id: userData.role_id || role.id || null,
+      nama_role:
+        userData.nama_role ||
+        userData.role_name ||
+        role.nama_role ||
+        role.name ||
+        "User",
+      level_akses:
+        userData.level_akses ||
+        userData.level ||
+        role.level_akses ||
+        "peminjam",
+    },
+  };
+};
+
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("token") || null,
-    user: JSON.parse(localStorage.getItem("user")) || null,
+    user: safeParseUser(),
     loading: false,
     error: null,
   }),
+
+  getters: {
+    isAuthenticated: (state) => !!state.token,
+    roleId: (state) => state.user?.role_id || state.user?.role?.id || null,
+    roleName: (state) => state.user?.role_name || state.user?.role?.nama_role || null,
+    level: (state) => state.user?.level || state.user?.role?.level_akses || null,
+    isPeminjam: (state) => state.user?.level === "peminjam",
+    isAdmin: (state) => ["admin", "super_admin"].includes(state.user?.level),
+  },
+
   actions: {
-    // --- ACTION LOGIN ---
-    // Ubah parameter menjadi 'payload' agar bisa menerima object { email, password, portal }
+    setAuthHeader() {
+      if (this.token) {
+        api.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
+      } else {
+        delete api.defaults.headers.common["Authorization"];
+      }
+    },
+
     async login(payload) {
       this.loading = true;
       this.error = null;
-      
+
       try {
         const response = await api.post("/auth/login", payload);
 
         this.token = response.data.token;
-        const userData = response.data.user;
+        localStorage.setItem("token", this.token);
+        this.setAuthHeader();
 
-        // Mapping disesuaikan dengan response authController backend
+        const loginUser = response.data.user || {};
+        const roleData = normalizeRole(loginUser);
+
         this.user = {
-          id: userData.id,
-          email: payload.email, // Ambil email dari form
-          nama: userData.nama,
-          level: userData.level, // 'peminjam', 'admin', 'super_admin'
-          role_name: userData.role_name, // 'Mahasiswa', 'Dosen', 'Kepala Lab', dll
-          role_id: userData.role_id,
+          id: loginUser.id || null,
+          email: loginUser.email || payload.email,
+          nama: loginUser.nama || loginUser.nama_lengkap || "Pengguna",
+
+          ...roleData,
         };
 
-        localStorage.setItem("token", this.token);
         localStorage.setItem("user", JSON.stringify(this.user));
-        api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
-        
+
+        // Ambil data user terbaru dari /auth/me, termasuk role dari tabel role
+        await this.fetchMe();
+
         return true;
       } catch (error) {
-        // Tangkap pesan error dari backend
-        this.error = error.response?.data?.message || "Gagal login. Periksa koneksi Anda.";
+        this.error =
+          error.response?.data?.message ||
+          "Gagal login. Periksa koneksi Anda.";
+
         throw this.error;
       } finally {
         this.loading = false;
       }
     },
 
-    // --- ACTION FETCH ME ---
     async fetchMe() {
-      if (!this.token) return;
-      
-      try {
-        api.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
-        
-        const response = await api.get("/auth/me");
-        const userData = response.data.data;
+      if (!this.token) return null;
 
-        // Mapping disesuaikan dengan response authController.getMe backend
+      try {
+        this.setAuthHeader();
+
+        const response = await api.get("/auth/me");
+        const userData = response.data.data || response.data.user || response.data;
+        const roleData = normalizeRole(userData);
+
         this.user = {
           ...this.user,
-          id: userData.id,
-          email: userData.email,
-          nama: userData.nama_lengkap,
-          level: userData.level_akses, 
-          role_name: userData.nama_role, 
-          role_id: userData.role_id,
-          nip: userData.nip || '-',
-          nim: userData.nim || '-', // Tambahkan NIM untuk Mahasiswa
-          no_telepon: userData.no_telepon || '-'
+
+          id: userData.id || this.user?.id,
+          email: userData.email || this.user?.email,
+          nama: userData.nama_lengkap || userData.nama || this.user?.nama,
+
+          ...roleData,
+
+          nip: userData.nip || "-",
+          nim: userData.nim || "-",
+          identitas: userData.nim || userData.nip || "-",
+          no_telepon: userData.no_telepon || "-",
+
+          prodi: userData.detail_tambahan?.prodi || userData.prodi || "-",
+          kelas: userData.detail_tambahan?.kelas || userData.kelas || "-",
+          angkatan: userData.detail_tambahan?.angkatan || userData.angkatan || "-",
+
+          email_verified:
+            userData.email_verified === true ||
+            userData.email_verified === 1 ||
+            userData.email_verified === "1" ||
+            userData.email_verified === "true",
         };
 
         localStorage.setItem("user", JSON.stringify(this.user));
+        return this.user;
       } catch (error) {
-        console.error("Session expired or invalid token");
+        console.error("Session expired or invalid token:", error);
+
         if (error.response?.status === 401) {
           this.logout();
         }
+
+        return null;
       }
     },
-    
-    // --- ACTION LOGOUT ---
-    logout() {
-      // 1. Cek dulu user ini admin atau peminjam sebelum datanya dihapus
-      const isPeminjam = this.user?.level === 'peminjam';
 
-      // 2. Bersihkan State & Storage
+    logout() {
+      const isPeminjam =
+        this.user?.level === "peminjam" ||
+        ["Mahasiswa", "Dosen"].includes(this.user?.role_name);
+
       this.token = null;
       this.user = null;
       this.error = null;
+
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      delete api.defaults.headers.common['Authorization'];
+      localStorage.removeItem("cart_peminjaman");
 
-      // 3. Redirect Cerdas (Admin ke login admin, Peminjam ke login biasa)
+      delete api.defaults.headers.common["Authorization"];
+
       if (isPeminjam) {
-        window.location.href = "/"; // Sesuaikan path login mahasiswa
+        window.location.href = "/";
       } else {
-        window.location.href = "/admin/login"; 
+        window.location.href = "/admin/login";
       }
     },
   },

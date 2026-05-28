@@ -228,9 +228,11 @@
                                             <button @click="item.jumlah > 1 && item.jumlah--"
                                                 :disabled="item.stok === 0"
                                                 class="w-6 h-6 md:w-7 md:h-7 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-md text-slate-600 font-bold hover:bg-slate-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">-</button>
-                                            <span class="text-xs md:text-sm font-black w-4 md:w-5 text-center"
-                                                :class="item.stok === 0 ? 'text-slate-400' : 'text-slate-800'">{{
-                                                    item.jumlah }}</span>
+                                            <input type="number" v-model.number="item.jumlah"
+                                                @change="validateItemQuantity(item)" @blur="validateItemQuantity(item)"
+                                                :disabled="item.stok === 0"
+                                                class="w-10 md:w-12 text-center text-xs md:text-sm font-black bg-transparent border-b-2 border-transparent focus:border-blue-500 outline-none transition-colors px-1 py-0 custom-number-input"
+                                                :class="item.stok === 0 ? 'text-slate-400' : 'text-slate-800'" />
                                             <button @click="item.jumlah < item.stok && item.jumlah++"
                                                 :disabled="item.stok === 0 || item.jumlah >= item.stok"
                                                 class="w-6 h-6 md:w-7 md:h-7 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-md text-slate-600 font-bold hover:bg-slate-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">+</button>
@@ -343,6 +345,22 @@ const syncCartWithServerData = (serverDataList) => {
         }
     });
     return hasChanges;
+};
+
+const validateItemQuantity = (item) => {
+    // Jika dikosongkan atau bukan angka, kembalikan ke 1
+    if (typeof item.jumlah !== 'number' || isNaN(item.jumlah) || item.jumlah === '') {
+        item.jumlah = 1;
+    } 
+    // Jika diketik minus atau 0
+    else if (item.jumlah < 1) {
+        item.jumlah = 1;
+    } 
+    // Jika diketik melebihi stok yang ada
+    else if (item.jumlah > item.stok) {
+        item.jumlah = item.stok;
+        showAlert(`Maksimal peminjaman untuk ${item.nama_barang} adalah ${item.stok} unit.`, 'warning');
+    }
 };
 
 const validateCartStock = async () => {
@@ -535,5 +553,17 @@ onMounted(() => {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #94a3b8;
+}
+
+.custom-number-input::-webkit-outer-spin-button,
+.custom-number-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.custom-number-input[type=number] {
+    -moz-appearance: textfield; 
+    appearance: textfield; 
 }
 </style>

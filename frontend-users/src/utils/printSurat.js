@@ -58,7 +58,7 @@ const buildTableRows = (detailBarang = []) => {
 	if (!Array.isArray(detailBarang) || detailBarang.length === 0) {
 		return `
 			<tr>
-				<td colspan="4" style="text-align: center;">Tidak ada data barang</td>
+				<td colspan="3" style="text-align: center;">Tidak ada data barang</td>
 			</tr>
 		`;
 	}
@@ -73,7 +73,6 @@ const buildTableRows = (detailBarang = []) => {
 					<td style="text-align: center;">${index + 1}</td>
 					<td>${namaBarang}</td>
 					<td style="text-align: center;">${jumlahPinjam} Unit</td>
-					<td></td>
 				</tr>
 			`;
 		})
@@ -188,15 +187,9 @@ export const generateSuratPDF = (transaksi = {}, showAlert) => {
 		transaksi.prodi_mahasiswa ||
 		"-";
 
-	const kelasMahasiswa =
-		currentUser.kelas ||
-		transaksi.kelas_mahasiswa ||
-		"-";
+	const kelasMahasiswa = currentUser.kelas || transaksi.kelas_mahasiswa || "-";
 
-	const emailMahasiswa =
-		currentUser.email ||
-		transaksi.email_peminjam ||
-		"-";
+	const emailMahasiswa = currentUser.email || transaksi.email_peminjam || "-";
 
 	const teleponMahasiswa =
 		currentUser.telepon ||
@@ -210,21 +203,16 @@ export const generateSuratPDF = (transaksi = {}, showAlert) => {
 		transaksi.dosen_penanggung_jawab ||
 		"...........................................";
 
-	const dosenPJNip =
-		transaksi.nip_dosen_pj ||
-		"........................";
+	const dosenPJNip = transaksi.nip_dosen_pj || "........................";
 
-	const penyelenggara =
-		transaksi.organisasi_penyelenggara ||
-		"";
+	const penyelenggara = transaksi.organisasi_penyelenggara || "";
 
 	const today = formatTanggalIndonesia(new Date());
 	const tglPinjam = formatTanggalIndonesia(transaksi.tanggal_pinjam);
 	const tglKembali = formatTanggalIndonesia(transaksi.tanggal_kembali);
 
 	const noSurat =
-		transaksi.nomor_surat ||
-		`_____ / LAB-TI / ${new Date().getFullYear()}`;
+		transaksi.nomor_surat || `_____ / LAB-TI / ${new Date().getFullYear()}`;
 
 	const tableRows = buildTableRows(transaksi.detail_barang);
 
@@ -553,8 +541,7 @@ export const generateSuratPDF = (transaksi = {}, showAlert) => {
 						<p>Dengan hormat,</p>
 
 						<p>
-							Sehubungan dengan pelaksanaan kegiatan <b>${safeText(acara)}</b>
-							dengan judul/tujuan <i>"${safeText(transaksi.tujuan_peminjaman, "......................")}"</i>,
+							Sehubungan dengan pelaksanaan kegiatan <i>"${safeText(transaksi.tujuan_peminjaman, "......................")}"</i>,
 							yang rencananya akan dilaksanakan pada tanggal ${safeText(tglPinjam)}
 							s.d. ${safeText(tglKembali)}, maka saya yang bertanda tangan di bawah ini:
 						</p>
@@ -603,10 +590,9 @@ export const generateSuratPDF = (transaksi = {}, showAlert) => {
 						<table>
 							<thead>
 								<tr>
-									<th style="width: 5%;">No</th>
-									<th style="width: 50%;">Nama Alat / Spesifikasi</th>
-									<th style="width: 20%;">Jumlah</th>
-									<th style="width: 25%;">Keterangan</th>
+									<th style="width: 8%;">No</th>
+									<th style="width: 67%;">Nama Alat / Spesifikasi</th>
+									<th style="width: 15%;">Jumlah</th>
 								</tr>
 							</thead>
 

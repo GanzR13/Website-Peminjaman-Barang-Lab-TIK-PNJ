@@ -15,7 +15,9 @@
         </div>
 
         <div v-if="isLoading" class="flex flex-col items-center justify-center py-20">
-          <div class="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+          <div
+            class="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4">
+          </div>
           <p class="text-gray-500 font-bold text-sm animate-pulse">Memuat data profil...</p>
         </div>
 
@@ -32,9 +34,8 @@
                   {{ authStore.user?.nama?.charAt(0) || 'U' }}
                 </div>
               </div>
-              
-              <button
-                @click="openEditProfile"
+
+              <button @click="openEditProfile"
                 class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-100 cursor-pointer active:scale-95 flex items-center gap-2">
                 <PencilIcon class="w-4 h-4" />
                 Edit Profil
@@ -69,16 +70,20 @@
                 </h3>
                 <div class="space-y-4">
                   <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
-                      <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                    <div
+                      class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                      <span
+                        class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
                         {{ authStore.user?.nim ? 'NIM' : 'NIP' }}
                       </span>
                       <span class="text-gray-900 font-bold font-mono tracking-tight text-sm">
                         {{ authStore.user?.identitas || '-' }}
                       </span>
                     </div>
-                    <div class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
-                      <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                    <div
+                      class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                      <span
+                        class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
                         Nomor Telepon
                       </span>
                       <span class="text-gray-900 font-bold text-sm truncate" :title="authStore.user?.no_telepon">
@@ -88,21 +93,27 @@
                   </div>
 
                   <template v-if="isMahasiswa">
-                    <div class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
-                      <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                    <div
+                      class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                      <span
+                        class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
                         Program Studi
                       </span>
                       <span class="text-gray-900 font-bold text-sm">{{ authStore.user?.prodi || '-' }}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                      <div class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
-                        <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                      <div
+                        class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                        <span
+                          class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
                           Kelas
                         </span>
                         <span class="text-gray-900 font-bold text-sm">{{ authStore.user?.kelas || '-' }}</span>
                       </div>
-                      <div class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
-                        <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                      <div
+                        class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                        <span
+                          class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
                           Angkatan
                         </span>
                         <span class="text-gray-900 font-bold text-sm">{{ authStore.user?.angkatan || '-' }}</span>
@@ -117,11 +128,14 @@
                   <LockClosedIcon class="w-4 h-4 text-gray-400" /> Keamanan Akun
                 </h3>
                 <div class="space-y-4">
-                  <div class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
-                    <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                  <div
+                    class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                    <span
+                      class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
                       Status Verifikasi Email
                     </span>
-                    <div v-if="checkVerified(authStore.user?.email_verified)" class="flex items-center text-emerald-600 font-bold text-sm mt-0.5">
+                    <div v-if="checkVerified(authStore.user?.email_verified)"
+                      class="flex items-center text-emerald-600 font-bold text-sm mt-0.5">
                       <CheckCircleIcon class="h-4 w-4 mr-1.5" />
                       Terverifikasi
                     </div>
@@ -130,8 +144,10 @@
                       Belum Verifikasi
                     </div>
                   </div>
-                  <div class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
-                    <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                  <div
+                    class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                    <span
+                      class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
                       Password
                     </span>
                     <button @click="openEditPassword"
@@ -145,7 +161,8 @@
           </div>
         </div>
 
-        <div v-if="!isLoading" class="mt-8 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
+        <div v-if="!isLoading"
+          class="mt-8 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
           <div>
             <h4 class="text-gray-900 font-bold">Keluar dari Sesi</h4>
             <p class="text-gray-500 text-sm mt-0.5">Hapus semua cache kredensial dan keluar dari sistem.</p>
@@ -162,9 +179,12 @@
 
     <Teleport to="body">
       <transition name="fade">
-        <div v-if="isProfileModalOpen" class="fixed inset-0 z-999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" @click.self="isProfileModalOpen = false">
+        <div v-if="isProfileModalOpen"
+          class="fixed inset-0 z-999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          @click.self="isProfileModalOpen = false">
           <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 overflow-hidden relative">
-            <button @click="isProfileModalOpen = false" class="absolute top-5 right-5 p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors cursor-pointer active:scale-95">
+            <button @click="isProfileModalOpen = false"
+              class="absolute top-5 right-5 p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors cursor-pointer active:scale-95">
               <XMarkIcon class="w-5 h-5" />
             </button>
 
@@ -173,20 +193,26 @@
 
             <form @submit.prevent="submitProfile" class="space-y-4">
               <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                <input v-model="profileForm.nama_lengkap" type="text" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm" />
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nama Lengkap <span
+                    class="text-red-500">*</span></label>
+                <input v-model="profileForm.nama_lengkap" type="text" required
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm" />
               </div>
               <div>
                 <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nomor Telepon</label>
-                <input v-model="profileForm.no_telepon" type="text" placeholder="Contoh: 081234567890" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm" />
+                <input v-model="profileForm.no_telepon" type="text" placeholder="Contoh: 081234567890"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm" />
               </div>
 
               <div class="flex justify-end gap-3 pt-4 mt-2">
-                <button type="button" @click="isProfileModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition cursor-pointer active:scale-95">
+                <button type="button" @click="isProfileModalOpen = false"
+                  class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition cursor-pointer active:scale-95">
                   Batal
                 </button>
-                <button type="submit" :disabled="isSubmittingProfile" class="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200 transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2">
-                  <span v-if="isSubmittingProfile" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <button type="submit" :disabled="isSubmittingProfile"
+                  class="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200 transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2">
+                  <span v-if="isSubmittingProfile"
+                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   Simpan Perubahan
                 </button>
               </div>
@@ -198,9 +224,12 @@
 
     <Teleport to="body">
       <transition name="fade">
-        <div v-if="isPasswordModalOpen" class="fixed inset-0 z-999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" @click.self="isPasswordModalOpen = false">
+        <div v-if="isPasswordModalOpen"
+          class="fixed inset-0 z-999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          @click.self="isPasswordModalOpen = false">
           <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 overflow-hidden relative">
-            <button @click="isPasswordModalOpen = false" class="absolute top-5 right-5 p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors cursor-pointer active:scale-95">
+            <button @click="isPasswordModalOpen = false"
+              class="absolute top-5 right-5 p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors cursor-pointer active:scale-95">
               <XMarkIcon class="w-5 h-5" />
             </button>
 
@@ -209,44 +238,69 @@
 
             <form @submit.prevent="submitPassword" class="space-y-4">
               <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Password Lama <span class="text-red-500">*</span></label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Password Lama <span
+                    class="text-red-500">*</span></label>
                 <div class="relative">
-                  <input :type="showOldPassword ? 'text' : 'password'" v-model="passwordForm.password_lama" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none pr-10 bg-gray-50 focus:bg-white text-sm" />
-                  <button type="button" @click="showOldPassword = !showOldPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer">
+                  <input :type="showOldPassword ? 'text' : 'password'" v-model="passwordForm.password_lama" required
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none pr-10 bg-gray-50 focus:bg-white text-sm transition-colors" />
+                  <button type="button" @click="showOldPassword = !showOldPassword"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer">
                     <EyeIcon v-if="!showOldPassword" class="h-4 w-4" />
                     <EyeSlashIcon v-else class="h-4 w-4" />
                   </button>
                 </div>
               </div>
-              
+
               <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Password Baru <span class="text-red-500">*</span></label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Password Baru <span
+                    class="text-red-500">*</span></label>
                 <div class="relative">
-                  <input :type="showNewPassword ? 'text' : 'password'" v-model="passwordForm.password_baru" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none pr-10 bg-gray-50 focus:bg-white text-sm" />
-                  <button type="button" @click="showNewPassword = !showNewPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer">
+                  <input :type="showNewPassword ? 'text' : 'password'" v-model="passwordForm.password_baru" required
+                    minlength="6"
+                    class="w-full px-4 py-3 border rounded-xl focus:ring-2 outline-none pr-10 bg-gray-50 focus:bg-white text-sm transition-colors"
+                    :class="(passwordForm.password_baru && passwordForm.password_baru.length < 6) ? 'border-red-400 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'" />
+                  <button type="button" @click="showNewPassword = !showNewPassword"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer">
                     <EyeIcon v-if="!showNewPassword" class="h-4 w-4" />
                     <EyeSlashIcon v-else class="h-4 w-4" />
                   </button>
                 </div>
+                <p v-if="passwordForm.password_baru && passwordForm.password_baru.length < 6"
+                  class="text-[10px] font-bold text-red-500 mt-1.5 ml-1">
+                  * Kata sandi minimal 6 karakter.
+                </p>
               </div>
 
               <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Konfirmasi Password Baru <span class="text-red-500">*</span></label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Konfirmasi Password Baru
+                  <span class="text-red-500">*</span></label>
                 <div class="relative">
-                  <input :type="showConfirmPassword ? 'text' : 'password'" v-model="passwordForm.konfirmasi_password" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none pr-10 bg-gray-50 focus:bg-white text-sm" />
-                  <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer">
+                  <input :type="showConfirmPassword ? 'text' : 'password'" v-model="passwordForm.konfirmasi_password"
+                    required minlength="6"
+                    class="w-full px-4 py-3 border rounded-xl focus:ring-2 outline-none pr-10 bg-gray-50 focus:bg-white text-sm transition-colors"
+                    :class="(passwordForm.konfirmasi_password && passwordForm.password_baru !== passwordForm.konfirmasi_password) ? 'border-red-400 focus:ring-red-500' : 'border-gray-200 focus:ring-blue-500'" />
+                  <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer">
                     <EyeIcon v-if="!showConfirmPassword" class="h-4 w-4" />
                     <EyeSlashIcon v-else class="h-4 w-4" />
                   </button>
                 </div>
+                <p v-if="passwordForm.konfirmasi_password && passwordForm.password_baru !== passwordForm.konfirmasi_password"
+                  class="text-[10px] font-bold text-red-500 mt-1.5 ml-1">
+                  * Konfirmasi kata sandi tidak cocok.
+                </p>
               </div>
 
               <div class="flex justify-end gap-3 pt-4 mt-2 border-t border-gray-50">
-                <button type="button" @click="isPasswordModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition cursor-pointer active:scale-95">
+                <button type="button" @click="isPasswordModalOpen = false"
+                  class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition cursor-pointer active:scale-95">
                   Batal
                 </button>
-                <button type="submit" :disabled="isSubmittingPassword" class="px-6 py-2.5 text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-lg shadow-slate-200 transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2">
-                  <span v-if="isSubmittingPassword" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <button type="submit"
+                  :disabled="isSubmittingPassword || (passwordForm.password_baru.length > 0 && passwordForm.password_baru.length < 6) || (passwordForm.konfirmasi_password.length > 0 && passwordForm.password_baru !== passwordForm.konfirmasi_password)"
+                  class="px-6 py-2.5 text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-lg shadow-slate-200 transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2">
+                  <span v-if="isSubmittingPassword"
+                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   Ubah Sandi
                 </button>
               </div>
@@ -264,12 +318,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
 import api from '../plugins/axios';
-import { 
-  PencilIcon, 
-  UserIcon, 
-  LockClosedIcon, 
-  CheckCircleIcon, 
-  XCircleIcon, 
+import {
+  PencilIcon,
+  UserIcon,
+  LockClosedIcon,
+  CheckCircleIcon,
+  XCircleIcon,
   ArrowRightOnRectangleIcon,
   XMarkIcon,
   EyeIcon,
@@ -373,19 +427,19 @@ const openEditProfile = () => {
 };
 
 const submitProfile = async () => {
-  if(isSubmittingProfile.value) return;
+  if (isSubmittingProfile.value) return;
   isSubmittingProfile.value = true;
-  
+
   try {
     // Sesuaikan URL endpoint update profil ini dengan backend milikmu (misal: /users/:id atau /auth/update)
     await api.put(`/users/${authStore.user?.id}`, {
       nama_lengkap: profileForm.value.nama_lengkap,
       no_telepon: profileForm.value.no_telepon
     });
-    
+
     showAlert("Profil berhasil diperbarui!", "success");
     isProfileModalOpen.value = false;
-    
+
     // Tarik ulang data profil terbaru
     await fetchUserProfile();
   } catch (error) {
@@ -410,8 +464,9 @@ const openEditPassword = () => {
 };
 
 const submitPassword = async () => {
-  if (passwordForm.value.password_baru !== passwordForm.value.konfirmasi_password) {
-    showAlert("Konfirmasi kata sandi baru tidak cocok!", "error");
+  // 1. Validasi Frontend Dasar
+  if (!passwordForm.value.password_lama) {
+    showAlert("Password lama wajib diisi!", "error");
     return;
   }
 
@@ -420,11 +475,22 @@ const submitPassword = async () => {
     return;
   }
 
+  if (passwordForm.value.password_baru !== passwordForm.value.konfirmasi_password) {
+    showAlert("Konfirmasi kata sandi baru tidak cocok!", "error");
+    return;
+  }
+
+  if (passwordForm.value.password_lama === passwordForm.value.password_baru) {
+    showAlert("Kata sandi baru tidak boleh sama dengan kata sandi lama!", "error");
+    return;
+  }
+
+  // 2. Cegah Double Submit
   if (isSubmittingPassword.value) return;
   isSubmittingPassword.value = true;
 
   try {
-    // Sesuaikan URL endpoint update password ini dengan backend milikmu
+    // 3. Tembak API Backend
     await api.put(`/users/password/${authStore.user?.id}`, {
       old_password: passwordForm.value.password_lama,
       new_password: passwordForm.value.password_baru
@@ -432,9 +498,23 @@ const submitPassword = async () => {
 
     showAlert("Kata sandi berhasil diubah!", "success");
     isPasswordModalOpen.value = false;
+
+    // 4. Bersihkan Form setelah sukses agar aman
+    passwordForm.value = { password_lama: '', password_baru: '', konfirmasi_password: '' };
+    showOldPassword.value = false;
+    showNewPassword.value = false;
+    showConfirmPassword.value = false;
+
   } catch (error) {
     console.error("Error update password:", error);
-    showAlert(error.response?.data?.message || "Gagal mengubah kata sandi. Pastikan password lama benar.", "error");
+
+    // PERBAIKAN KRUSIAL: Menangkap respons dari express-validator
+    // Backend mengirim pesan error spesifik di dalam objek "errors", bukan "message"
+    const errorMessage = error.response?.data?.errors
+      || error.response?.data?.message
+      || "Gagal mengubah kata sandi. Pastikan password lama benar.";
+
+    showAlert(errorMessage, "error");
   } finally {
     isSubmittingPassword.value = false;
   }
@@ -447,11 +527,21 @@ const submitPassword = async () => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.overflow-y-auto::-webkit-scrollbar { width: 5px; }
+.overflow-y-auto::-webkit-scrollbar {
+  width: 5px;
+}
+
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: #e2e8f0;
   border-radius: 10px;
@@ -462,6 +552,7 @@ const submitPassword = async () => {
 .fade-leave-active {
   transition: opacity 0.2s, transform 0.2s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

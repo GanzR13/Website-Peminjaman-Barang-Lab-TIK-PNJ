@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 			});
 			Peminjaman.hasMany(models.LaporanMasalah, {
 				foreignKey: "peminjaman_id",
-				as: "laporan_masalah", 
+				as: "laporan_masalah",
 			});
 		}
 	}
@@ -58,6 +58,10 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			dosen_penanggung_jawab: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			nip_dosen_pj: {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},

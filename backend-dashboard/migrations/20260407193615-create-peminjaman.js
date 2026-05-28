@@ -46,6 +46,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
+      nip_dosen_pj: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       tanggal_pinjam: {
         type: Sequelize.DATE,
         allowNull: false

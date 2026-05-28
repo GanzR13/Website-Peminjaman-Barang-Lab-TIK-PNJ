@@ -30,7 +30,7 @@
                         <img src="../assets/logo_pnj.png" alt="Logo PNJ"
                             class="mx-auto h-8 sm:h-10 w-auto drop-shadow-md" />
                     </div>
-                    <h1 class="font-black text-slate-800 text-xs sm:text-sm md:text-lg tracking-tight leading-tight">
+                    <h1 class="font-black text-slate-800 text-5xs sm:text-sm md:text-lg tracking-tight leading-tight">
                         SI-LAB PLP TIK Admin
                     </h1>
                 </div>
