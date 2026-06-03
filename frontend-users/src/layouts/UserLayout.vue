@@ -33,7 +33,7 @@
             <router-link to="/riwayat"
               class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-bold transition-colors text-slate-500 hover:text-blue-600 hover:border-blue-600"
               active-class="!border-blue-600 !text-blue-600">
-              Peminjaman Saya
+              Riwayat Peminjaman
             </router-link>
           </nav>
 

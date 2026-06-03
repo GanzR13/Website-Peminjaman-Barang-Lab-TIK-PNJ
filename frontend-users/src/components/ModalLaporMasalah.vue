@@ -235,12 +235,21 @@
                                             </transition>
                                         </div>
                                     </div>
-                                    <div>
+                                    <div v-if="formLapor.jenis_laporan === 'Kerusakan'">
                                         <label
-                                            class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Bukti
-                                            Foto <span class="text-red-500">*</span></label>
+                                            class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                                            Bukti Foto <span class="text-red-500">*</span>
+                                        </label>
+
                                         <input type="file" @change="handleFileChange" accept="image/*" required
                                             class="w-full px-3 py-3 border border-slate-200 rounded-xl text-sm font-medium bg-slate-50 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-orange-100 file:text-orange-700 hover:file:bg-orange-200 cursor-pointer transition-all" />
+                                    </div>
+
+                                    <div v-else
+                                        class="flex items-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+                                        <p class="text-xs font-bold text-slate-500 leading-relaxed">
+                                            Bukti foto tidak diperlukan untuk laporan kehilangan total.
+                                        </p>
                                     </div>
                                 </div>
 
