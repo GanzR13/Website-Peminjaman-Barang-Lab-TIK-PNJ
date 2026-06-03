@@ -25,13 +25,22 @@
       </router-link>
 
       <router-link to="/peminjaman"
-        class="flex items-center space-x-3 p-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-400 hover:text-white"
+        class="flex items-center justify-between p-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-400 hover:text-white"
         active-class="!bg-blue-600 !text-white shadow-lg shadow-blue-900/50">
-        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-        </svg>
-        <span class="font-medium text-sm">Data Peminjaman</span>
+        <div class="flex items-center space-x-3 min-w-0">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+
+          <span class="font-medium text-sm truncate">Data Peminjaman</span>
+        </div>
+
+        <span v-if="totalMenunggu > 0"
+          class="min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg shadow-red-900/40 animate-pulse"
+          title="Peminjaman menunggu persetujuan">
+          {{ totalMenunggu > 99 ? '99+' : totalMenunggu }}
+        </span>
       </router-link>
 
       <router-link to="/laporan-masalah"
@@ -79,6 +88,17 @@
         <span class="font-medium text-sm">Staff & Admin</span>
       </router-link>
 
+      <router-link v-if="authStore.user?.level === 'super_admin'" to="/admin/action-logs"
+        class="flex items-center space-x-3 p-3 rounded-xl transition duration-200 hover:bg-slate-800 text-slate-400 hover:text-white"
+        active-class="!bg-blue-600 !text-white shadow-lg shadow-blue-900/50">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
+        </svg>
+
+        <span class="font-medium text-sm">Log Action Admin</span>
+      </router-link>
+
       <div class="pt-4 mt-2 mb-1">
         <p class="px-3 text-[10px] font-black tracking-widest text-slate-500 uppercase">Pengaturan</p>
       </div>
@@ -109,28 +129,34 @@
 </template>
 
 <script setup>
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
-import { useAlert } from '../composables/useAlert';
 import { useConfirm } from '../composables/useConfirm';
+import api from '../plugins/axios';
 
-// Definisikan emit agar komponen induk (Layout Utama) bisa menangkap sinyal penutupan
 defineEmits(['close-mobile']);
 
 const authStore = useAuthStore();
-const { showAlert } = useAlert();
 const { showConfirm } = useConfirm();
+
+const totalMenunggu = ref(0);
+let notificationInterval = null;
+
+const fetchTotalMenunggu = async () => {
+  try {
+    const response = await api.get('/admin/peminjaman/menunggu/count');
+    totalMenunggu.value = response.data?.total || 0;
+  } catch (error) {
+    console.error('Gagal mengambil notifikasi peminjaman menunggu:', error);
+    totalMenunggu.value = 0;
+  }
+};
 
 const handleLogout = () => {
   showConfirm(
     'Apakah Anda yakin ingin keluar dari aplikasi?',
-    async () => {
+    () => {
       authStore.logout();
-
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('cart_peminjaman');
-
-      await router.push('/login');
     },
     null,
     'Ya, Keluar',
@@ -138,24 +164,18 @@ const handleLogout = () => {
     'Konfirmasi Logout'
   );
 };
+
+onMounted(() => {
+  fetchTotalMenunggu();
+
+  notificationInterval = setInterval(() => {
+    fetchTotalMenunggu();
+  }, 30000);
+});
+
+onUnmounted(() => {
+  if (notificationInterval) {
+    clearInterval(notificationInterval);
+  }
+});
 </script>
-
-<style scoped>
-/* Scrollbar khusus untuk navigasi sidebar agar lebih rapi */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #334155;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #475569;
-}
-</style>

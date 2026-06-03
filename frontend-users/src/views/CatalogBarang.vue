@@ -66,7 +66,7 @@
 
                     <!-- Gambar -->
                     <div
-                        class="relative w-full h-28 sm:h-36 md:h-48 rounded-xl md:rounded-2xl overflow-hidden bg-slate-50 mb-3 md:mb-5 border border-slate-100 shrink-0">
+                        class="relative w-full h-28 sm:h-36 md:h-60 rounded-xl md:rounded-2xl overflow-hidden bg-slate-50 mb-3 md:mb-5 border border-slate-100 shrink-0">
                         <img :src="getImageUrl(barang.gambar)" :alt="barang.nama_barang"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
@@ -105,7 +105,7 @@
                     <div class="mt-3 md:mt-5 pt-3 md:pt-5 border-t border-slate-100 space-y-2">
                         <!-- Tombol Detail -->
                         <button type="button" @click.stop="openDetailModal(barang)"
-                            class="w-full py-2 md:py-2.5 bg-slate-50 text-blue-700 font-bold text-[11px] md:text-sm rounded-lg md:rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors flex items-center justify-center gap-1.5 md:gap-2">
+                            class="w-full py-2 md:py-2.5 bg-slate-50 text-blue-700 font-bold text-[11px] md:text-sm rounded-lg md:rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer">
                             Detail
                             <ArrowRightIcon
                                 class="w-3 h-3 md:w-4 md:h-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
@@ -114,7 +114,7 @@
                         <!-- Tombol Tambah Keranjang -->
                         <button v-if="barang.stok > 0 && !isInCart(barang.id)" type="button"
                             @click.stop="addToCart(barang)"
-                            class="w-full py-2 md:py-2.5 bg-blue-600 text-white font-black text-[11px] md:text-sm rounded-lg md:rounded-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-1.5 md:gap-2 shadow-md shadow-blue-600/20">
+                            class="w-full py-2 md:py-2.5 bg-blue-600 text-white font-black text-[11px] md:text-sm rounded-lg md:rounded-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-1.5 md:gap-2 shadow-md shadow-blue-600/20 cursor-pointer">
                             Tambah Ke Keranjang
                         </button>
                     </div>

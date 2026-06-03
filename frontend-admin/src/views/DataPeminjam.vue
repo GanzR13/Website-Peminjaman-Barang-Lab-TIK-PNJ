@@ -521,7 +521,7 @@ const handleDelete = (id) => {
         'Yakin ingin menghapus data peminjam ini? Data yang sudah dihapus tidak dapat dikembalikan.',
         async () => {
             try {
-                await api.delete(`/admin/peminjam/${id}`);
+                await api.delete(`/users/${id}`);
                 showAlert('Data peminjam berhasil dihapus.', 'success');
                 await fetchUsers();
             } catch (error) {

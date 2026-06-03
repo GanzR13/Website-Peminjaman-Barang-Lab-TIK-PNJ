@@ -186,7 +186,7 @@
                                 Edit
                             </button>
                             <button
-                                @click="deleteUser(user.id)"
+                                @click="deleteUser(user.user_id)"
                                 class="py-2 bg-red-50 text-red-600 font-bold rounded-lg text-xs hover:bg-red-100 transition-colors active:scale-95 cursor-pointer"
                             >
                                 Hapus

@@ -278,8 +278,8 @@ const stockDropdownRef = ref(null);
 
 const stockOptions = [
     { value: "semua", label: "Semua Status Stok" },
-    { value: "tersedia", label: "Stok Tersedia (>0)" },
-    { value: "habis", label: "Stok Habis (0)" },
+    { value: "tersedia", label: "Stok Tersedia" },
+    { value: "habis", label: "Stok Habis" },
 ];
 
 const stockFilterLabel = computed(() => stockOptions.find((o) => o.value === stockFilter.value)?.label || "Semua Status Stok");

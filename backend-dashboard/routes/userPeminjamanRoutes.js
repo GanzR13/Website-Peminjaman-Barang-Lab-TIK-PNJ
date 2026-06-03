@@ -5,7 +5,7 @@ const router = express.Router();
 const peminjamanUserController = require('../controllers/peminjamanUserController');
 const { authenticateToken } = require('../middlewares/authMiddleware'); 
 const laporanUserController = require('../controllers/laporanUserController');
-const { uploadCloud } = require('../middlewares/uploadCloudinary');
+const { uploadLaporan } = require('../middlewares/uploadCloudinary');
 
 router.use(authenticateToken);
 
@@ -30,7 +30,7 @@ router.put('/:id/edit', peminjamanUserController.updatePeminjamanSaya);
 // ==========================================
 
 router.post('/laporan', (req, res, next) => {
-    const upload = uploadCloud.single('foto_bukti');
+    const upload = uploadLaporan.single('foto_bukti');
     upload(req, res, function (err) {
         if (err) {
             if (err.message === 'FORMAT_TIDAK_VALID') {
@@ -42,7 +42,7 @@ router.post('/laporan', (req, res, next) => {
         }
         next();
     });
-}, laporanUserController.buatLaporan);
+}, laporanUserController.buatLaporan)
 
 router.get('/laporan', laporanUserController.getRiwayatLaporan);
 router.get('/laporan/:id', laporanUserController.getDetailLaporan);

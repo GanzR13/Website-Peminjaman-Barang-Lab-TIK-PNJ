@@ -13,8 +13,11 @@ const userPeminjamanRoutes = require('./routes/userPeminjamanRoutes');
 const adminPeminjamanRoutes = require('./routes/adminPeminjamanRoutes');
 const dataanalitikRoutes = require('./routes/dataanalitikRoutes');
 const adminLaporanRoutes = require('./routes/adminLaporanRoutes');
+const adminActionLogRoutes = require("./routes/adminActionLogRoutes");
 
 const app = express();
+
+app.set("trust proxy", true);
 
 // CUSTOM LOG MANUAL
 app.use((req, res, next) => {
@@ -55,6 +58,7 @@ app.use('/api/user/peminjaman', userPeminjamanRoutes);
 app.use('/api/admin/peminjaman', adminPeminjamanRoutes);
 app.use('/api/dataanalitik', dataanalitikRoutes);
 app.use('/api/admin/laporan', adminLaporanRoutes);
+app.use("/api/admin-action-logs", adminActionLogRoutes);
 
 // REDIRECT Rute Utama
 app.get("/", (req, res) => {

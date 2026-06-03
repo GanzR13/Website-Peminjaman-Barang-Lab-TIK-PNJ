@@ -9,7 +9,6 @@ const {
 const { Op } = require("sequelize");
 
 exports.checkoutPeminjaman = async (req, res) => {
-	// Memulai Database Transaction
 	const t = await sequelize.transaction();
 
 	try {
@@ -253,100 +252,107 @@ exports.batalkanPeminjaman = async (req, res) => {
 
 // FUNGSI 4: UPDATE PEMINJAMAN (Hanya jika masih 'Menunggu')
 exports.updatePeminjamanSaya = async (req, res) => {
-	// Memulai Database Transaction karena kita akan mengupdate 2 tabel
-	const t = await sequelize.transaction();
+    const t = await sequelize.transaction();
 
-	try {
-		const { id } = req.params; // ID Transaksi Peminjaman
-		const user_id = req.user.id;
+    try {
+        const { id } = req.params;
+        const user_id = req.user.id;
 
-		const {
-			kategori_kebutuhan,
-			tujuan_peminjaman,
-			nama_acara,
-			organisasi_penyelenggara,
-			dosen_penanggung_jawab,
-			nip_dosen_pj,
-			tanggal_pinjam,
-			tanggal_kembali,
-			keranjang_barang,
-		} = req.body;
+        const {
+            kategori_kebutuhan,
+            tujuan_peminjaman,
+            nama_acara,
+            organisasi_penyelenggara,
+            dosen_penanggung_jawab,
+            nip_dosen_pj,
+            jenis_khusus, // <-- Tambahan: Pastikan ini ditangkap
+            tanggal_pinjam,
+            tanggal_kembali,
+            keranjang_barang,
+        } = req.body;
 
-		// 1. Cari peminjaman milik user ini
-		const peminjaman = await Peminjaman.findOne({
-			where: { id, user_id },
-		});
+        const peminjaman = await Peminjaman.findOne({
+            where: { id, user_id },
+            transaction: t
+        });
 
-		// 2. Validasi Transaksi
-		if (!peminjaman) {
-			return res.status(404).json({
-				status: "error",
-				message: "Transaksi peminjaman tidak ditemukan.",
-			});
-		}
+        if (!peminjaman) {
+            await t.rollback();
+            return res.status(404).json({ status: "error", message: "Transaksi tidak ditemukan." });
+        }
 
-		if (peminjaman.status !== "Menunggu") {
-			return res.status(400).json({
-				status: "error",
-				message:
-					"Peminjaman tidak dapat diedit karena sudah diproses oleh Admin.",
-			});
-		}
+        if (peminjaman.status !== "Menunggu") {
+            await t.rollback();
+            return res.status(400).json({ status: "error", message: "Tidak dapat diedit karena sudah diproses Admin." });
+        }
 
-		if (!keranjang_barang || keranjang_barang.length === 0) {
-			return res.status(400).json({
-				status: "error",
-				message: "Keranjang barang tidak boleh kosong!",
-			});
-		}
+        if (!keranjang_barang || keranjang_barang.length === 0) {
+            await t.rollback();
+            return res.status(400).json({ status: "error", message: "Keranjang tidak boleh kosong!" });
+        }
 
-		// 3. Update Data Induk (Formulir Peminjaman)
-		await peminjaman.update(
-			{
-				kategori_kebutuhan,
-				tujuan_peminjaman,
-				nama_acara: nama_acara || null,
-				organisasi_penyelenggara: organisasi_penyelenggara || null,
-				dosen_penanggung_jawab: dosen_penanggung_jawab || null,
-				nip_dosen_pj: nip_dosen_pj || null,
-				tanggal_pinjam,
-				tanggal_kembali,
-			},
-			{ transaction: t },
-		);
+        // --- PERBAIKAN FATAL: KEMBALIKAN STOK LAMA DULU ---
+        const detailLama = await DetailPeminjaman.findAll({ 
+            where: { peminjaman_id: peminjaman.id }, 
+            transaction: t 
+        });
 
-		// 4. Update Keranjang (Tabel DetailPeminjaman)
-		// Cara paling aman dan bersih: Hapus semua keranjang lama, lalu masukkan keranjang baru
+        for (const item of detailLama) {
+            const barangLokal = await Barang.findByPk(item.barang_id, { transaction: t });
+            if (barangLokal) {
+                await barangLokal.increment('stok', { by: item.jumlah_pinjam, transaction: t });
+            }
+        }
 
-		// 4a. Hapus detail lama
-		await DetailPeminjaman.destroy({
-			where: { peminjaman_id: peminjaman.id },
-			transaction: t,
-		});
+        // Hapus detail lama
+        await DetailPeminjaman.destroy({
+            where: { peminjaman_id: peminjaman.id },
+            transaction: t,
+        });
 
-		// 4b. Siapkan detail baru
-		const detailDataBaru = keranjang_barang.map((item) => {
-			return {
-				peminjaman_id: peminjaman.id,
-				barang_id: item.barang_id,
-				jumlah_pinjam: item.jumlah,
-				status_barang: "Dipinjam",
-			};
-		});
+        // --- PERBAIKAN FATAL: POTONG STOK BARU SEKALIGUS VALIDASI ---
+        for (const item of keranjang_barang) {
+            const barangLokal = await Barang.findByPk(item.barang_id, { transaction: t });
+            
+            if (!barangLokal) throw new Error(`Barang ID ${item.barang_id} tidak ditemukan.`);
+            if (barangLokal.stok < item.jumlah) {
+                throw new Error(`Stok "${barangLokal.nama_barang}" tidak mencukupi.`);
+            }
 
-		// 4c. Masukkan detail baru (Bulk Insert)
-		await DetailPeminjaman.bulkCreate(detailDataBaru, { transaction: t });
+            await barangLokal.decrement("stok", { by: item.jumlah, transaction: t });
+        }
 
-		// 5. Commit Transaksi
-		await t.commit();
+        // Update Data Induk
+        await peminjaman.update(
+            {
+                kategori_kebutuhan,
+                jenis_khusus: jenis_khusus || null, // <-- Tambahan: Pastikan ini ikut diupdate
+                tujuan_peminjaman,
+                nama_acara: nama_acara || null,
+                organisasi_penyelenggara: organisasi_penyelenggara || null,
+                dosen_penanggung_jawab: dosen_penanggung_jawab || null,
+                nip_dosen_pj: nip_dosen_pj || null,
+                tanggal_pinjam,
+                tanggal_kembali,
+            },
+            { transaction: t }
+        );
 
-		res.status(200).json({
-			status: "success",
-			message: "Keranjang peminjaman berhasil diperbarui!",
-		});
-	} catch (error) {
-		// Rollback jika terjadi error
-		await t.rollback();
-		res.status(500).json({ status: "error", message: error.message });
-	}
+        // Masukkan detail baru
+        const detailDataBaru = keranjang_barang.map((item) => ({
+            peminjaman_id: peminjaman.id,
+            barang_id: item.barang_id,
+            jumlah_pinjam: item.jumlah,
+            status_barang: "Dipinjam",
+        }));
+
+        await DetailPeminjaman.bulkCreate(detailDataBaru, { transaction: t });
+
+        await t.commit();
+        res.status(200).json({ status: "success", message: "Keranjang peminjaman berhasil diperbarui!" });
+    } catch (error) {
+        await t.rollback();
+        const statusCode = error.message.includes("Stok") ? 400 : 500;
+        res.status(statusCode).json({ status: "error", message: error.message });
+    }
 };

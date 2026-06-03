@@ -261,7 +261,7 @@ const steps = [
   {
     no: 4,
     title: 'Tunggu Konfirmasi',
-    desc: 'Permohonanmu akan diperiksa oleh admin sebelum disetujui.',
+    desc: 'Permohonanmu akan diperiksa oleh admin sebelum disetujui. Kamu bisa langsung ke Lab untuk meminta admin konfirmasi dan berikan KTM atau tanda pengenal lain.',
     icon: markRaw(ClockIcon),
     iconBox: 'bg-amber-50 text-amber-600',
     hover: 'hover:shadow-amber-500/10 hover:border-amber-100',
@@ -271,7 +271,7 @@ const steps = [
   {
     no: 5,
     title: 'Ambil Barang',
-    desc: 'Jika status <b>Disetujui</b>, datang ke lab untuk mengambil barang.',
+    desc: 'Jika status <b>Disetujui</b>, barang bisa kamu terima.',
     icon: markRaw(HandRaisedIcon),
     iconBox: 'bg-emerald-50 text-emerald-600',
     hover: 'hover:shadow-emerald-500/10 hover:border-emerald-100',

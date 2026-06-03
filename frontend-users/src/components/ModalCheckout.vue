@@ -34,7 +34,189 @@
                             </p>
                         </div>
 
-                        <form @submit.prevent="submitPeminjaman" class="space-y-4 sm:space-y-5 md:space-y-6">
+                        <!-- Custom Date Picker -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+                                <div class="relative" ref="tanggalPinjamPickerRef">
+                                    <label class="label-form">
+                                        Tgl Ambil Alat <span class="text-red-500">*</span>
+                                    </label>
+
+                                    <button type="button" @click.stop="toggleTanggalPinjamPicker"
+                                        class="date-filter-button"
+                                        :class="showTanggalPinjamPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
+                                        <div class="flex items-center gap-2 overflow-hidden">
+                                            <svg class="w-4 h-4 shrink-0 transition-colors"
+                                                :class="showTanggalPinjamPicker || formCheckout.tanggal_pinjam ? 'text-blue-500' : 'text-slate-400'"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
+                                            </svg>
+
+                                            <span class="truncate"
+                                                :class="formCheckout.tanggal_pinjam ? 'text-slate-800' : 'text-slate-500'">
+                                                {{ formatForDisplay(formCheckout.tanggal_pinjam) }}
+                                            </span>
+                                        </div>
+
+                                        <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
+                                            :class="showTanggalPinjamPicker ? 'rotate-180 text-blue-500' : ''"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <transition name="dropdown">
+                                        <div v-if="showTanggalPinjamPicker" class="date-picker-panel-down left-0" @click.stop>
+                                            <div class="flex items-center justify-between mb-4">
+                                                <button type="button"
+                                                    @click="currentTanggalPinjamCal = subMonth(currentTanggalPinjamCal)"
+                                                    class="calendar-nav-button">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                </button>
+
+                                                <span class="font-black text-slate-800 text-sm">
+                                                    {{ getCalHeader(currentTanggalPinjamCal) }}
+                                                </span>
+
+                                                <button type="button"
+                                                    @click="currentTanggalPinjamCal = addMonth(currentTanggalPinjamCal)"
+                                                    class="calendar-nav-button">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <div
+                                                class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
+                                                <div v-for="day in daysOfWeek" :key="day">
+                                                    {{ day }}
+                                                </div>
+                                            </div>
+
+                                            <div class="grid grid-cols-7 gap-1">
+                                                <button type="button" v-for="(date, index) in tanggalPinjamCalGrid"
+                                                    :key="index" @click="pilihTanggalPinjam(date)" :disabled="!date"
+                                                    class="calendar-day" :class="getTanggalPinjamClass(date)">
+                                                    {{ date ? date.getDate() : '' }}
+                                                </button>
+                                            </div>
+
+                                            <div
+                                                class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
+                                                <button type="button" @click="clearTanggalPinjam"
+                                                    class="calendar-action-button text-slate-500 hover:bg-slate-100">
+                                                    Hapus
+                                                </button>
+
+                                                <button type="button" @click="setTanggalPinjamToday"
+                                                    class="calendar-action-button text-blue-600 hover:bg-blue-50">
+                                                    Hari ini
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </transition>
+                                </div>
+
+                                <div class="relative" ref="tanggalKembaliPickerRef">
+                                    <label class="label-form">
+                                        Tgl Kembali Alat <span class="text-red-500">*</span>
+                                    </label>
+
+                                    <button type="button" @click.stop="toggleTanggalKembaliPicker"
+                                        class="date-filter-button"
+                                        :class="showTanggalKembaliPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
+                                        <div class="flex items-center gap-2 overflow-hidden">
+                                            <svg class="w-4 h-4 shrink-0 transition-colors"
+                                                :class="showTanggalKembaliPicker || formCheckout.tanggal_kembali ? 'text-blue-500' : 'text-slate-400'"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
+                                            </svg>
+
+                                            <span class="truncate"
+                                                :class="formCheckout.tanggal_kembali ? 'text-slate-800' : 'text-slate-500'">
+                                                {{ formatForDisplay(formCheckout.tanggal_kembali) }}
+                                            </span>
+                                        </div>
+
+                                        <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
+                                            :class="showTanggalKembaliPicker ? 'rotate-180 text-blue-500' : ''"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <transition name="dropdown">
+                                        <div v-if="showTanggalKembaliPicker"class="date-picker-panel-down left-0 md:left-0 md:left-auto" @click.stop>
+                                            <div class="flex items-center justify-between mb-4">
+                                                <button type="button"
+                                                    @click="currentTanggalKembaliCal = subMonth(currentTanggalKembaliCal)"
+                                                    class="calendar-nav-button">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                </button>
+
+                                                <span class="font-black text-slate-800 text-sm">
+                                                    {{ getCalHeader(currentTanggalKembaliCal) }}
+                                                </span>
+
+                                                <button type="button"
+                                                    @click="currentTanggalKembaliCal = addMonth(currentTanggalKembaliCal)"
+                                                    class="calendar-nav-button">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <div
+                                                class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
+                                                <div v-for="day in daysOfWeek" :key="day">
+                                                    {{ day }}
+                                                </div>
+                                            </div>
+
+                                            <div class="grid grid-cols-7 gap-1">
+                                                <button type="button" v-for="(date, index) in tanggalKembaliCalGrid"
+                                                    :key="index" @click="pilihTanggalKembali(date)"
+                                                    :disabled="!date || isBeforeTanggalPinjam(date)"
+                                                    class="calendar-day" :class="getTanggalKembaliClass(date)">
+                                                    {{ date ? date.getDate() : '' }}
+                                                </button>
+                                            </div>
+
+                                            <div
+                                                class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
+                                                <button type="button" @click="clearTanggalKembali"
+                                                    class="calendar-action-button text-slate-500 hover:bg-slate-100">
+                                                    Hapus
+                                                </button>
+
+                                                <button type="button" @click="setTanggalKembaliToday"
+                                                    class="calendar-action-button text-blue-600 hover:bg-blue-50">
+                                                    Hari ini
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </transition>
+                                </div>
+                            </div>
+
+                        <form @submit.prevent="submitPeminjaman" class="space-y-4 sm:space-y-5 md:space-y-6 mt-8">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
                                 <div>
                                     <label class="label-form">
@@ -238,196 +420,8 @@
                                 </div>
                             </div>
 
-                            <!-- Custom Date Picker -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
-                                <div class="relative" ref="tanggalPinjamPickerRef">
-                                    <label class="label-form">
-                                        Tgl Ambil Alat <span class="text-red-500">*</span>
-                                    </label>
-
-                                    <button type="button" @click.stop="toggleTanggalPinjamPicker"
-                                        class="date-filter-button"
-                                        :class="showTanggalPinjamPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
-                                        <div class="flex items-center gap-2 overflow-hidden">
-                                            <svg class="w-4 h-4 shrink-0 transition-colors"
-                                                :class="showTanggalPinjamPicker || formCheckout.tanggal_pinjam ? 'text-blue-500' : 'text-slate-400'"
-                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
-                                            </svg>
-
-                                            <span class="truncate"
-                                                :class="formCheckout.tanggal_pinjam ? 'text-slate-800' : 'text-slate-500'">
-                                                {{ formatForDisplay(formCheckout.tanggal_pinjam) }}
-                                            </span>
-                                        </div>
-
-                                        <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
-                                            :class="showTanggalPinjamPicker ? 'rotate-180 text-blue-500' : ''"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-
-                                    <transition name="dropdown">
-                                        <div v-if="showTanggalPinjamPicker" class="date-picker-panel-up left-0" @click.stop>
-                                            <div class="flex items-center justify-between mb-4">
-                                                <button type="button"
-                                                    @click="currentTanggalPinjamCal = subMonth(currentTanggalPinjamCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 19l-7-7 7-7" />
-                                                    </svg>
-                                                </button>
-
-                                                <span class="font-black text-slate-800 text-sm">
-                                                    {{ getCalHeader(currentTanggalPinjamCal) }}
-                                                </span>
-
-                                                <button type="button"
-                                                    @click="currentTanggalPinjamCal = addMonth(currentTanggalPinjamCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            <div
-                                                class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
-                                                <div v-for="day in daysOfWeek" :key="day">
-                                                    {{ day }}
-                                                </div>
-                                            </div>
-
-                                            <div class="grid grid-cols-7 gap-1">
-                                                <button type="button" v-for="(date, index) in tanggalPinjamCalGrid"
-                                                    :key="index" @click="pilihTanggalPinjam(date)" :disabled="!date"
-                                                    class="calendar-day" :class="getTanggalPinjamClass(date)">
-                                                    {{ date ? date.getDate() : '' }}
-                                                </button>
-                                            </div>
-
-                                            <div
-                                                class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
-                                                <button type="button" @click="clearTanggalPinjam"
-                                                    class="calendar-action-button text-slate-500 hover:bg-slate-100">
-                                                    Hapus
-                                                </button>
-
-                                                <button type="button" @click="setTanggalPinjamToday"
-                                                    class="calendar-action-button text-blue-600 hover:bg-blue-50">
-                                                    Hari ini
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </transition>
-                                </div>
-
-                                <div class="relative" ref="tanggalKembaliPickerRef">
-                                    <label class="label-form">
-                                        Tgl Kembali Alat <span class="text-red-500">*</span>
-                                    </label>
-
-                                    <button type="button" @click.stop="toggleTanggalKembaliPicker"
-                                        class="date-filter-button"
-                                        :class="showTanggalKembaliPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
-                                        <div class="flex items-center gap-2 overflow-hidden">
-                                            <svg class="w-4 h-4 shrink-0 transition-colors"
-                                                :class="showTanggalKembaliPicker || formCheckout.tanggal_kembali ? 'text-blue-500' : 'text-slate-400'"
-                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
-                                            </svg>
-
-                                            <span class="truncate"
-                                                :class="formCheckout.tanggal_kembali ? 'text-slate-800' : 'text-slate-500'">
-                                                {{ formatForDisplay(formCheckout.tanggal_kembali) }}
-                                            </span>
-                                        </div>
-
-                                        <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
-                                            :class="showTanggalKembaliPicker ? 'rotate-180 text-blue-500' : ''"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-
-                                    <transition name="dropdown">
-                                        <div v-if="showTanggalKembaliPicker"
-    class="date-picker-panel-up left-0 md:right-0 md:left-auto" @click.stop>
-                                            <div class="flex items-center justify-between mb-4">
-                                                <button type="button"
-                                                    @click="currentTanggalKembaliCal = subMonth(currentTanggalKembaliCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 19l-7-7 7-7" />
-                                                    </svg>
-                                                </button>
-
-                                                <span class="font-black text-slate-800 text-sm">
-                                                    {{ getCalHeader(currentTanggalKembaliCal) }}
-                                                </span>
-
-                                                <button type="button"
-                                                    @click="currentTanggalKembaliCal = addMonth(currentTanggalKembaliCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            <div
-                                                class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
-                                                <div v-for="day in daysOfWeek" :key="day">
-                                                    {{ day }}
-                                                </div>
-                                            </div>
-
-                                            <div class="grid grid-cols-7 gap-1">
-                                                <button type="button" v-for="(date, index) in tanggalKembaliCalGrid"
-                                                    :key="index" @click="pilihTanggalKembali(date)"
-                                                    :disabled="!date || isBeforeTanggalPinjam(date)"
-                                                    class="calendar-day" :class="getTanggalKembaliClass(date)">
-                                                    {{ date ? date.getDate() : '' }}
-                                                </button>
-                                            </div>
-
-                                            <p v-if="formCheckout.tanggal_pinjam"
-                                                class="mt-3 text-[10px] font-bold text-slate-400">
-                                                Tanggal kembali tidak boleh sebelum tanggal ambil.
-                                            </p>
-
-                                            <div
-                                                class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
-                                                <button type="button" @click="clearTanggalKembali"
-                                                    class="calendar-action-button text-slate-500 hover:bg-slate-100">
-                                                    Hapus
-                                                </button>
-
-                                                <button type="button" @click="setTanggalKembaliToday"
-                                                    class="calendar-action-button text-blue-600 hover:bg-blue-50">
-                                                    Hari ini
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </transition>
-                                </div>
-                            </div>
-
                             <div v-if="formCheckout.kategori_kebutuhan === 'Harian'">
-                                <label class="label-form">
+                                <label class="label-form mt-10">
                                     Dosen Penanggung Jawab / Pengampu
                                     <span class="text-slate-400 normal-case">(Opsional)</span>
                                 </label>
@@ -437,7 +431,7 @@
                             </div>
 
                             <div
-                                class="pt-5 sm:pt-6 mt-2 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3">
+                                class="pt-5 sm:pt-6 mt-10 border-t border-slate-100 flex flex-col-reverse sm:flex-row gap-3">
                                 <button type="button" @click="$emit('back')"
                                     class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all active:scale-[0.98]">
                                     Kembali
@@ -1177,6 +1171,19 @@ const submitPeminjaman = async () => {
     }
 }
 
+.date-picker-panel-down {
+    position: absolute;
+    top: 100%;
+    margin-top: 0.5rem;
+    width: min(17rem, calc(100vw - 2rem));
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    padding: 0.75rem;
+    z-index: 9999;
+    box-shadow: 0 22px 50px rgb(15 23 42 / 0.18);
+}
+
 .date-picker-panel-up {
     position: absolute;
     bottom: 100%;
@@ -1187,5 +1194,13 @@ const submitPeminjaman = async () => {
     padding: 0.75rem;
     z-index: 90;
     box-shadow: 0 22px 50px rgb(15 23 42 / 0.18);
+}
+
+@media (max-width: 640px) {
+    .date-picker-panel-down,
+    .date-picker-panel-up {
+        width: min(17rem, calc(100vw - 2.5rem));
+        padding: 0.7rem;
+    }
 }
 </style>

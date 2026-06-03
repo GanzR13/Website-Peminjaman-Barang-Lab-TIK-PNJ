@@ -14,6 +14,7 @@ const {
 const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
+const createAdminLog = require("../utils/adminActionLogger");
 
 // Fungsi GET All Users (Admin Only)
 exports.getAllUsers = async (req, res) => {
@@ -118,8 +119,8 @@ exports.getPeminjam = async (req, res) => {
 				nim: user.mahasiswa?.nim || null,
 				nip: user.pegawai?.nip || null,
 				angkatan: user.mahasiswa?.angkatan || null,
-                prodi_id: user.mahasiswa?.prodi_id || null, 
-                kelas_id: user.mahasiswa?.kelas_id || null,
+				prodi_id: user.mahasiswa?.prodi_id || null,
+				kelas_id: user.mahasiswa?.kelas_id || null,
 				nama_prodi: user.mahasiswa?.prodi?.nama_prodi || "-",
 				nama_kelas: user.mahasiswa?.kelas?.nama_kelas || "-",
 				user: {
@@ -148,7 +149,7 @@ exports.getPeminjam = async (req, res) => {
 
 // Fungsi CREATE User dengan Transaction
 exports.createUser = async (req, res) => {
-	const t = await sequelize.transaction(); // Inisialisasi Transaksi
+	const t = await sequelize.transaction();
 
 	try {
 		const {
@@ -162,19 +163,39 @@ exports.createUser = async (req, res) => {
 			angkatan,
 			prodi_id,
 			kelas_id,
-            tanggal_daftar // 1. Ekstrak dari req.body
+			tanggal_daftar,
 		} = req.body;
 
-		if (parseInt(role_id) !== 5 && !nip) {
+		const selectedRole = await Role.findByPk(role_id);
+
+		if (!selectedRole) {
 			await t.rollback();
-			return res
-				.status(400)
-				.json({ message: "NIP wajib diisi untuk Dosen atau Teknisi." });
+			return res.status(400).json({
+				status: "error",
+				message: "Role tidak ditemukan.",
+			});
+		}
+
+		const isMahasiswa = selectedRole.nama_role === "Mahasiswa";
+
+		if (!isMahasiswa && !nip) {
+			await t.rollback();
+			return res.status(400).json({
+				status: "error",
+				message: "NIP wajib diisi untuk Dosen atau Pegawai.",
+			});
+		}
+
+		if (isMahasiswa && !nim) {
+			await t.rollback();
+			return res.status(400).json({
+				status: "error",
+				message: "NIM wajib diisi untuk Mahasiswa.",
+			});
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
 
-		// 2. Buat User Utama
 		const newUser = await User.create(
 			{
 				id: uuidv4(),
@@ -182,14 +203,13 @@ exports.createUser = async (req, res) => {
 				password: hashedPassword,
 				no_telepon,
 				role_id,
-                tanggal_daftar: tanggal_daftar || new Date(), // 2. Masukkan tanggal daftar
-                email_verified: true // 3. Bypass verifikasi email (Otomatis True)
+				tanggal_daftar: tanggal_daftar || new Date(),
+				email_verified: true,
 			},
 			{ transaction: t },
 		);
 
-		// 3. Pisahkan Data Berdasarkan Role
-		if (parseInt(role_id) === 5) {
+		if (isMahasiswa) {
 			await Mahasiswa.create(
 				{
 					id: uuidv4(),
@@ -214,139 +234,327 @@ exports.createUser = async (req, res) => {
 			);
 		}
 
-		await t.commit(); // Eksekusi ke database jika semua berhasil
-		res
-			.status(201)
-			.json({ status: "success", message: "User berhasil dibuat" });
+		await t.commit();
+
+		await createAdminLog({
+			req,
+			action: "CREATE",
+			module: selectedRole.level_akses === "peminjam" ? "Peminjam" : "Pegawai",
+			description: `Menambahkan user ${selectedRole.nama_role}: ${nama_lengkap}`,
+			target_id: null,
+			metadata: {
+				created_user_id: newUser.id,
+				email,
+				nama_lengkap,
+				role_id,
+				role: selectedRole.nama_role,
+				level_akses: selectedRole.level_akses,
+				nim: isMahasiswa ? nim : null,
+				nip: !isMahasiswa ? nip : null,
+			},
+		});
+
+		return res.status(201).json({
+			status: "success",
+			message: "User berhasil dibuat",
+			data: {
+				id: newUser.id,
+				email: newUser.email,
+				nama_lengkap,
+				role_id,
+			},
+		});
 	} catch (error) {
-		await t.rollback(); // Batalkan semua jika ada gagal
+		await t.rollback();
+
 		console.error("Error Register:", error);
 
 		if (error.name === "SequelizeUniqueConstraintError") {
 			return res.status(400).json({
+				status: "error",
 				message:
 					"Email atau NIP/NIM sudah terdaftar di sistem. Silakan gunakan yang lain.",
 			});
 		}
 
-		res
-			.status(500)
-			.json({ message: error.message || "Terjadi kesalahan pada server." });
+		return res.status(500).json({
+			status: "error",
+			message: error.message || "Terjadi kesalahan pada server.",
+		});
 	}
 };
 
 // Fungsi UPDATE Users dengan Transaction
 exports.updateUser = async (req, res) => {
-    const t = await sequelize.transaction();
-    
-    try {
-        const { id } = req.params; // Mengambil UUID dari parameter URL
-        const {
-            email, no_telepon, nama_lengkap, nip, nim, 
-            angkatan, prodi_id, kelas_id, email_verified, 
-            role_id // 1. TANGKAP ROLE ID DARI REQUEST
-        } = req.body;
-        
-        const user = await User.findByPk(id, { include: [Role], transaction: t });
+	const t = await sequelize.transaction();
 
-        if (!user) {
-            await t.rollback();
-            return res.status(404).json({ status: "error", message: "User tidak ditemukan" });
-        }
+	try {
+		const { id } = req.params;
 
-        // 2. Update data akun utama
-        const updateAkunUtama = { email, no_telepon, email_verified };
-        
-        // 3. Masukkan role_id ke dalam update jika Super Admin mengubah otoritas user lain
-        if (role_id) {
-            updateAkunUtama.role_id = role_id; 
-        }
+		const {
+			email,
+			no_telepon,
+			nama_lengkap,
+			nip,
+			nim,
+			angkatan,
+			prodi_id,
+			kelas_id,
+			email_verified,
+			role_id,
+		} = req.body;
 
-        await user.update(updateAkunUtama, { transaction: t });
+		const user = await User.findByPk(id, {
+			include: [
+				{ model: Role, attributes: ["id", "nama_role", "level_akses"] },
+				{ model: Pegawai, as: "pegawai" },
+				{ model: Mahasiswa, as: "mahasiswa" },
+			],
+			transaction: t,
+		});
 
-        // 4. Update data profil secara dinamis (Hanya update yang tidak kosong)
-        if (user.Role.nama_role === "Mahasiswa") {
-            const updateMahasiswa = { nama_mahasiswa: nama_lengkap };
-            if (nim) updateMahasiswa.nim = nim;
-            if (angkatan) updateMahasiswa.angkatan = angkatan;
-            if (prodi_id) updateMahasiswa.prodi_id = prodi_id;
-            if (kelas_id) updateMahasiswa.kelas_id = kelas_id;
+		if (!user) {
+			await t.rollback();
+			return res.status(404).json({
+				status: "error",
+				message: "User tidak ditemukan",
+			});
+		}
 
-            await Mahasiswa.update(updateMahasiswa, { where: { user_id: id }, transaction: t });
-        } else {
-            const updatePegawai = { nama_lengkap };
-            if (nip) updatePegawai.nip = nip;
+		const plainBefore = user.toJSON ? user.toJSON() : user;
 
-            await Pegawai.update(updatePegawai, { where: { user_id: id }, transaction: t });
-        }
-        
-        await t.commit();
-        res.status(200).json({
-            status: "success",
-            message: "Data user dan otoritas berhasil diperbarui",
-            data: { id, email, nama_lengkap, role_id },
-        });
-    } catch (error) {
-        await t.rollback();
-        console.error("Error Update User:", error);
-        res.status(500).json({ message: error.message });
-    }
+		const oldName =
+			plainBefore.mahasiswa?.nama_mahasiswa ||
+			plainBefore.pegawai?.nama_lengkap ||
+			plainBefore.email;
+
+		const oldData = {
+			user_id: plainBefore.id,
+			email: plainBefore.email,
+			no_telepon: plainBefore.no_telepon,
+			email_verified: plainBefore.email_verified,
+			role_id: plainBefore.role_id,
+			role: plainBefore.Role?.nama_role,
+			level_akses: plainBefore.Role?.level_akses,
+			nama_lengkap: oldName,
+			nim: plainBefore.mahasiswa?.nim || null,
+			nip: plainBefore.pegawai?.nip || null,
+			angkatan: plainBefore.mahasiswa?.angkatan || null,
+			prodi_id: plainBefore.mahasiswa?.prodi_id || null,
+			kelas_id: plainBefore.mahasiswa?.kelas_id || null,
+		};
+
+		const updateAkunUtama = {
+			email,
+			no_telepon,
+			email_verified,
+		};
+
+		if (role_id) {
+			updateAkunUtama.role_id = role_id;
+		}
+
+		await user.update(updateAkunUtama, { transaction: t });
+
+		const currentRoleName = plainBefore.Role?.nama_role;
+
+		if (currentRoleName === "Mahasiswa") {
+			const updateMahasiswa = {
+				nama_mahasiswa: nama_lengkap,
+			};
+
+			if (nim) updateMahasiswa.nim = nim;
+			if (angkatan) updateMahasiswa.angkatan = angkatan;
+			if (prodi_id) updateMahasiswa.prodi_id = prodi_id;
+			if (kelas_id) updateMahasiswa.kelas_id = kelas_id;
+
+			await Mahasiswa.update(updateMahasiswa, {
+				where: { user_id: id },
+				transaction: t,
+			});
+		} else {
+			const updatePegawai = {
+				nama_lengkap,
+			};
+
+			if (nip) updatePegawai.nip = nip;
+
+			await Pegawai.update(updatePegawai, {
+				where: { user_id: id },
+				transaction: t,
+			});
+		}
+
+		const newRole = role_id
+			? await Role.findByPk(role_id, { transaction: t })
+			: plainBefore.Role;
+
+		await t.commit();
+
+		await createAdminLog({
+			req,
+			action:
+				role_id && Number(role_id) !== Number(oldData.role_id)
+					? "UPDATE_ROLE"
+					: "UPDATE",
+			module: newRole?.level_akses === "peminjam" ? "Peminjam" : "Pegawai",
+			description:
+				role_id && Number(role_id) !== Number(oldData.role_id)
+					? `Mengubah role user ${oldName} dari ${oldData.role} menjadi ${newRole?.nama_role || role_id}`
+					: `Memperbarui data user: ${nama_lengkap || oldName}`,
+			target_id: null,
+			metadata: {
+				updated_user_id: id,
+				before: oldData,
+				after: {
+					user_id: id,
+					email,
+					no_telepon,
+					email_verified,
+					role_id: role_id || oldData.role_id,
+					role: newRole?.nama_role || oldData.role,
+					level_akses: newRole?.level_akses || oldData.level_akses,
+					nama_lengkap: nama_lengkap || oldName,
+					nim: nim || oldData.nim,
+					nip: nip || oldData.nip,
+					angkatan: angkatan || oldData.angkatan,
+					prodi_id: prodi_id || oldData.prodi_id,
+					kelas_id: kelas_id || oldData.kelas_id,
+				},
+			},
+		});
+
+		return res.status(200).json({
+			status: "success",
+			message: "Data user dan otoritas berhasil diperbarui",
+			data: {
+				id,
+				email,
+				nama_lengkap,
+				role_id: role_id || oldData.role_id,
+			},
+		});
+	} catch (error) {
+		await t.rollback();
+
+		console.error("Error Update User:", error);
+
+		return res.status(500).json({
+			status: "error",
+			message: error.message,
+		});
+	}
 };
 
 // Fungsi DELETE User
 exports.deleteUser = async (req, res) => {
-    const t = await sequelize.transaction();
+	const t = await sequelize.transaction();
 
-    try {
-        const { id } = req.params; // UUID
+	try {
+		const { id } = req.params;
 
-        const user = await User.findByPk(id);
-        if (!user) {
-            await t.rollback();
-            return res
-                .status(404)
-                .json({ status: "error", message: "User tidak ditemukan" });
-        }
+		const user = await User.findByPk(id, {
+			include: [
+				{ model: Role, attributes: ["nama_role", "level_akses"] },
+				{ model: Pegawai, as: "pegawai" },
+				{ model: Mahasiswa, as: "mahasiswa" },
+			],
+			transaction: t,
+		});
 
-        // Hapus detail peminjaman terlebih dahulu untuk menghindari constraint error
-        const peminjamanList = await Peminjaman.findAll({
-            where: { user_id: id },
-            attributes: ["id"],
-            transaction: t,
-        });
-        const peminjamanIds = peminjamanList.map((p) => p.id);
+		if (!user) {
+			await t.rollback();
+			return res.status(404).json({
+				status: "error",
+				message: "User tidak ditemukan",
+			});
+		}
 
-        if (peminjamanIds.length > 0) {
-            await DetailPeminjaman.destroy({
-                where: { peminjaman_id: peminjamanIds },
-                transaction: t,
-            });
-        }
+		const plainUser = user.toJSON ? user.toJSON() : user;
 
-        // Hapus relasi lainnya secara berurutan
-        await Peminjaman.destroy({ where: { user_id: id }, transaction: t });
-        await Pegawai.destroy({ where: { user_id: id }, transaction: t });
-        await Mahasiswa.destroy({ where: { user_id: id }, transaction: t });
-        
-        // Hapus akun utama (User)
-        await User.destroy({ where: { id }, transaction: t });
+		const deletedName =
+			plainUser.pegawai?.nama_lengkap ||
+			plainUser.mahasiswa?.nama_mahasiswa ||
+			plainUser.email;
 
-        await t.commit();
+		const deletedRole = plainUser.Role?.nama_role || "User";
 
-        res.status(200).json({
-            status: "success",
-            message: "User dan semua data profil terkait berhasil dihapus secara permanen.",
-            deletedId: id,
-        });
-    } catch (error) {
-        await t.rollback();
-        console.error("Error Delete User:", error);
-        res.status(500).json({
-            status: "error",
-            message: "Gagal menghapus user secara permanen dari server.",
-            error: error.message,
-        });
-    }
+		const peminjamanList = await Peminjaman.findAll({
+			where: { user_id: id },
+			attributes: ["id"],
+			transaction: t,
+		});
+
+		const peminjamanIds = peminjamanList.map((p) => p.id);
+
+		if (peminjamanIds.length > 0) {
+			await DetailPeminjaman.destroy({
+				where: {
+					peminjaman_id: {
+						[Op.in]: peminjamanIds,
+					},
+				},
+				transaction: t,
+			});
+		}
+
+		await Peminjaman.destroy({
+			where: { user_id: id },
+			transaction: t,
+		});
+
+		await Pegawai.destroy({
+			where: { user_id: id },
+			transaction: t,
+		});
+
+		await Mahasiswa.destroy({
+			where: { user_id: id },
+			transaction: t,
+		});
+
+		await User.destroy({
+			where: { id },
+			transaction: t,
+		});
+		
+		await t.commit();
+
+		await createAdminLog({
+			req,
+			action: "DELETE",
+			module:
+				deletedRole === "Mahasiswa" || deletedRole === "Dosen"
+					? "Peminjam"
+					: "Pegawai",
+			description: `Menghapus user ${deletedRole}: ${deletedName}`,
+			target_id: null,
+			metadata: {
+				deleted_user_id: id,
+				email: plainUser.email,
+				nama: deletedName,
+				role: deletedRole,
+				role_id: plainUser.role_id,
+			},
+		});
+
+		return res.status(200).json({
+			status: "success",
+			message:
+				"User dan semua data profil terkait berhasil dihapus secara permanen.",
+			deletedId: id,
+		});
+	} catch (error) {
+		await t.rollback();
+
+		console.error("Error Delete User:", error);
+
+		return res.status(500).json({
+			status: "error",
+			message: "Gagal menghapus user secara permanen dari server.",
+			error: error.message,
+		});
+	}
 };
 
 // --- Fungsi Tambahan Sesuai Router ---
@@ -482,45 +690,44 @@ exports.getMe = async (req, res) => {
 };
 
 exports.updatePassword = async (req, res) => {
-    try {
-        const { id } = req.params; // UUID dari user yang sedang login
-        const { old_password, new_password } = req.body;
+	try {
+		const { id } = req.params; // UUID dari user yang sedang login
+		const { old_password, new_password } = req.body;
 
-        // 1. Cari user di database
-        const user = await User.findByPk(id);
-        if (!user) {
-            return res.status(404).json({ 
-                status: "error", 
-                message: "User tidak ditemukan di sistem." 
-            });
-        }
+		// 1. Cari user di database
+		const user = await User.findByPk(id);
+		if (!user) {
+			return res.status(404).json({
+				status: "error",
+				message: "User tidak ditemukan di sistem.",
+			});
+		}
 
-        // 2. Cek kecocokan password lama menggunakan bcrypt
-        const isMatch = await bcrypt.compare(old_password, user.password);
-        if (!isMatch) {
-            // Menggunakan format { errors: ... } agar ditangkap presisi oleh validasi Vue kamu
-            return res.status(400).json({ 
-                status: "fail",
-                errors: "Kata sandi lama yang Anda masukkan salah." 
-            });
-        }
+		// 2. Cek kecocokan password lama menggunakan bcrypt
+		const isMatch = await bcrypt.compare(old_password, user.password);
+		if (!isMatch) {
+			// Menggunakan format { errors: ... } agar ditangkap presisi oleh validasi Vue kamu
+			return res.status(400).json({
+				status: "fail",
+				errors: "Kata sandi lama yang Anda masukkan salah.",
+			});
+		}
 
-        // 3. Enkripsi (Hash) password baru
-        const hashedNewPassword = await bcrypt.hash(new_password, 10);
+		// 3. Enkripsi (Hash) password baru
+		const hashedNewPassword = await bcrypt.hash(new_password, 10);
 
-        // 4. Update password ke database
-        await user.update({ password: hashedNewPassword });
+		// 4. Update password ke database
+		await user.update({ password: hashedNewPassword });
 
-        res.status(200).json({
-            status: "success",
-            message: "Kata sandi berhasil diperbarui."
-        });
-
-    } catch (error) {
-        console.error("Error Update Password:", error);
-        res.status(500).json({ 
-            status: "error", 
-            message: error.message || "Terjadi kesalahan pada server." 
-        });
-    }
+		res.status(200).json({
+			status: "success",
+			message: "Kata sandi berhasil diperbarui.",
+		});
+	} catch (error) {
+		console.error("Error Update Password:", error);
+		res.status(500).json({
+			status: "error",
+			message: error.message || "Terjadi kesalahan pada server.",
+		});
+	}
 };

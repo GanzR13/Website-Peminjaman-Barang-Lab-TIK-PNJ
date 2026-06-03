@@ -50,6 +50,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
+      nomor_surat: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
       tanggal_pinjam: {
         type: Sequelize.DATE,
         allowNull: false

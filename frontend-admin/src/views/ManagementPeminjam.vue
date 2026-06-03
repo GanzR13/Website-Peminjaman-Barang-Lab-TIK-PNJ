@@ -497,6 +497,7 @@ const statusOptions = [
     { value: '', label: 'Semua Status' },
     { value: 'Menunggu', label: 'Menunggu (Pending)' },
     { value: 'Disetujui', label: 'Disetujui (Belum Diambil)' },
+    { value: 'Barang Rusak', label: 'Barang Rusak / Hilang' },
     { value: 'Dipinjam', label: 'Dipinjam (Sedang Digunakan)' },
     { value: 'Selesai', label: 'Selesai (Dikembalikan)' },
     { value: 'Ditolak', label: 'Ditolak / Dibatalkan' }
@@ -890,6 +891,8 @@ const getStatusBadgeClass = (status) => {
             return 'bg-blue-50 text-blue-600 ring-blue-200';
         case 'Dipinjam':
             return 'bg-indigo-50 text-indigo-600 ring-indigo-200';
+        case 'Barang Rusak':
+            return 'bg-orange-50 text-orange-600 ring-orange-200';
         case 'Selesai':
             return 'bg-emerald-50 text-emerald-600 ring-emerald-200';
         case 'Dibatalkan':
@@ -907,6 +910,9 @@ const openProcessModal = (item) => {
 
 // LOGIKA UPDATE STATUS (MENGGUNAKAN useConfirm)
 const updateStatus = (newStatus) => {
+    const currentStatus = selectedData.value?.status;
+    const hasLaporanMasalah = selectedData.value?.laporan_masalah?.length > 0;
+
     let pesanKonfirmasi = `Ubah status menjadi "${newStatus}"?`;
     let btnText = 'Ya, Lanjutkan';
     let btnColor = 'blue';
@@ -920,9 +926,16 @@ const updateStatus = (newStatus) => {
         btnText = 'Ya, Mulai Peminjaman';
         btnColor = 'blue';
     } else if (newStatus === 'Selesai') {
-        pesanKonfirmasi = 'Pastikan alat telah dikembalikan dengan lengkap. Selesaikan peminjaman ini?';
-        btnText = 'Ya, Selesai';
-        btnColor = 'emerald';
+        if (currentStatus === 'Barang Rusak' || hasLaporanMasalah) {
+            pesanKonfirmasi =
+                'Transaksi ini memiliki laporan kendala/barang rusak. Pastikan pertanggungjawaban sudah dicatat atau diselesaikan secara manual oleh admin. Tetap selesaikan peminjaman ini?';
+            btnText = 'Ya, Selesaikan';
+            btnColor = 'emerald';
+        } else {
+            pesanKonfirmasi = 'Pastikan alat telah dikembalikan dengan lengkap. Selesaikan peminjaman ini?';
+            btnText = 'Ya, Selesai';
+            btnColor = 'emerald';
+        }
     } else if (newStatus === 'Ditolak') {
         pesanKonfirmasi = 'Yakin ingin MENOLAK permohonan peminjaman ini?';
         btnText = 'Ya, Tolak';
@@ -938,7 +951,8 @@ const updateStatus = (newStatus) => {
 
             try {
                 await api.put(`/admin/peminjaman/${selectedData.value.id}/status`, {
-                    status: newStatus
+                    status: newStatus,
+                    force_selesai: newStatus === 'Selesai' && (currentStatus === 'Barang Rusak' || hasLaporanMasalah),
                 });
 
                 showAlert(`Status berhasil diubah menjadi ${newStatus}`, 'success');
@@ -950,7 +964,7 @@ const updateStatus = (newStatus) => {
                 processingStatus.value = null;
             }
         },
-        null, // Fungsi jika dibatalkan (kosongkan saja)
+        null,
         btnText,
         btnColor
     );
