@@ -106,8 +106,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Nama
-                                Lengkap</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Nama Lengkap</label>
                             <input v-model="formData.nama_lengkap" type="text" required
                                 class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-slate-700" />
                         </div>
@@ -117,7 +116,7 @@
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">NIM (Nomor
                                     Induk Mahasiswa)</label>
                                 <input v-model="formData.nim" type="text" required
-                                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none font-medium text-slate-700"
+                                    class="w-full px-4 py-2.5 border border-slate-200 focus:ring-2 focus:ring-emerald-500 rounded-xl outline-none font-medium text-slate-700"
                                     placeholder="Contoh: 22071..." />
                             </div>
 
@@ -125,7 +124,7 @@
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Program
                                     Studi</label>
                                 <button type="button" @click.stop="toggleDropdown('prodi')"
-                                    class="w-full flex items-center justify-between px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm font-bold cursor-pointer text-slate-700">
+                                    class="w-full flex items-center justify-between px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 bg-white text-sm font-bold cursor-pointer text-slate-700">
                                     <span class="truncate pr-2">{{validRefProdi.find((p) => p.id ===
                                         formData.prodi_id)?.nama_prodi || "Pilih Prodi"}}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 shrink-0"
@@ -136,7 +135,7 @@
                                 </button>
                                 <transition name="fade">
                                     <div v-if="activeDropdown === 'prodi'"
-                                        class="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-xl shadow-xl z-60 max-h-40 overflow-y-auto">
+                                        class="absolute top-full left-0 right-0 mt-1  bg-white border border-slate-100 rounded-xl shadow-xl z-60 max-h-40 overflow-y-auto">
                                         <button v-for="p in validRefProdi" :key="p.id" type="button"
                                             @click="formData.prodi_id = p.id; activeDropdown = null;"
                                             class="w-full px-4 py-2 text-sm text-left hover:bg-emerald-50 font-medium text-slate-700 transition-colors">
@@ -212,7 +211,7 @@
                                 class="w-full flex items-center justify-between px-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm font-bold cursor-pointer hover:border-emerald-300 transition-colors text-slate-700">
                                 <span class="truncate pr-2">
                                     {{validRoleOptions.find((role) => role.id === formData.role_id)?.nama_role ||
-                                    'Pilih Role Pegawai' }}
+                                        'Pilih Role Pegawai'}}
                                 </span>
 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 shrink-0"
@@ -245,7 +244,7 @@
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Email
                                     Institusi</label>
                                 <input v-model="formData.email" type="email" required :disabled="isEditMode"
-                                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl disabled:bg-slate-100 outline-none font-medium text-slate-700"
+                                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100 outline-none font-medium text-slate-700"
                                     placeholder="name@pnj.ac.id" />
 
                                 <div class="mt-3">
@@ -267,11 +266,17 @@
                             </div>
 
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Nomor
-                                    Telepon</label>
-                                <input v-model="formData.no_telepon" type="text"
-                                    class="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none font-medium text-slate-700"
-                                    placeholder="08..." />
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">
+                                    Nomor Telepon
+                                </label>
+                                <input v-model="formData.no_telepon" type="text" maxlength="13"
+                                    class="w-full px-4 py-2.5 border focus:ring-2 focus:ring-emerald-500 border-slate-200 rounded-xl outline-none font-medium text-slate-700"
+                                    placeholder="08..."
+                                    @input="formData.no_telepon = formData.no_telepon.replace(/\D/g, '').slice(0, 13)" />
+                                <p v-if="formData.no_telepon && formData.no_telepon.length < 10"
+                                    class="text-[10px] text-red-500 font-bold mt-1 ml-1">
+                                    Nomor telepon minimal 10 digit
+                                </p>
                             </div>
                         </div>
 

@@ -65,6 +65,36 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
+			status_approve_kalab: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: "Menunggu",
+			},
+
+			kalab_approved_by: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+
+			kalab_approved_at: {
+				type: DataTypes.DATE,
+				allowNull: true,
+			},
+			dosen_pj_user_id: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+
+			status_approve_dosen_pj: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: "Tidak Diperlukan",
+			},
+
+			dosen_pj_approved_at: {
+				type: DataTypes.DATE,
+				allowNull: true,
+			},
 			tanggal_pinjam: {
 				type: DataTypes.DATE,
 				allowNull: false,

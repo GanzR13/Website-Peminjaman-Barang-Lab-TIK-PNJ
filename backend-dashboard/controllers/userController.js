@@ -15,6 +15,41 @@ const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
 const createAdminLog = require("../utils/adminActionLogger");
+const { cloudinary } = require("../middlewares/uploadCloudinary");
+
+const getCloudinaryPublicIdFromUrl = (url) => {
+	if (!url || typeof url !== "string") return null;
+
+	try {
+		const uploadIndex = url.indexOf("/upload/");
+		if (uploadIndex === -1) return null;
+
+		let path = url.substring(uploadIndex + "/upload/".length);
+
+		// Hilangkan version Cloudinary, contoh: v1712345678/
+		path = path.replace(/^v\d+\//, "");
+
+		// Hilangkan extension file, contoh: .webp / .jpg / .png
+		path = path.replace(/\.[^/.]+$/, "");
+
+		return path;
+	} catch (error) {
+		return null;
+	}
+};
+
+const deleteCloudinaryFile = async (url) => {
+	const publicId = getCloudinaryPublicIdFromUrl(url);
+
+	if (!publicId) return;
+
+	try {
+		await cloudinary.uploader.destroy(publicId);
+		console.log("TTD lama berhasil dihapus dari Cloudinary:", publicId);
+	} catch (error) {
+		console.error("Gagal menghapus TTD lama dari Cloudinary:", error.message);
+	}
+};
 
 // Fungsi GET All Users (Admin Only)
 exports.getAllUsers = async (req, res) => {
@@ -27,11 +62,13 @@ exports.getAllUsers = async (req, res) => {
 				"no_telepon",
 				"tanggal_daftar",
 				"email_verified",
+				"ttd_digital",
 				"createdAt",
 				"updatedAt",
 			],
 			include: [{ model: Role, attributes: ["nama_role", "level_akses"] }],
 		});
+
 		res.status(200).json(users);
 	} catch (error) {
 		res
@@ -128,6 +165,7 @@ exports.getPeminjam = async (req, res) => {
 					email_verified: user.email_verified,
 					no_telepon: user.no_telepon,
 					Role: user.Role,
+					ttd_digital: user.ttd_digital,
 				},
 			};
 		});
@@ -164,6 +202,7 @@ exports.createUser = async (req, res) => {
 			prodi_id,
 			kelas_id,
 			tanggal_daftar,
+			ttd_digital,
 		} = req.body;
 
 		const selectedRole = await Role.findByPk(role_id);
@@ -195,6 +234,7 @@ exports.createUser = async (req, res) => {
 		}
 
 		const hashedPassword = await bcrypt.hash(password, 10);
+		const ttdDigitalUrl = req.file?.path || ttd_digital || null;
 
 		const newUser = await User.create(
 			{
@@ -205,6 +245,7 @@ exports.createUser = async (req, res) => {
 				role_id,
 				tanggal_daftar: tanggal_daftar || new Date(),
 				email_verified: true,
+				ttd_digital: ttdDigitalUrl,
 			},
 			{ transaction: t },
 		);
@@ -251,6 +292,7 @@ exports.createUser = async (req, res) => {
 				level_akses: selectedRole.level_akses,
 				nim: isMahasiswa ? nim : null,
 				nip: !isMahasiswa ? nip : null,
+				ttd_digital: ttdDigitalUrl,
 			},
 		});
 
@@ -302,6 +344,7 @@ exports.updateUser = async (req, res) => {
 			kelas_id,
 			email_verified,
 			role_id,
+			ttd_digital,
 		} = req.body;
 
 		const user = await User.findByPk(id, {
@@ -323,6 +366,11 @@ exports.updateUser = async (req, res) => {
 
 		const plainBefore = user.toJSON ? user.toJSON() : user;
 
+		const oldTtdDigital = plainBefore.ttd_digital || null;
+
+		const newTtdDigitalUrl =
+			req.file?.path || ttd_digital || plainBefore.ttd_digital || null;
+
 		const oldName =
 			plainBefore.mahasiswa?.nama_mahasiswa ||
 			plainBefore.pegawai?.nama_lengkap ||
@@ -342,13 +390,26 @@ exports.updateUser = async (req, res) => {
 			angkatan: plainBefore.mahasiswa?.angkatan || null,
 			prodi_id: plainBefore.mahasiswa?.prodi_id || null,
 			kelas_id: plainBefore.mahasiswa?.kelas_id || null,
+			ttd_digital: plainBefore.ttd_digital || null,
 		};
 
+		const ttdDigitalUrl =
+			req.file?.path || ttd_digital || plainBefore.ttd_digital || null;
 		const updateAkunUtama = {
-			email,
-			no_telepon,
-			email_verified,
+			ttd_digital: newTtdDigitalUrl,
 		};
+
+		if (email !== undefined) {
+			updateAkunUtama.email = email;
+		}
+
+		if (no_telepon !== undefined) {
+			updateAkunUtama.no_telepon = no_telepon;
+		}
+
+		if (email_verified !== undefined) {
+			updateAkunUtama.email_verified = email_verified;
+		}
 
 		if (role_id) {
 			updateAkunUtama.role_id = role_id;
@@ -391,6 +452,10 @@ exports.updateUser = async (req, res) => {
 
 		await t.commit();
 
+		if (req.file?.path && oldTtdDigital && oldTtdDigital !== req.file.path) {
+			await deleteCloudinaryFile(oldTtdDigital);
+		}
+
 		await createAdminLog({
 			req,
 			action:
@@ -420,6 +485,7 @@ exports.updateUser = async (req, res) => {
 					angkatan: angkatan || oldData.angkatan,
 					prodi_id: prodi_id || oldData.prodi_id,
 					kelas_id: kelas_id || oldData.kelas_id,
+					ttd_digital: ttdDigitalUrl,
 				},
 			},
 		});
@@ -432,6 +498,7 @@ exports.updateUser = async (req, res) => {
 				email,
 				nama_lengkap,
 				role_id: role_id || oldData.role_id,
+				ttd_digital: ttdDigitalUrl,
 			},
 		});
 	} catch (error) {
@@ -517,7 +584,7 @@ exports.deleteUser = async (req, res) => {
 			where: { id },
 			transaction: t,
 		});
-		
+
 		await t.commit();
 
 		await createAdminLog({
@@ -568,7 +635,23 @@ exports.getPegawaiById = async (req, res) => {
 	try {
 		const data = await Pegawai.findOne({
 			where: { user_id: req.params.id },
-			include: [{ model: User, as: "user", include: [Role] }],
+			include: [
+				{
+					model: User,
+					as: "user",
+					attributes: [
+						"id",
+						"email",
+						"no_telepon",
+						"email_verified",
+						"role_id",
+						"ttd_digital",
+						"createdAt",
+						"updatedAt",
+					],
+					include: [Role],
+				},
+			],
 		});
 
 		if (!data) {
@@ -621,6 +704,7 @@ exports.getPeminjamById = async (req, res) => {
 				identitas: isMahasiswa ? user.mahasiswa?.nim : user.pegawai?.nip,
 				role: user.Role.nama_role,
 				detail: isMahasiswa ? user.mahasiswa : user.pegawai,
+				ttd_digital: user.ttd_digital,
 			},
 		});
 	} catch (error) {
@@ -634,7 +718,14 @@ exports.getMe = async (req, res) => {
 
 		const user = await User.findByPk(userId, {
 			// FIX PENTING: Tambahkan 'email_verified' di dalam attributes agar bisa diakses
-			attributes: ["id", "email", "email_verified", "no_telepon", "role_id"],
+			attributes: [
+				"id",
+				"email",
+				"email_verified",
+				"no_telepon",
+				"role_id",
+				"ttd_digital",
+			],
 			include: [
 				{ model: Role, attributes: ["nama_role", "level_akses"] },
 				{ model: Pegawai, as: "pegawai", required: false },
@@ -671,6 +762,7 @@ exports.getMe = async (req, res) => {
 				: user.pegawai?.nama_lengkap,
 			nip: user.pegawai?.nip || null,
 			nim: user.mahasiswa?.nim || null,
+			ttd_digital: user.ttd_digital,
 			detail_tambahan: isMahasiswa
 				? {
 						angkatan: user.mahasiswa?.angkatan,
@@ -730,4 +822,56 @@ exports.updatePassword = async (req, res) => {
 			message: error.message || "Terjadi kesalahan pada server.",
 		});
 	}
+};
+
+exports.getDosenUsers = async (req, res) => {
+    try {
+        const data = await User.findAll({
+            attributes: ["id", "email", "no_telepon", "ttd_digital", "role_id"],
+            include: [
+                {
+                    model: Role,
+                    attributes: ["id", "nama_role", "level_akses"],
+                    where: {
+                        nama_role: "Dosen",
+                    },
+                },
+                {
+                    model: Pegawai,
+                    as: "pegawai",
+                    attributes: ["nama_lengkap", "nip"],
+                    required: true,
+                },
+            ],
+            order: [[{ model: Pegawai, as: "pegawai" }, "nama_lengkap", "ASC"]],
+        });
+
+        const mappedData = data.map((user) => {
+            const plain = user.get({ plain: true });
+
+            return {
+                id: plain.id,
+                email: plain.email,
+                no_telepon: plain.no_telepon,
+                role_id: plain.role_id,
+                nama_role: plain.Role?.nama_role,
+                level_akses: plain.Role?.level_akses,
+                nama_lengkap: plain.pegawai?.nama_lengkap,
+                nip: plain.pegawai?.nip,
+                ttd_digital: plain.ttd_digital,
+            };
+        });
+
+        return res.status(200).json({
+            status: "success",
+            data: mappedData,
+        });
+    } catch (error) {
+        console.error("Error Get Dosen Users:", error);
+
+        return res.status(500).json({
+            status: "error",
+            message: "Gagal mengambil data dosen.",
+        });
+    }
 };

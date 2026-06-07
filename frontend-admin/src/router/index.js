@@ -61,6 +61,24 @@ const routes = [
 				},
 			},
 			{
+				path: "/referensi/prodi",
+				name: "TabelRefProdi",
+				component: () => import("../views/TabelRefProdi.vue"),
+				meta: {
+					requiresAuth: true,
+					role: "super_admin",
+				},
+			},
+			{
+				path: "/referensi/kelas",
+				name: "TabelRefKelas",
+				component: () => import("../views/TabelRefKelas.vue"),
+				meta: {
+					requiresAuth: true,
+					role: "super_admin",
+				},
+			},
+			{
 				path: "/laporan-masalah",
 				name: "LaporanMasalah",
 				component: () => import("../views/LaporanMasalah.vue"), // Pastikan kamu membuat file ini nanti!
@@ -90,10 +108,8 @@ router.beforeEach((to, from) => {
 
 	// Jika sudah login pakai akun Mahasiswa tapi mencoba masuk rute Admin
 	if (to.meta.requiresAuth && isAuthenticated && !isAdmin) {
-		localStorage.clear(); // Tendang tokennya
+		localStorage.clear();
 
-		// Catatan: Pastikan ShowAlert di-import jika ingin digunakan di luar file .vue
-		// Jika error "ShowAlert is not defined", ganti dengan alert biasa:
 		alert("Akses Ditolak: Halaman ini hanya untuk Admin/Pegawai");
 
 		return { name: "AdminLogin" };
@@ -101,10 +117,10 @@ router.beforeEach((to, from) => {
 
 	// Jika sudah login sebagai Admin, lalu mencoba buka halaman Login lagi
 	if (to.path === "/admin/login" && isAuthenticated && isAdmin) {
-		return { name: "AdminDashboard" }; // Langsung arahkan ke dashboard
+		return { name: "AdminDashboard" };
 	}
 
-	return true; // Jika semua aman, izinkan masuk
+	return true;
 });
 
 export default router;

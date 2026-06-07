@@ -14,6 +14,7 @@ const adminPeminjamanRoutes = require('./routes/adminPeminjamanRoutes');
 const dataanalitikRoutes = require('./routes/dataanalitikRoutes');
 const adminLaporanRoutes = require('./routes/adminLaporanRoutes');
 const adminActionLogRoutes = require("./routes/adminActionLogRoutes");
+const dosenApprovalRoutes = require("./routes/dosenApprovalRoutes");
 
 const app = express();
 
@@ -59,6 +60,7 @@ app.use('/api/admin/peminjaman', adminPeminjamanRoutes);
 app.use('/api/dataanalitik', dataanalitikRoutes);
 app.use('/api/admin/laporan', adminLaporanRoutes);
 app.use("/api/admin-action-logs", adminActionLogRoutes);
+app.use("/api/dosen", dosenApprovalRoutes);
 
 // REDIRECT Rute Utama
 app.get("/", (req, res) => {

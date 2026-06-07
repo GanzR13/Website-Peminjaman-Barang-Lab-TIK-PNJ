@@ -148,13 +148,13 @@
                             Top 5 Prioritas Pengadaan
                         </h3>
                         <p class="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-                            Berdasarkan skor SPK tahun {{ selectedYear }}
+                            Berdasarkan skor SPK 0,00 - 1,00 tahun {{ selectedYear }}
                         </p>
                     </div>
 
                     <span
                         class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 w-fit">
-                        Rule-Based Score
+                        Rule-Based Score 0,00 - 1,00
                     </span>
                 </div>
                 <div v-if="isLoading" class="h-52 md:h-64 flex flex-col items-center justify-center text-slate-400">
@@ -175,7 +175,7 @@
                             Bobot Peminjaman
                         </p>
                         <p class="text-xs text-blue-700 font-bold mt-1">
-                            Semakin sering dipinjam, skor makin tinggi.
+                            Dinormalisasi 0,00 - 1,00 dari data tahun terpilih.
                         </p>
                     </div>
 
@@ -217,21 +217,21 @@
                 <ul v-if="showMatrix || isDesktop" class="space-y-3 text-sm font-medium text-slate-300 mt-4 lg:mt-0">
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Kritis:</strong> Dipinjam > 50x & Kendala > 2x. (Ganti & Tambah
+                        <p><strong class="text-white">Kritis:</strong> Dipinjam ≥ 50x & Kendala ≥ 2x. (Ganti & Tambah
                             Stok)</p>
                     </li>
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Prioritas:</strong> Dipinjam > 50x & Stok < 5. (Wajib Tambah
+                        <p><strong class="text-white">Prioritas Tinggi:</strong> Dipinjam ≥ 50x & Stok ≤ 5. (Wajib Tambah
                                 Stok)</p>
                     </li>
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-orange-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Penggantian:</strong> Ada barang rusak/hilang. (Wajib Restock)</p>
+                        <p><strong class="text-white">Perlu Penggantian:</strong> Ada barang rusak/hilang. (Wajib Restock)</p>
                     </li>
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Menengah:</strong> Dipinjam > 50x (Stok Aman), ATAU Stok Tipis.
+                        <p><strong class="text-white">Prioritas Menengah:</strong> Dipinjam ≥ 50x (Stok Aman), ATAU Stok Tipis.
                         </p>
                     </li>
                     <li class="flex items-start gap-2">
@@ -530,7 +530,7 @@ watch(selectedYear, () => {
     fetchMonthlyTrendData();
 });
 
-// --- LOGIKA RULE-BASED ANALYTICS YANG LEBIH CERDAS ---
+// --- Logika Rule Base Data Analitik ---
 const generateRecommendation = (item) => {
     const isHighDemand = item.total_dipinjam >= 50;
     const isLowStock = item.stok_saat_ini <= 5;
@@ -607,37 +607,61 @@ const prioritasTinggiCount = computed(() => analitikWithRekomendasi.value.filter
     a.rekomendasi.type === 'ganti_unit'
 ).length);
 
-const calculatePriorityScore = (item) => {
+const normalizeScore = (value, maxValue) => {
+    if (!maxValue || maxValue <= 0) return 0;
+    return Math.min(Number(value || 0) / maxValue, 1);
+};
+
+const getStockScore = (stok) => {
+    const currentStock = Number(stok || 0);
+
+    if (currentStock <= 0) return 1;
+    if (currentStock <= 5) return (6 - currentStock) / 5;
+
+    return 0;
+};
+
+const getRuleScore = (type) => {
+    const ruleScoreMap = {
+        kritis: 1,
+        prioritas_tinggi: 0.85,
+        ganti_unit: 0.7,
+        prioritas_menengah: 0.5,
+        aman: 0
+    };
+
+    return ruleScoreMap[type] || 0;
+};
+
+const calculatePriorityScore = (item, maxValues) => {
     const totalKendala = item.rusak + item.hilang + item.rusak_total;
 
-    let score = 0;
+    const demandScore = normalizeScore(item.total_dipinjam, maxValues.maxDipinjam);
+    const problemScore = normalizeScore(totalKendala, maxValues.maxKendala);
+    const stockScore = getStockScore(item.stok_saat_ini);
+    const ruleScore = getRuleScore(item.rekomendasi.type);
 
-    // Semakin sering dipinjam, semakin tinggi prioritas
-    score += item.total_dipinjam;
+    const finalScore =
+        (demandScore * 0.40) +
+        (problemScore * 0.25) +
+        (stockScore * 0.20) +
+        (ruleScore * 0.15);
 
-    // Kerusakan dan kehilangan diberi bobot lebih besar
-    score += item.rusak * 10;
-    score += item.hilang * 12;
-    score += item.rusak_total * 15;
-
-    // Stok tipis diberi tambahan skor
-    if (item.stok_saat_ini <= 5) {
-        score += 20;
-    }
-
-    // Jika banyak kendala, tambah bobot kritis
-    if (totalKendala >= 2) {
-        score += 15;
-    }
-
-    return score;
+    return Number(Math.min(finalScore, 1).toFixed(2));
 };
 
 const top5Data = computed(() => {
-    return [...analitikWithRekomendasi.value]
+    const data = [...analitikWithRekomendasi.value];
+
+    const maxValues = {
+        maxDipinjam: Math.max(...data.map(item => item.total_dipinjam), 0),
+        maxKendala: Math.max(...data.map(item => item.rusak + item.hilang + item.rusak_total), 0)
+    };
+
+    return data
         .map(item => ({
             ...item,
-            priority_score: calculatePriorityScore(item)
+            priority_score: calculatePriorityScore(item, maxValues)
         }))
         .filter(item => item.priority_score > 0)
         .sort((a, b) => b.priority_score - a.priority_score)
@@ -682,7 +706,7 @@ const chartOptions = {
                     const item = top5Data.value[context.dataIndex];
 
                     return [
-                        `Skor Prioritas: ${item.priority_score}`,
+                        `Skor Prioritas: ${item.priority_score.toFixed(2)}`,
                         `Dipinjam: ${item.total_dipinjam}x`,
                         `Stok: ${item.stok_saat_ini} unit`,
                         `Kendala: ${item.rusak + item.hilang + item.rusak_total} kasus`
@@ -694,12 +718,13 @@ const chartOptions = {
     scales: {
         x: {
             beginAtZero: true,
+            suggestedMax: 1,
             grid: {
                 color: '#f1f5f9'
             },
             ticks: {
-                precision: 0,
                 color: '#64748b',
+                callback: (value) => Number(value).toFixed(2),
                 font: {
                     size: 11,
                     weight: 'bold'

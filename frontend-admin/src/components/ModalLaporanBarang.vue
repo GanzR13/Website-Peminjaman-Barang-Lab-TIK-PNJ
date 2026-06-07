@@ -245,7 +245,10 @@ onUnmounted(() => {
 });
 
 const handleSave = () => {
-    emit('save', { ...localForm.value });
+    emit('save', {
+        ...localForm.value,
+        jumlah: Number(props.item?.jumlah || 1)
+    });
 };
 
 const getImageUrl = (path) => {

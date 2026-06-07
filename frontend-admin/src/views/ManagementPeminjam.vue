@@ -276,6 +276,32 @@
                             </span>
                         </div>
 
+                        <div v-if="item.kategori_kebutuhan === 'Khusus'" class="mt-3 grid grid-cols-1 gap-2">
+                            <div
+                                class="flex items-center justify-between gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                    Approval Kalab
+                                </span>
+
+                                <span :class="getApprovalStatusBadgeClass(item.status_approve_kalab)"
+                                    class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1">
+                                    {{ item.status_approve_kalab || 'Menunggu' }}
+                                </span>
+                            </div>
+
+                            <div
+                                class="flex items-center justify-between gap-2 bg-slate-50 rounded-xl px-3 py-2 border border-slate-100">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                    Approval Dosen PJ
+                                </span>
+
+                                <span :class="getApprovalStatusBadgeClass(item.status_approve_dosen_pj)"
+                                    class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1">
+                                    {{ item.status_approve_dosen_pj || 'Tidak Diperlukan' }}
+                                </span>
+                            </div>
+                        </div>
+
                         <span :class="getStatusBadgeClass(item.status)"
                             class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ring-1 text-center max-w-30 truncate">
                             {{ item.status }}
@@ -330,6 +356,7 @@
                             <th class="p-4">Info Peminjam</th>
                             <th class="p-4">Tgl Pinjam</th>
                             <th class="p-4">Tgl Kembali</th>
+                            <th class="p-4">Approval</th>
                             <th class="p-4 pr-6 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -374,6 +401,38 @@
                                 <span
                                     class="px-3 py-1 bg-slate-50 rounded-lg border border-slate-100 text-slate-700 font-bold text-xs">
                                     {{ formatDate(item.tanggal_kembali) }}
+                                </span>
+                            </td>
+
+                            <td class="p-4">
+                                <div v-if="item.kategori_kebutuhan === 'Khusus'" class="space-y-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="text-[9px] font-black text-slate-400 uppercase tracking-widest w-12">
+                                            Kalab
+                                        </span>
+
+                                        <span :class="getApprovalStatusBadgeClass(item.status_approve_kalab)"
+                                            class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1">
+                                            {{ item.status_approve_kalab || 'Menunggu' }}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5">
+                                        <span
+                                            class="text-[9px] font-black text-slate-400 uppercase tracking-widest w-12">
+                                            Dosen
+                                        </span>
+
+                                        <span :class="getApprovalStatusBadgeClass(item.status_approve_dosen_pj)"
+                                            class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ring-1">
+                                            {{ item.status_approve_dosen_pj || 'Tidak Diperlukan' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <span v-else class="text-[10px] font-bold text-slate-400">
+                                    -
                                 </span>
                             </td>
 
@@ -475,10 +534,12 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon
 } from '@heroicons/vue/24/outline';
+import { useAuthStore } from '../stores/auth';
 
 const { showAlert } = useAlert();
 const { showConfirm } = useConfirm(); // Panggil fungsi Confirm
 
+const authStore = useAuthStore();
 // State Umum
 const rawPeminjamanList = ref([]);
 const isLoading = ref(false);
@@ -492,6 +553,63 @@ const selectedData = ref(null);
 const filterStatus = ref('');
 const showStatusDropdown = ref(false);
 const statusDropdownRef = ref(null);
+
+const currentUserRoleId = computed(() => {
+    return Number(authStore.user?.role_id || authStore.user?.role?.id || 0);
+});
+
+const isKepalaLab = computed(() => {
+    return currentUserRoleId.value === 1;
+});
+
+const isAdminPengelola = computed(() => {
+    return currentUserRoleId.value === 3;
+});
+
+const isPeminjamanKhusus = (item) => {
+    return item?.kategori_kebutuhan === 'Khusus';
+};
+
+const isKalabApproved = (item) => {
+    return item?.status_approve_kalab === 'Disetujui';
+};
+
+const isDosenPjApproved = (item) => {
+    return (
+        !item?.dosen_pj_user_id ||
+        item?.status_approve_dosen_pj === 'Tidak Diperlukan' ||
+        item?.status_approve_dosen_pj === 'Disetujui'
+    );
+};
+
+const getApprovalStatusBadgeClass = (status) => {
+    switch (status) {
+        case 'Disetujui':
+            return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
+        case 'Ditolak':
+            return 'bg-red-50 text-red-700 ring-red-200';
+        case 'Menunggu':
+            return 'bg-amber-50 text-amber-700 ring-amber-200';
+        case 'Tidak Diperlukan':
+            return 'bg-slate-50 text-slate-500 ring-slate-200';
+        default:
+            return 'bg-slate-50 text-slate-500 ring-slate-200';
+    }
+};
+
+const getApprovalBlockingMessage = (item) => {
+    if (!isPeminjamanKhusus(item)) return '';
+
+    if (!isKalabApproved(item)) {
+        return 'Peminjaman khusus belum dapat disetujui admin karena belum disetujui Kepala Laboratorium.';
+    }
+
+    if (!isDosenPjApproved(item)) {
+        return 'Peminjaman khusus belum dapat disetujui admin karena Dosen Penanggung Jawab belum menyetujui.';
+    }
+
+    return '';
+};
 
 const statusOptions = [
     { value: '', label: 'Semua Status' },
@@ -910,8 +1028,28 @@ const openProcessModal = (item) => {
 
 // LOGIKA UPDATE STATUS (MENGGUNAKAN useConfirm)
 const updateStatus = (newStatus) => {
-    const currentStatus = selectedData.value?.status;
-    const hasLaporanMasalah = selectedData.value?.laporan_masalah?.length > 0;
+    const currentItem = selectedData.value;
+
+    if (!currentItem) return;
+
+    const currentStatus = currentItem.status;
+    const hasLaporanMasalah = currentItem.laporan_masalah?.length > 0;
+
+    const isKhusus = isPeminjamanKhusus(currentItem);
+
+    if (newStatus === 'Disetujui' && isKhusus) {
+        if (isKepalaLab.value && !isKalabApproved(currentItem)) {
+            approveKalab(currentItem);
+            return;
+        }
+
+        const blockingMessage = getApprovalBlockingMessage(currentItem);
+
+        if (blockingMessage) {
+            showAlert(blockingMessage, 'warning');
+            return;
+        }
+    }
 
     let pesanKonfirmasi = `Ubah status menjadi "${newStatus}"?`;
     let btnText = 'Ya, Lanjutkan';
@@ -950,9 +1088,11 @@ const updateStatus = (newStatus) => {
             processingStatus.value = newStatus;
 
             try {
-                await api.put(`/admin/peminjaman/${selectedData.value.id}/status`, {
+                await api.put(`/admin/peminjaman/${currentItem.id}/status`, {
                     status: newStatus,
-                    force_selesai: newStatus === 'Selesai' && (currentStatus === 'Barang Rusak' || hasLaporanMasalah),
+                    force_selesai:
+                        newStatus === 'Selesai' &&
+                        (currentStatus === 'Barang Rusak' || hasLaporanMasalah),
                 });
 
                 showAlert(`Status berhasil diubah menjadi ${newStatus}`, 'success');
@@ -967,6 +1107,39 @@ const updateStatus = (newStatus) => {
         null,
         btnText,
         btnColor
+    );
+};
+
+const approveKalab = (item) => {
+    showConfirm(
+        'Setujui peminjaman khusus ini sebagai Kepala Laboratorium?',
+        async () => {
+            if (processingStatus.value !== null) return;
+
+            processingStatus.value = 'ApproveKalab';
+
+            try {
+                await api.put(`/admin/peminjaman/${item.id}/kalab-approval`, {
+                    status_approve_kalab: 'Disetujui',
+                });
+
+                showAlert('Peminjaman berhasil disetujui Kepala Laboratorium.', 'success');
+
+                isModalOpen.value = false;
+                await fetchPeminjaman();
+            } catch (error) {
+                showAlert(
+                    error.response?.data?.message ||
+                        'Gagal menyetujui peminjaman sebagai Kepala Laboratorium.',
+                    'error'
+                );
+            } finally {
+                processingStatus.value = null;
+            }
+        },
+        null,
+        'Ya, Approve Kalab',
+        'blue'
     );
 };
 

@@ -68,14 +68,27 @@ import {
   UserCircleIcon,
   Squares2X2Icon,
   ArchiveBoxIcon,
-  ClockIcon
+  ClockIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/vue/24/outline';
+
 
 const emit = defineEmits(['close-mobile']);
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { showConfirm } = useConfirm();
+
+const isDosen = computed(() => {
+  const roleName = String(authStore.user?.role_name || authStore.user?.nama_role || '').toLowerCase();
+  const level = String(authStore.user?.level || authStore.user?.level_akses || '').toLowerCase();
+
+  return (
+    roleName === 'dosen' ||
+    Number(authStore.user?.role_id) === 4 ||
+    level === 'dosen'
+  );
+});
 
 const userName = computed(() => {
   return authStore.user?.nama || authStore.user?.nama_lengkap || 'Pengguna';
@@ -89,12 +102,29 @@ const userRole = computed(() => {
   return authStore.user?.role_name || authStore.user?.level || 'Peminjam';
 });
 
-const menuItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: Squares2X2Icon },
-  { name: 'Katalog Barang', path: '/catalog', icon: ArchiveBoxIcon },
-  { name: 'Riwayat Pinjam', path: '/riwayat', icon: ClockIcon },
-  { name: 'Profil', path: '/profile', icon: UserCircleIcon }
-];
+const menuItems = computed(() => {
+  const menus = [
+    { name: 'Dashboard', path: '/dashboard', icon: Squares2X2Icon },
+    { name: 'Katalog Barang', path: '/catalog', icon: ArchiveBoxIcon },
+    { name: 'Riwayat Pinjam', path: '/riwayat', icon: ClockIcon },
+  ];
+
+  if (isDosen.value) {
+    menus.push({
+      name: 'Approval Peminjaman',
+      path: '/approval-dosen',
+      icon: ClipboardDocumentCheckIcon,
+    });
+  }
+
+  menus.push({
+    name: 'Profil',
+    path: '/profile',
+    icon: UserCircleIcon,
+  });
+
+  return menus;
+});
 
 const handleLogout = () => {
   emit('close-mobile');

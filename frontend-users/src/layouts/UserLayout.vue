@@ -35,13 +35,17 @@
               active-class="!border-blue-600 !text-blue-600">
               Riwayat Peminjaman
             </router-link>
+            <router-link v-if="isDosen" to="/approval-dosen"
+              class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-bold transition-colors text-slate-500 hover:text-blue-600 hover:border-blue-600"
+              active-class="!border-blue-600 !text-blue-600">
+              Approval Dosen
+            </router-link>
           </nav>
 
           <div class="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
             <div class="hidden md:flex flex-col text-right">
               <span class="text-sm font-bold text-slate-900 leading-tight">{{ authStore.user?.nama || 'Rizki' }}</span>
-              <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">{{ authStore.user?.level ||
-                'Mahasiswa' }}</span>
+              <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">{{ userDisplayRole }}</span>
             </div>
 
             <router-link to="/profile"
@@ -82,6 +86,11 @@
             <router-link to="/riwayat"
               class="block px-4 py-3.5 rounded-xl text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-colors active:scale-95"
               active-class="bg-blue-50 !text-blue-600">Peminjaman Saya</router-link>
+            <router-link v-if="isDosen" to="/approval-dosen"
+              class="block px-4 py-3.5 rounded-xl text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-colors active:scale-95"
+              active-class="bg-blue-50 !text-blue-600">
+              Approval Dosen
+            </router-link>
 
             <div class="my-2 border-t border-slate-100"></div>
 
@@ -114,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useConfirm } from '../composables/useConfirm';
@@ -131,6 +140,35 @@ const router = useRouter();
 const { showConfirm } = useConfirm();
 
 const isMobileMenuOpen = ref(false);
+
+const isDosen = computed(() => {
+  const roleId = Number(authStore.user?.role_id || authStore.user?.role?.id);
+
+  const roleName = String(
+    authStore.user?.role_name ||
+    authStore.user?.nama_role ||
+    authStore.user?.role?.nama_role ||
+    ''
+  ).toLowerCase();
+
+  const level = String(
+    authStore.user?.level ||
+    authStore.user?.level_akses ||
+    authStore.user?.role?.level_akses ||
+    ''
+  ).toLowerCase();
+
+  return roleId === 4 || roleName === 'dosen' || level === 'dosen';
+});
+
+const userDisplayRole = computed(() => {
+  return (
+    authStore.user?.role_name ||
+    authStore.user?.nama_role ||
+    authStore.user?.level ||
+    'Mahasiswa'
+  );
+});
 
 watch(() => route.path, () => {
   isMobileMenuOpen.value = false;

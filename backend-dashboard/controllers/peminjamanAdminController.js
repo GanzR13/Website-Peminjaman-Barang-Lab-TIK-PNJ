@@ -286,6 +286,35 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			}
 		}
 
+		if (status === "Disetujui" && peminjaman.kategori_kebutuhan === "Khusus") {
+			if (peminjaman.status_approve_kalab !== "Disetujui") {
+				await t.rollback();
+
+				return res.status(400).json({
+					status: "error",
+					message:
+						"Peminjaman khusus belum dapat disetujui karena belum disetujui Kepala Laboratorium.",
+				});
+			}
+
+			const perluApprovalDosen =
+				peminjaman.dosen_pj_user_id &&
+				peminjaman.status_approve_dosen_pj !== "Tidak Diperlukan";
+
+			if (
+				perluApprovalDosen &&
+				peminjaman.status_approve_dosen_pj !== "Disetujui"
+			) {
+				await t.rollback();
+
+				return res.status(400).json({
+					status: "error",
+					message:
+						"Peminjaman khusus belum dapat disetujui karena belum disetujui Dosen Penanggung Jawab.",
+				});
+			}
+		}
+
 		// ============================================================
 		// 3. GENERATE NOMOR SURAT
 		// ============================================================
@@ -380,6 +409,63 @@ exports.updateStatusPeminjaman = async (req, res) => {
 		if (t) await t.rollback();
 
 		console.error("Error Update Status:", error);
+
+		return res.status(500).json({
+			status: "error",
+			message: error.message,
+		});
+	}
+};
+
+exports.approveKalabPeminjaman = async (req, res) => {
+	try {
+		const { id } = req.params;
+
+		const userRoleId = Number(req.user?.role_id);
+
+		if (userRoleId !== 1) {
+			return res.status(403).json({
+				status: "error",
+				message: "Hanya Kepala Laboratorium yang dapat melakukan approval ini.",
+			});
+		}
+
+		const peminjaman = await Peminjaman.findByPk(id);
+
+		if (!peminjaman) {
+			return res.status(404).json({
+				status: "error",
+				message: "Data peminjaman tidak ditemukan.",
+			});
+		}
+
+		if (peminjaman.kategori_kebutuhan !== "Khusus") {
+			return res.status(400).json({
+				status: "error",
+				message:
+					"Approval Kepala Lab hanya diperlukan untuk peminjaman khusus.",
+			});
+		}
+
+		if (peminjaman.status_approve_kalab === "Disetujui") {
+			return res.status(400).json({
+				status: "error",
+				message: "Peminjaman ini sudah disetujui Kepala Laboratorium.",
+			});
+		}
+
+		await peminjaman.update({
+			status_approve_kalab: "Disetujui",
+			kalab_approved_by: req.user.id,
+			kalab_approved_at: new Date(),
+		});
+
+		return res.status(200).json({
+			status: "success",
+			message: "Peminjaman berhasil disetujui Kepala Laboratorium.",
+		});
+	} catch (error) {
+		console.error("Error Approve Kalab Peminjaman:", error);
 
 		return res.status(500).json({
 			status: "error",

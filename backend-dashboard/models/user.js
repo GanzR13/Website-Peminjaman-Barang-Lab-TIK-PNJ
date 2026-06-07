@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
 			no_telepon: DataTypes.STRING,
 			tanggal_daftar: DataTypes.DATE,
 			email_verified: DataTypes.BOOLEAN,
-			role_id: DataTypes.INTEGER, 
+			role_id: DataTypes.INTEGER,
+			ttd_digital: DataTypes.STRING,
 		},
 		{
 			sequelize,

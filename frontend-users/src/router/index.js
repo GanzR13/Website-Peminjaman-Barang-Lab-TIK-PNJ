@@ -1,9 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-// 1. Import Layout Topbar
 import UserLayout from "../layouts/UserLayout.vue";
 
-// 2. Import Views (HomePage dihapus)
 import Login from "../views/Login.vue";
 import Register from "../views/Register.vue";
 import Beranda from "../views/Beranda.vue";
@@ -12,17 +10,11 @@ import CatalogBarang from "../views/CatalogBarang.vue";
 import RiwayatPeminjaman from "../views/RiwayatPeminjaman.vue";
 
 const routes = [
-	// ==========================================
-	// RUTE AWAL (Mengarahkan langsung ke Beranda)
-	// ==========================================
 	{
 		path: "/",
-		redirect: "/beranda", // Langsung arahkan ke beranda saat web pertama dibuka
+		redirect: "/beranda",
 	},
 
-	// ==========================================
-	// RUTE GUEST (Hanya untuk yang belum login)
-	// ==========================================
 	{
 		path: "/login",
 		name: "Login",
@@ -36,13 +28,10 @@ const routes = [
 		meta: { guestOnly: true },
 	},
 
-	// ==========================================
-	// RUTE USER (Dibungkus dengan UserLayout)
-	// ==========================================
 	{
 		path: "/user",
 		component: UserLayout,
-		meta: { requiresAuth: true }, // Semua children otomatis butuh login
+		meta: { requiresAuth: true },
 		children: [
 			{
 				path: "/beranda",
@@ -64,13 +53,21 @@ const routes = [
 				name: "RiwayatPeminjaman",
 				component: RiwayatPeminjaman,
 			},
+			{
+				path: "/approval-dosen",
+				name: "ApprovalDosen",
+				component: () => import("../views/ApprovalDosen.vue"),
+				meta: {
+					requiresAuth: true,
+					onlyDosen: true,
+				},
+			},
 		],
 	},
 
-	// CATCH ALL (Jika user mengetik URL ngawur)
 	{
 		path: "/:pathMatch(.*)*",
-		redirect: "/beranda", // Arahkan kembali ke Beranda
+		redirect: "/beranda",
 	},
 ];
 
@@ -79,45 +76,99 @@ const router = createRouter({
 	routes,
 });
 
-// ==========================================
-// NAVIGATION GUARD (Satpam Rute)
-// ==========================================
-router.beforeEach((to, from) => {
+const getStoredUser = () => {
+	try {
+		return JSON.parse(localStorage.getItem("user") || "{}");
+	} catch (error) {
+		localStorage.removeItem("user");
+		return {};
+	}
+};
+
+const normalizeText = (value) => {
+	return String(value || "")
+		.trim()
+		.toLowerCase()
+		.replaceAll(" ", "_");
+};
+
+const isUserPeminjamPortal = (user) => {
+	const roleId = Number(user.role_id || user.role?.id);
+	const roleName = normalizeText(
+		user.role_name ||
+			user.nama_role ||
+			user.role?.nama_role
+	);
+
+	const level = normalizeText(
+		user.level_akses ||
+			user.level ||
+			user.role?.level_akses
+	);
+
+	return (
+		roleId === 4 ||
+		roleId === 5 ||
+		roleName === "mahasiswa" ||
+		roleName === "dosen" ||
+		level === "peminjam"
+	);
+};
+
+const isUserDosen = (user) => {
+	const roleId = Number(user.role_id || user.role?.id);
+	const roleName = normalizeText(
+		user.role_name ||
+			user.nama_role ||
+			user.role?.nama_role
+	);
+
+	return roleId === 4 || roleName === "dosen";
+};
+
+router.beforeEach((to) => {
 	const token = localStorage.getItem("token");
-	const user = JSON.parse(localStorage.getItem("user") || "{}");
+	const user = getStoredUser();
 	const isAuthenticated = !!token;
 
-	// Mahasiswa (5) dan Dosen/Teknisi (4) masuk sebagai peminjam
-	// Admin dan Super Admin biasanya memiliki Role ID 1, 2, atau 3.
-	const isPeminjam = user.role_id === 4 || user.role_id === 5;
+	const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+	const guestOnly = to.matched.some((record) => record.meta.guestOnly);
 
-	// 1. Jika rute butuh auth tapi user belum login
-	if (to.meta.requiresAuth && !isAuthenticated) {
+	const isPeminjam = isUserPeminjamPortal(user);
+	const isDosen = isUserDosen(user);
+
+	if (requiresAuth && !isAuthenticated) {
 		return { name: "Login" };
 	}
 
-	// 2. Jika Admin/Staff (Role 1-3) mencoba masuk ke portal Peminjam
-	if (to.meta.requiresAuth && isAuthenticated && !isPeminjam) {
-		// Bersihkan sesi agar mereka login ulang lewat portal admin
-		localStorage.clear();
-		alert(
-			"Akses Ditolak: Silakan gunakan Portal Admin untuk mengelola sistem.",
-		);
+	if (requiresAuth && isAuthenticated && !isPeminjam) {
+		localStorage.removeItem("token");
+		localStorage.removeItem("user");
+		localStorage.removeItem("cart_peminjaman");
+
+		alert("Akses ditolak. Silakan gunakan Portal Admin untuk mengelola sistem.");
+
 		return { name: "Login" };
 	}
 
-	// 3. Jika user SUDAH login tapi mencoba buka halaman Login / Register
-	if (to.meta.guestOnly && isAuthenticated) {
+	if (to.meta.onlyDosen && !isDosen) {
+		alert("Akses ditolak. Halaman approval hanya dapat diakses oleh akun Dosen.");
+		return { name: "Beranda" };
+	}
+
+	if (guestOnly && isAuthenticated) {
 		if (isPeminjam) {
-			return { name: "Beranda" }; // PERBAIKAN: Sesuaikan dengan nama rute 'Beranda'
-		} else {
-			// Jika ternyata admin yang iseng buka /login milik user, usir kembali
-			localStorage.clear();
-			return { name: "Login" };
+			return { name: "Beranda" };
 		}
+
+		localStorage.removeItem("token");
+		localStorage.removeItem("user");
+		localStorage.removeItem("cart_peminjaman");
+
+		return { name: "Login" };
 	}
 
-	return true; // Jika aman, izinkan masuk
+	return true;
 });
 
 export default router;

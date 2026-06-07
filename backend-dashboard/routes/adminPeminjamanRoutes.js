@@ -8,7 +8,7 @@ const { authenticateToken } = require("../middlewares/authMiddleware");
 
 // Semua route admin peminjaman wajib login
 router.use(authenticateToken);
-
+router.put('/:id/kalab-approval', adminController.approveKalabPeminjaman);
 // Route untuk admin mengelola peminjaman
 router.get("/all", adminController.getAllPeminjaman);
 router.get("/menunggu/count", adminController.getTotalPeminjamanMenunggu);

@@ -92,6 +92,50 @@
                     </div>
                   </div>
 
+                  <div
+                    class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <span
+                          class="block text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 group-hover:text-blue-500">
+                          TTD Digital
+                        </span>
+                        <p class="text-xs font-bold text-gray-500">
+                          Tanda tangan digital untuk dokumen/surat peminjaman.
+                        </p>
+                      </div>
+
+                      <span
+                        v-if="authStore.user?.ttd_digital"
+                        class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 text-[9px] font-black uppercase tracking-widest shrink-0">
+                        Ada
+                      </span>
+
+                      <span
+                        v-else
+                        class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 text-[9px] font-black uppercase tracking-widest shrink-0">
+                        Belum
+                      </span>
+                    </div>
+
+                    <div
+                      v-if="authStore.user?.ttd_digital"
+                      class="bg-white border border-gray-200 rounded-2xl p-4 flex items-center justify-center min-h-28">
+                      <img
+                        :src="authStore.user.ttd_digital"
+                        alt="TTD Digital"
+                        class="max-h-24 max-w-full object-contain" />
+                    </div>
+
+                    <div
+                      v-else
+                      class="bg-white border border-dashed border-gray-200 rounded-2xl p-6 text-center">
+                      <p class="text-sm font-bold text-gray-400">
+                        Belum ada TTD digital.
+                      </p>
+                    </div>
+                  </div>
+
                   <template v-if="isMahasiswa">
                     <div
                       class="flex flex-col bg-gray-50 p-4 rounded-2xl border border-gray-100 hover:bg-white hover:border-blue-50 transition-colors group">
@@ -179,41 +223,136 @@
 
     <Teleport to="body">
       <transition name="fade">
-        <div v-if="isProfileModalOpen"
-          class="fixed inset-0 z-999 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          @click.self="isProfileModalOpen = false">
-          <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 overflow-hidden relative">
-            <button @click="isProfileModalOpen = false"
-              class="absolute top-5 right-5 p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors cursor-pointer active:scale-95">
-              <XMarkIcon class="w-5 h-5" />
-            </button>
-
-            <h3 class="text-xl font-black text-gray-900 mb-1 pr-10">Edit Profil Anda</h3>
-            <p class="text-xs font-medium text-gray-500 mb-6">Perbarui informasi dasar profil Anda.</p>
-
-            <form @submit.prevent="submitProfile" class="space-y-4">
+        <div
+          v-if="isProfileModalOpen"
+          class="fixed inset-0 z-9999 flex items-center justify-center bg-slate-950/60 backdrop-blur-md p-4"
+          @click.self="closeProfileModal"
+        >
+          <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[92vh] overflow-hidden relative flex flex-col">
+            <div class="px-6 py-5 border-b border-gray-100 flex items-start justify-between gap-4 shrink-0">
               <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nama Lengkap <span
-                    class="text-red-500">*</span></label>
-                <input v-model="profileForm.nama_lengkap" type="text" required
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm" />
-              </div>
-              <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">Nomor Telepon</label>
-                <input v-model="profileForm.no_telepon" type="text" placeholder="Contoh: 081234567890"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm" />
+                <h3 class="text-xl font-black text-gray-900">Edit Profil Anda</h3>
+                <p class="text-xs font-medium text-gray-500 mt-1">
+                  Perbarui informasi dasar profil dan TTD digital Anda.
+                </p>
               </div>
 
-              <div class="flex justify-end gap-3 pt-4 mt-2">
-                <button type="button" @click="isProfileModalOpen = false"
-                  class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition cursor-pointer active:scale-95">
+              <button
+                type="button"
+                @click="closeProfileModal"
+                class="w-10 h-10 rounded-full bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 flex items-center justify-center transition-colors cursor-pointer active:scale-95 shrink-0"
+                title="Tutup"
+              >
+                <XMarkIcon class="w-5 h-5" />
+              </button>
+            </div>
+
+            <form @submit.prevent="submitProfile" class="flex-1 overflow-y-auto hidden-scrollbar px-6 py-5 space-y-4">
+              <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">
+                  Nama Lengkap <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="profileForm.nama_lengkap"
+                  type="text"
+                  required
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm"
+                />
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 ml-1">
+                  Nomor Telepon
+                </label>
+                <input
+                  v-model="profileForm.no_telepon"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="13"
+                  placeholder="Contoh: 081234567890"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-shadow bg-gray-50 focus:bg-white font-medium text-sm"
+                  @input="profileForm.no_telepon = profileForm.no_telepon.replace(/\D/g, '').slice(0, 13)"
+                />
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1">
+                  Upload TTD Digital
+                </label>
+
+                <div class="border border-gray-200 rounded-2xl p-4 bg-gray-50">
+                  <input
+                    ref="ttdInputRef"
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    class="hidden"
+                    @change="handleTtdDigitalChange"
+                  />
+
+                  <div v-if="ttdPreview" class="mb-4">
+                    <img
+                      :src="ttdPreview"
+                      alt="Preview TTD Digital"
+                      class="h-28 max-w-full object-contain bg-white border border-gray-200 rounded-xl p-2 mx-auto"
+                    />
+                  </div>
+
+                  <div v-else-if="authStore.user?.ttd_digital" class="mb-4">
+                    <img
+                      :src="authStore.user.ttd_digital"
+                      alt="TTD Digital Saat Ini"
+                      class="h-28 max-w-full object-contain bg-white border border-gray-200 rounded-xl p-2 mx-auto"
+                    />
+                  </div>
+
+                  <div v-else class="mb-4 rounded-xl border border-dashed border-gray-200 bg-white p-6 text-center">
+                    <p class="text-sm font-bold text-gray-400">
+                      Belum ada TTD digital.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    @click="ttdInputRef?.click()"
+                    class="w-full px-4 py-2.5 bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-600 hover:text-blue-700 rounded-xl text-sm font-black transition-all cursor-pointer"
+                  >
+                    Pilih File TTD Digital
+                  </button>
+
+                  <p class="text-[10px] text-gray-400 font-bold mt-2 leading-relaxed">
+                    Format JPG, JPEG, PNG, atau WEBP. Maksimal {{ MAX_TTD_SIZE_MB }} MB.
+                  </p>
+
+                  <button
+                    v-if="profileForm.ttd_digital_file || ttdPreview"
+                    type="button"
+                    @click="resetTtdDigital"
+                    class="mt-3 text-xs font-bold text-red-500 hover:text-red-700 transition-colors cursor-pointer"
+                  >
+                    Hapus pilihan file
+                  </button>
+                </div>
+              </div>
+
+              <div class="sticky bottom-0 -mx-6 -mb-5 px-6 py-4 bg-white border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  type="button"
+                  @click="closeProfileModal"
+                  class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition cursor-pointer active:scale-95"
+                >
                   Batal
                 </button>
-                <button type="submit" :disabled="isSubmittingProfile"
-                  class="px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200 transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center gap-2">
-                  <span v-if="isSubmittingProfile"
-                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Simpan Perubahan
+
+                <button
+                  type="submit"
+                  :disabled="isSubmittingProfile"
+                  class="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-200 transition cursor-pointer active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  <span
+                    v-if="isSubmittingProfile"
+                    class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin">
+                  </span>
+                  {{ isSubmittingProfile ? 'Menyimpan...' : 'Simpan Perubahan' }}
                 </button>
               </div>
             </form>
@@ -314,7 +453,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
 import api from '../plugins/axios';
@@ -342,9 +481,15 @@ const isLoading = ref(true);
 // === STATE UNTUK MODAL EDIT PROFIL ===
 const isProfileModalOpen = ref(false);
 const isSubmittingProfile = ref(false);
+const MAX_TTD_SIZE_MB = 2;
+const MAX_TTD_SIZE = MAX_TTD_SIZE_MB * 1024 * 1024;
+const ttdInputRef = ref(null);
+const ttdPreview = ref(null);
+
 const profileForm = ref({
   nama_lengkap: '',
-  no_telepon: ''
+  no_telepon: '',
+  ttd_digital_file: null
 });
 
 // === STATE UNTUK MODAL KATA SANDI ===
@@ -398,6 +543,12 @@ onMounted(() => {
   fetchUserProfile();
 });
 
+onUnmounted(() => {
+  if (ttdPreview.value) {
+    URL.revokeObjectURL(ttdPreview.value);
+  }
+});
+
 const handleLogout = () => {
   showConfirm(
     'Apakah Anda yakin ingin keluar dari sistem?',
@@ -418,29 +569,100 @@ const handleLogout = () => {
 };
 
 // === FUNGSI EDIT PROFIL ===
+const resetTtdDigital = () => {
+  profileForm.value.ttd_digital_file = null;
+
+  if (ttdPreview.value) {
+    URL.revokeObjectURL(ttdPreview.value);
+    ttdPreview.value = null;
+  }
+
+  if (ttdInputRef.value) {
+    ttdInputRef.value.value = '';
+  }
+};
+
+const handleTtdDigitalChange = (event) => {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+
+  if (!allowedTypes.includes(file.type)) {
+    showAlert('Format TTD digital harus JPG, JPEG, PNG, atau WEBP.', 'error');
+    resetTtdDigital();
+    return;
+  }
+
+  if (file.size > MAX_TTD_SIZE) {
+    showAlert(`Ukuran TTD digital maksimal ${MAX_TTD_SIZE_MB} MB.`, 'error');
+    resetTtdDigital();
+    return;
+  }
+
+  profileForm.value.ttd_digital_file = file;
+
+  if (ttdPreview.value) {
+    URL.revokeObjectURL(ttdPreview.value);
+  }
+
+  ttdPreview.value = URL.createObjectURL(file);
+};
+
+const closeProfileModal = () => {
+  if (isSubmittingProfile.value) return;
+
+  isProfileModalOpen.value = false;
+  resetTtdDigital();
+};
+
 const openEditProfile = () => {
   profileForm.value = {
     nama_lengkap: authStore.user?.nama || '',
-    no_telepon: authStore.user?.no_telepon || ''
+    no_telepon: authStore.user?.no_telepon || '',
+    ttd_digital_file: null
   };
+
+  resetTtdDigital();
   isProfileModalOpen.value = true;
 };
 
 const submitProfile = async () => {
   if (isSubmittingProfile.value) return;
+
+  if (!profileForm.value.nama_lengkap.trim()) {
+    showAlert('Nama lengkap wajib diisi.', 'error');
+    return;
+  }
+
+  if (profileForm.value.no_telepon && profileForm.value.no_telepon.length < 10) {
+    showAlert('Nomor telepon minimal 10 digit.', 'error');
+    return;
+  }
+
   isSubmittingProfile.value = true;
 
   try {
-    // Sesuaikan URL endpoint update profil ini dengan backend milikmu (misal: /users/:id atau /auth/update)
-    await api.put(`/users/${authStore.user?.id}`, {
-      nama_lengkap: profileForm.value.nama_lengkap,
-      no_telepon: profileForm.value.no_telepon
+    const formData = new FormData();
+
+    formData.append('nama_lengkap', profileForm.value.nama_lengkap.trim());
+    formData.append('no_telepon', profileForm.value.no_telepon || '');
+
+    if (profileForm.value.ttd_digital_file) {
+      formData.append('ttd_digital', profileForm.value.ttd_digital_file);
+    }
+
+    await api.put(`/users/${authStore.user?.id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     });
 
     showAlert("Profil berhasil diperbarui!", "success");
     isProfileModalOpen.value = false;
+    resetTtdDigital();
 
-    // Tarik ulang data profil terbaru
     await fetchUserProfile();
   } catch (error) {
     console.error("Error update profile:", error);
@@ -545,6 +767,16 @@ const submitPassword = async () => {
 .overflow-y-auto::-webkit-scrollbar-thumb {
   background-color: #e2e8f0;
   border-radius: 10px;
+}
+
+
+.hidden-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hidden-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Modal Transitions */

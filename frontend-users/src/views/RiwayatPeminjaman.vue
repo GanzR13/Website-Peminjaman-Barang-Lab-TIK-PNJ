@@ -6,7 +6,7 @@
                 Riwayat Peminjaman
             </h2>
             <p class="text-slate-500 mt-1 text-xs md:text-sm font-medium">
-                Pantau status dan riwayat peminjaman alat lab Anda.
+                Pantau status, approval dosen PJ, approval kepala lab, dan riwayat peminjaman alat lab Anda.
             </p>
         </div>
 
@@ -79,6 +79,109 @@
                     </p>
                 </div>
 
+                <!-- Informasi Khusus dan Approval -->
+                <div v-if="transaksi.kategori_kebutuhan === 'Khusus'" class="px-4 pt-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        <div class="rounded-2xl border border-purple-100 bg-purple-50 p-3.5">
+                            <p class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-1">
+                                Jenis Peminjaman Khusus
+                            </p>
+                            <p class="text-xs font-black text-purple-800">
+                                {{ getJenisKhususLabel(transaksi.jenis_khusus) }}
+                            </p>
+
+                            <p v-if="transaksi.jenis_khusus === 'Organisasi' && transaksi.nama_acara"
+                                class="text-[11px] font-bold text-purple-700 mt-2">
+                                {{ transaksi.nama_acara }}
+                                <span v-if="transaksi.organisasi_penyelenggara">
+                                    • {{ transaksi.organisasi_penyelenggara }}
+                                </span>
+                            </p>
+                        </div>
+
+                        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-3.5">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                                Status Approval
+                            </p>
+
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-xs font-bold text-slate-600">
+                                        Dosen PJ
+                                    </span>
+                                    <span
+                                        class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ring-1"
+                                        :class="getApprovalBadgeClass(transaksi.status_approve_dosen_pj)">
+                                        {{ transaksi.status_approve_dosen_pj || 'Tidak Diperlukan' }}
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-xs font-bold text-slate-600">
+                                        Kepala Lab
+                                    </span>
+                                    <span
+                                        class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ring-1"
+                                        :class="getApprovalBadgeClass(transaksi.status_approve_kalab)">
+                                        {{ transaksi.status_approve_kalab || 'Menunggu' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Dosen PJ -->
+                    <div v-if="hasDosenPJ(transaksi)"
+                        class="mt-3 rounded-2xl border border-blue-100 bg-blue-50 p-3.5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">
+                                    Dosen Penanggung Jawab
+                                </p>
+                                <p class="text-xs font-black text-blue-800 truncate">
+                                    {{ getDosenPJName(transaksi) }}
+                                </p>
+                                <p class="text-[11px] font-bold text-blue-600 mt-0.5">
+                                    NIP. {{ getDosenPJNip(transaksi) }}
+                                </p>
+                            </div>
+
+                            <span v-if="transaksi.approved_dosen_pj?.ttd_digital"
+                                class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 text-[9px] font-black uppercase tracking-widest shrink-0">
+                                TTD Ada
+                            </span>
+                        </div>
+
+                        <p v-if="transaksi.status_approve_dosen_pj === 'Ditolak'"
+                            class="text-[11px] font-bold text-red-600 mt-2">
+                            Peminjaman ditolak oleh dosen penanggung jawab.
+                        </p>
+                    </div>
+
+                    <!-- Detail Kepala Lab -->
+                    <div v-if="transaksi.approved_kalab"
+                        class="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-3.5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">
+                                    Kepala Lab yang Menyetujui
+                                </p>
+                                <p class="text-xs font-black text-emerald-800 truncate">
+                                    {{ transaksi.approved_kalab.nama_lengkap || transaksi.approved_kalab.nama || '-' }}
+                                </p>
+                                <p class="text-[11px] font-bold text-emerald-600 mt-0.5">
+                                    NIP. {{ transaksi.approved_kalab.nip || '-' }}
+                                </p>
+                            </div>
+
+                            <span v-if="transaksi.approved_kalab.ttd_digital"
+                                class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 text-[9px] font-black uppercase tracking-widest shrink-0">
+                                TTD Ada
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Daftar Barang -->
                 <div class="p-4">
                     <div class="flex items-center justify-between mb-3">
@@ -93,7 +196,7 @@
 
                     <div v-if="transaksi.detail_barang?.length"
                         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                        <div v-for="detail in transaksi.detail_barang" :key="detail.id"
+                        <div v-for="detail in transaksi.detail_barang" :key="detail.id || detail.barang_id"
                             class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition">
                             <img :src="getImageUrl(detail.barang?.gambar)" :alt="detail.barang?.nama_barang || 'Barang'"
                                 class="w-11 h-11 rounded-lg object-cover bg-white border border-slate-200 shrink-0" />
@@ -133,6 +236,19 @@
                     </div>
                 </div>
 
+                <!-- Alert jika belum boleh cetak -->
+                <div v-if="transaksi.kategori_kebutuhan === 'Khusus' && transaksi.status === 'Disetujui' && !canPrintSurat(transaksi)"
+                    class="px-4 pb-3">
+                    <div class="bg-amber-50 px-3 py-2.5 rounded-xl border border-amber-100">
+                        <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-0.5">
+                            Surat Belum Dapat Dicetak
+                        </p>
+                        <p class="text-xs font-medium text-amber-800 leading-relaxed">
+                            Surat dapat dicetak setelah approval yang diperlukan selesai. Jika memilih Dosen PJ, approval dosen harus disetujui. Approval Kepala Lab juga harus disetujui.
+                        </p>
+                    </div>
+                </div>
+
                 <!-- Tombol Aksi -->
                 <div class="px-4 pb-4 flex flex-wrap gap-2">
                     <button v-if="canPrintSurat(transaksi)" @click="cetakSurat(transaksi)"
@@ -168,7 +284,8 @@
             </div>
         </div>
 
-        <ModalLaporMasalah :is-open="isLaporModalOpen" :transaksi="selectedPeminjaman" @close="closeLaporModal" />
+        <ModalLaporMasalah :is-open="isLaporModalOpen" :transaksi="selectedPeminjaman" @close="closeLaporModal"
+            @success="fetchRiwayat" />
     </div>
 </template>
 
@@ -222,7 +339,14 @@ onMounted(() => {
 });
 
 const handleCancelConfirmation = (id) => {
-    showConfirm('Batalkan permohonan ini?', () => batalkanPesanan(id));
+    showConfirm(
+        'Batalkan permohonan ini?',
+        () => batalkanPesanan(id),
+        null,
+        'Ya, Batalkan',
+        'red',
+        'Konfirmasi Pembatalan'
+    );
 };
 
 const batalkanPesanan = async (id) => {
@@ -239,11 +363,37 @@ const batalkanPesanan = async (id) => {
     }
 };
 
+const isApprovalAccepted = (value) => {
+    return value === 'Disetujui' || value === 'Tidak Diperlukan' || !value;
+};
+
+const isDosenApprovalReady = (transaksi) => {
+    if (!transaksi.dosen_pj_user_id) {
+        return true;
+    }
+
+    return transaksi.status_approve_dosen_pj === 'Disetujui';
+};
+
+const isKalabApprovalReady = (transaksi) => {
+    return transaksi.status_approve_kalab === 'Disetujui';
+};
+
 const canPrintSurat = (transaksi) => {
-    return transaksi.kategori_kebutuhan === 'Khusus' && transaksi.status === 'Disetujui';
+    return (
+        transaksi.kategori_kebutuhan === 'Khusus' &&
+        ['Disetujui', 'Dipinjam', 'Selesai'].includes(transaksi.status) &&
+        isDosenApprovalReady(transaksi) &&
+        isKalabApprovalReady(transaksi)
+    );
 };
 
 const cetakSurat = (transaksi) => {
+    if (!canPrintSurat(transaksi)) {
+        showAlert('Surat belum dapat dicetak karena approval belum lengkap.', 'warning');
+        return;
+    }
+
     generateSuratPDF(transaksi, showAlert);
 };
 
@@ -378,10 +528,60 @@ const getStatusBadgeClass = (status) => {
         Dipinjam: 'bg-indigo-100 text-indigo-700 ring-indigo-200',
         Selesai: 'bg-emerald-100 text-emerald-700 ring-emerald-200',
         Ditolak: 'bg-red-100 text-red-700 ring-red-200',
-        Dibatalkan: 'bg-slate-100 text-slate-500 ring-slate-200'
+        Dibatalkan: 'bg-slate-100 text-slate-500 ring-slate-200',
+        'Barang Rusak': 'bg-orange-100 text-orange-700 ring-orange-200',
     };
 
     return map[status] || 'bg-slate-100 text-slate-700 ring-slate-200';
+};
+
+const getApprovalBadgeClass = (status) => {
+    const map = {
+        Menunggu: 'bg-amber-100 text-amber-700 ring-amber-200',
+        Disetujui: 'bg-emerald-100 text-emerald-700 ring-emerald-200',
+        Ditolak: 'bg-red-100 text-red-700 ring-red-200',
+        'Tidak Diperlukan': 'bg-slate-100 text-slate-500 ring-slate-200',
+    };
+
+    return map[status || 'Menunggu'] || 'bg-slate-100 text-slate-700 ring-slate-200';
+};
+
+const getJenisKhususLabel = (jenis) => {
+    const map = {
+        PBL: 'Project Based Learning (PBL)',
+        Skripsi: 'Tugas Akhir / Skripsi',
+        Organisasi: 'Kegiatan Organisasi / Lomba',
+        Pribadi: 'Peminjaman Pribadi',
+    };
+
+    return map[jenis] || jenis || '-';
+};
+
+const hasDosenPJ = (transaksi) => {
+    return Boolean(
+        transaksi.dosen_pj_user_id ||
+        transaksi.dosen_penanggung_jawab ||
+        transaksi.approved_dosen_pj
+    );
+};
+
+const getDosenPJName = (transaksi) => {
+    return (
+        transaksi.approved_dosen_pj?.nama_lengkap ||
+        transaksi.approved_dosen_pj?.nama ||
+        transaksi.approved_dosen_pj?.pegawai?.nama_lengkap ||
+        transaksi.dosen_penanggung_jawab ||
+        '-'
+    );
+};
+
+const getDosenPJNip = (transaksi) => {
+    return (
+        transaksi.approved_dosen_pj?.nip ||
+        transaksi.approved_dosen_pj?.pegawai?.nip ||
+        transaksi.nip_dosen_pj ||
+        '-'
+    );
 };
 </script>
 

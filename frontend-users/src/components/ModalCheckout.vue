@@ -35,186 +35,187 @@
                         </div>
 
                         <!-- Custom Date Picker -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
-                                <div class="relative" ref="tanggalPinjamPickerRef">
-                                    <label class="label-form">
-                                        Tgl Ambil Alat <span class="text-red-500">*</span>
-                                    </label>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+                            <div class="relative" ref="tanggalPinjamPickerRef">
+                                <label class="label-form">
+                                    Tgl Ambil Alat <span class="text-red-500">*</span>
+                                </label>
 
-                                    <button type="button" @click.stop="toggleTanggalPinjamPicker"
-                                        class="date-filter-button"
-                                        :class="showTanggalPinjamPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
-                                        <div class="flex items-center gap-2 overflow-hidden">
-                                            <svg class="w-4 h-4 shrink-0 transition-colors"
-                                                :class="showTanggalPinjamPicker || formCheckout.tanggal_pinjam ? 'text-blue-500' : 'text-slate-400'"
-                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
-                                            </svg>
-
-                                            <span class="truncate"
-                                                :class="formCheckout.tanggal_pinjam ? 'text-slate-800' : 'text-slate-500'">
-                                                {{ formatForDisplay(formCheckout.tanggal_pinjam) }}
-                                            </span>
-                                        </div>
-
-                                        <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
-                                            :class="showTanggalPinjamPicker ? 'rotate-180 text-blue-500' : ''"
+                                <button type="button" @click.stop="toggleTanggalPinjamPicker" class="date-filter-button"
+                                    :class="showTanggalPinjamPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
+                                    <div class="flex items-center gap-2 overflow-hidden">
+                                        <svg class="w-4 h-4 shrink-0 transition-colors"
+                                            :class="showTanggalPinjamPicker || formCheckout.tanggal_pinjam ? 'text-blue-500' : 'text-slate-400'"
                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
+                                                d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
                                         </svg>
-                                    </button>
 
-                                    <transition name="dropdown">
-                                        <div v-if="showTanggalPinjamPicker" class="date-picker-panel-down left-0" @click.stop>
-                                            <div class="flex items-center justify-between mb-4">
-                                                <button type="button"
-                                                    @click="currentTanggalPinjamCal = subMonth(currentTanggalPinjamCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 19l-7-7 7-7" />
-                                                    </svg>
-                                                </button>
+                                        <span class="truncate"
+                                            :class="formCheckout.tanggal_pinjam ? 'text-slate-800' : 'text-slate-500'">
+                                            {{ formatForDisplay(formCheckout.tanggal_pinjam) }}
+                                        </span>
+                                    </div>
 
-                                                <span class="font-black text-slate-800 text-sm">
-                                                    {{ getCalHeader(currentTanggalPinjamCal) }}
-                                                </span>
+                                    <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
+                                        :class="showTanggalPinjamPicker ? 'rotate-180 text-blue-500' : ''" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
 
-                                                <button type="button"
-                                                    @click="currentTanggalPinjamCal = addMonth(currentTanggalPinjamCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </button>
-                                            </div>
+                                <transition name="dropdown">
+                                    <div v-if="showTanggalPinjamPicker" class="date-picker-panel-down left-0"
+                                        @click.stop>
+                                        <div class="flex items-center justify-between mb-4">
+                                            <button type="button"
+                                                @click="currentTanggalPinjamCal = subMonth(currentTanggalPinjamCal)"
+                                                class="calendar-nav-button">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                            </button>
 
-                                            <div
-                                                class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
-                                                <div v-for="day in daysOfWeek" :key="day">
-                                                    {{ day }}
-                                                </div>
-                                            </div>
-
-                                            <div class="grid grid-cols-7 gap-1">
-                                                <button type="button" v-for="(date, index) in tanggalPinjamCalGrid"
-                                                    :key="index" @click="pilihTanggalPinjam(date)" :disabled="!date"
-                                                    class="calendar-day" :class="getTanggalPinjamClass(date)">
-                                                    {{ date ? date.getDate() : '' }}
-                                                </button>
-                                            </div>
-
-                                            <div
-                                                class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
-                                                <button type="button" @click="clearTanggalPinjam"
-                                                    class="calendar-action-button text-slate-500 hover:bg-slate-100">
-                                                    Hapus
-                                                </button>
-
-                                                <button type="button" @click="setTanggalPinjamToday"
-                                                    class="calendar-action-button text-blue-600 hover:bg-blue-50">
-                                                    Hari ini
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </transition>
-                                </div>
-
-                                <div class="relative" ref="tanggalKembaliPickerRef">
-                                    <label class="label-form">
-                                        Tgl Kembali Alat <span class="text-red-500">*</span>
-                                    </label>
-
-                                    <button type="button" @click.stop="toggleTanggalKembaliPicker"
-                                        class="date-filter-button"
-                                        :class="showTanggalKembaliPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
-                                        <div class="flex items-center gap-2 overflow-hidden">
-                                            <svg class="w-4 h-4 shrink-0 transition-colors"
-                                                :class="showTanggalKembaliPicker || formCheckout.tanggal_kembali ? 'text-blue-500' : 'text-slate-400'"
-                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
-                                            </svg>
-
-                                            <span class="truncate"
-                                                :class="formCheckout.tanggal_kembali ? 'text-slate-800' : 'text-slate-500'">
-                                                {{ formatForDisplay(formCheckout.tanggal_kembali) }}
+                                            <span class="font-black text-slate-800 text-sm">
+                                                {{ getCalHeader(currentTanggalPinjamCal) }}
                                             </span>
+
+                                            <button type="button"
+                                                @click="currentTanggalPinjamCal = addMonth(currentTanggalPinjamCal)"
+                                                class="calendar-nav-button">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
                                         </div>
 
-                                        <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
-                                            :class="showTanggalKembaliPicker ? 'rotate-180 text-blue-500' : ''"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-
-                                    <transition name="dropdown">
-                                        <div v-if="showTanggalKembaliPicker"class="date-picker-panel-down left-0 md:left-0 md:left-auto" @click.stop>
-                                            <div class="flex items-center justify-between mb-4">
-                                                <button type="button"
-                                                    @click="currentTanggalKembaliCal = subMonth(currentTanggalKembaliCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M15 19l-7-7 7-7" />
-                                                    </svg>
-                                                </button>
-
-                                                <span class="font-black text-slate-800 text-sm">
-                                                    {{ getCalHeader(currentTanggalKembaliCal) }}
-                                                </span>
-
-                                                <button type="button"
-                                                    @click="currentTanggalKembaliCal = addMonth(currentTanggalKembaliCal)"
-                                                    class="calendar-nav-button">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M9 5l7 7-7 7" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            <div
-                                                class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
-                                                <div v-for="day in daysOfWeek" :key="day">
-                                                    {{ day }}
-                                                </div>
-                                            </div>
-
-                                            <div class="grid grid-cols-7 gap-1">
-                                                <button type="button" v-for="(date, index) in tanggalKembaliCalGrid"
-                                                    :key="index" @click="pilihTanggalKembali(date)"
-                                                    :disabled="!date || isBeforeTanggalPinjam(date)"
-                                                    class="calendar-day" :class="getTanggalKembaliClass(date)">
-                                                    {{ date ? date.getDate() : '' }}
-                                                </button>
-                                            </div>
-
-                                            <div
-                                                class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
-                                                <button type="button" @click="clearTanggalKembali"
-                                                    class="calendar-action-button text-slate-500 hover:bg-slate-100">
-                                                    Hapus
-                                                </button>
-
-                                                <button type="button" @click="setTanggalKembaliToday"
-                                                    class="calendar-action-button text-blue-600 hover:bg-blue-50">
-                                                    Hari ini
-                                                </button>
+                                        <div
+                                            class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
+                                            <div v-for="day in daysOfWeek" :key="day">
+                                                {{ day }}
                                             </div>
                                         </div>
-                                    </transition>
-                                </div>
+
+                                        <div class="grid grid-cols-7 gap-1">
+                                            <button type="button" v-for="(date, index) in tanggalPinjamCalGrid"
+                                                :key="index" @click="pilihTanggalPinjam(date)" :disabled="!date"
+                                                class="calendar-day" :class="getTanggalPinjamClass(date)">
+                                                {{ date ? date.getDate() : '' }}
+                                            </button>
+                                        </div>
+
+                                        <div
+                                            class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
+                                            <button type="button" @click="clearTanggalPinjam"
+                                                class="calendar-action-button text-slate-500 hover:bg-slate-100">
+                                                Hapus
+                                            </button>
+
+                                            <button type="button" @click="setTanggalPinjamToday"
+                                                class="calendar-action-button text-blue-600 hover:bg-blue-50">
+                                                Hari ini
+                                            </button>
+                                        </div>
+                                    </div>
+                                </transition>
                             </div>
+
+                            <div class="relative" ref="tanggalKembaliPickerRef">
+                                <label class="label-form">
+                                    Tgl Kembali Alat <span class="text-red-500">*</span>
+                                </label>
+
+                                <button type="button" @click.stop="toggleTanggalKembaliPicker"
+                                    class="date-filter-button"
+                                    :class="showTanggalKembaliPicker ? 'border-blue-500 bg-white ring-4 ring-blue-50' : ''">
+                                    <div class="flex items-center gap-2 overflow-hidden">
+                                        <svg class="w-4 h-4 shrink-0 transition-colors"
+                                            :class="showTanggalKembaliPicker || formCheckout.tanggal_kembali ? 'text-blue-500' : 'text-slate-400'"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z" />
+                                        </svg>
+
+                                        <span class="truncate"
+                                            :class="formCheckout.tanggal_kembali ? 'text-slate-800' : 'text-slate-500'">
+                                            {{ formatForDisplay(formCheckout.tanggal_kembali) }}
+                                        </span>
+                                    </div>
+
+                                    <svg class="w-4 h-4 shrink-0 text-slate-400 transition-transform"
+                                        :class="showTanggalKembaliPicker ? 'rotate-180 text-blue-500' : ''" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <transition name="dropdown">
+                                    <div v-if="showTanggalKembaliPicker"
+                                        class="date-picker-panel-down left-0 md:left-0" @click.stop>
+                                        <div class="flex items-center justify-between mb-4">
+                                            <button type="button"
+                                                @click="currentTanggalKembaliCal = subMonth(currentTanggalKembaliCal)"
+                                                class="calendar-nav-button">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                            </button>
+
+                                            <span class="font-black text-slate-800 text-sm">
+                                                {{ getCalHeader(currentTanggalKembaliCal) }}
+                                            </span>
+
+                                            <button type="button"
+                                                @click="currentTanggalKembaliCal = addMonth(currentTanggalKembaliCal)"
+                                                class="calendar-nav-button">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div
+                                            class="grid grid-cols-7 gap-1 mb-2 text-center text-[10px] font-black text-slate-400">
+                                            <div v-for="day in daysOfWeek" :key="day">
+                                                {{ day }}
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-7 gap-1">
+                                            <button type="button" v-for="(date, index) in tanggalKembaliCalGrid"
+                                                :key="index" @click="pilihTanggalKembali(date)"
+                                                :disabled="!date || isBeforeTanggalPinjam(date)" class="calendar-day"
+                                                :class="getTanggalKembaliClass(date)">
+                                                {{ date ? date.getDate() : '' }}
+                                            </button>
+                                        </div>
+
+                                        <div
+                                            class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
+                                            <button type="button" @click="clearTanggalKembali"
+                                                class="calendar-action-button text-slate-500 hover:bg-slate-100">
+                                                Hapus
+                                            </button>
+
+                                            <button type="button" @click="setTanggalKembaliToday"
+                                                class="calendar-action-button text-blue-600 hover:bg-blue-50">
+                                                Hari ini
+                                            </button>
+                                        </div>
+                                    </div>
+                                </transition>
+                            </div>
+                        </div>
 
                         <form @submit.prevent="submitPeminjaman" class="space-y-4 sm:space-y-5 md:space-y-6 mt-8">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
@@ -262,9 +263,9 @@
                                         </div>
                                     </div>
 
-                                    <p v-if="!isMahasiswa"
-                                        class="text-[10px] md:text-[11px] text-amber-600 font-bold mt-1.5 ml-1">
-                                        Peminjaman Khusus hanya tersedia untuk mahasiswa.
+                                    <p v-if="formCheckout.kategori_kebutuhan === 'Khusus'"
+                                        class="text-[10px] md:text-[11px] text-blue-600 font-bold mt-1.5 ml-1">
+                                        Peminjaman khusus tersedia untuk Mahasiswa dan Dosen.
                                     </p>
                                 </div>
 
@@ -338,21 +339,87 @@
                                         </div>
                                     </div>
 
-                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
-                                        <div>
+                                    <!-- Dropdown Dosen Penanggung Jawab -->
+                                    <div class="space-y-3">
+                                        <div class="relative" ref="dosenDropdownRef">
                                             <label class="label-form">
-                                                Dosen Penanggung Jawab <span class="text-red-500">*</span>
+                                                Dosen Penanggung Jawab
+                                                <span class="text-slate-400 normal-case tracking-normal font-bold">
+                                                    (Opsional)
+                                                </span>
                                             </label>
-                                            <input v-model="formCheckout.dosen_penanggung_jawab" type="text" required
-                                                placeholder="Nama Dosen Pembimbing" class="input-form bg-white" />
+
+                                            <button type="button" @click.stop="toggleDosenDropdown"
+                                                class="dropdown-button bg-white border-blue-200">
+                                                <div class="min-w-0 text-left">
+                                                    <p class="text-sm font-bold truncate"
+                                                        :class="formCheckout.dosen_pj_user_id ? 'text-slate-800' : 'text-slate-500'">
+                                                        {{ selectedDosenLabel }}
+                                                    </p>
+
+                                                    <p v-if="formCheckout.nip_dosen_pj"
+                                                        class="text-[11px] text-slate-500 font-medium truncate">
+                                                        NIP. {{ formCheckout.nip_dosen_pj }}
+                                                    </p>
+
+                                                    <p v-else class="text-[11px] text-slate-500 font-medium truncate">
+                                                        Jika dipilih, pengajuan akan menunggu approval dosen.
+                                                    </p>
+                                                </div>
+
+                                                <svg class="w-5 h-5 text-slate-400 transition-transform shrink-0"
+                                                    :class="isDosenOpen ? 'rotate-180' : ''" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+
+                                            <div v-if="isDosenOpen" class="dropdown-menu" @click.stop>
+                                                <div v-if="isLoadingDosen"
+                                                    class="px-4 py-4 text-center text-sm font-bold text-slate-400">
+                                                    Memuat data dosen...
+                                                </div>
+
+                                                <div v-else-if="dosenOptions.length === 0"
+                                                    class="px-4 py-4 text-center text-sm font-bold text-slate-400">
+                                                    Data dosen belum tersedia.
+                                                </div>
+
+                                                <template v-else>
+                                                    <button type="button" @click="clearDosenPJ" class="dropdown-item">
+                                                        <div>
+                                                            <p class="text-sm font-black text-slate-800">
+                                                                Tidak menggunakan Dosen PJ
+                                                            </p>
+                                                            <p class="text-[11px] font-medium text-slate-500">
+                                                                Untuk peminjaman pribadi atau kegiatan tanpa dosen
+                                                                penanggung jawab
+                                                            </p>
+                                                        </div>
+                                                    </button>
+
+                                                    <button v-for="dosen in dosenOptions" :key="dosen.id" type="button"
+                                                        @click="selectDosenPJ(dosen)" class="dropdown-item"
+                                                        :class="String(formCheckout.dosen_pj_user_id) === String(dosen.id) ? 'bg-blue-50' : ''">
+                                                        <div>
+                                                            <p class="text-sm font-black text-slate-800">
+                                                                {{ dosen.nama_lengkap || dosen.nama || dosen.email }}
+                                                            </p>
+                                                            <p class="text-[11px] font-medium text-slate-500">
+                                                                NIP. {{ dosen.nip || '-' }}
+                                                            </p>
+                                                        </div>
+                                                    </button>
+                                                </template>
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <label class="label-form">
-                                                NIP Dosen PJ <span class="text-red-500">*</span>
-                                            </label>
-                                            <input v-model="formCheckout.nip_dosen_pj" type="text" required
-                                                placeholder="Cth: 199123456789056789" class="input-form bg-white" />
+                                        <div class="rounded-2xl border border-blue-100 bg-blue-50 p-3.5">
+                                            <p class="text-xs font-bold text-blue-700 leading-relaxed">
+                                                Dosen PJ bersifat opsional. Jika dipilih, peminjaman akan menunggu
+                                                approval dari dosen tersebut.
+                                            </p>
                                         </div>
                                     </div>
 
@@ -383,35 +450,51 @@
                                             Data Peminjam Otomatis
                                         </p>
 
-                                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+                                        <!-- Data otomatis untuk Dosen -->
+                                        <div v-if="isDosen" class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
                                             <div>
                                                 <label class="label-form">Nama Lengkap</label>
-                                                <input v-model="formCheckout.nama_mahasiswa" type="text" readonly
+                                                <input :value="formCheckout.nama_lengkap" type="text" readonly
                                                     class="input-readonly" />
                                             </div>
 
                                             <div>
-                                                <label class="label-form">NIM / Identitas</label>
-                                                <input v-model="formCheckout.nim_mahasiswa" type="text" readonly
+                                                <label class="label-form">NIP</label>
+                                                <input :value="formCheckout.nip" type="text" readonly
+                                                    class="input-readonly" />
+                                            </div>
+                                        </div>
+
+                                        <!-- Data otomatis untuk Mahasiswa -->
+                                        <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+                                            <div>
+                                                <label class="label-form">Nama</label>
+                                                <input :value="formCheckout.nama_mahasiswa" type="text" readonly
+                                                    class="input-readonly" />
+                                            </div>
+
+                                            <div>
+                                                <label class="label-form">NIM</label>
+                                                <input :value="formCheckout.nim_mahasiswa" type="text" readonly
                                                     class="input-readonly" />
                                             </div>
 
                                             <div>
                                                 <label class="label-form">Program Studi</label>
-                                                <input v-model="formCheckout.prodi_mahasiswa" type="text" readonly
+                                                <input :value="formCheckout.prodi_mahasiswa" type="text" readonly
                                                     class="input-readonly" />
                                             </div>
 
                                             <div class="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label class="label-form">Angkatan</label>
-                                                    <input v-model="formCheckout.angkatan_mahasiswa" type="text"
-                                                        readonly class="input-readonly" />
+                                                    <input :value="formCheckout.angkatan_mahasiswa" type="text" readonly
+                                                        class="input-readonly" />
                                                 </div>
 
                                                 <div>
                                                     <label class="label-form">Kelas</label>
-                                                    <input v-model="formCheckout.kelas_mahasiswa" type="text" readonly
+                                                    <input :value="formCheckout.kelas_mahasiswa" type="text" readonly
                                                         class="input-readonly" />
                                                 </div>
                                             </div>
@@ -476,8 +559,14 @@ const isSubmitting = ref(false);
 
 const isKategoriOpen = ref(false);
 const isJenisOpen = ref(false);
+const isDosenOpen = ref(false);
+
 const kategoriDropdownRef = ref(null);
 const jenisDropdownRef = ref(null);
+const dosenDropdownRef = ref(null);
+
+const dosenOptions = ref([]);
+const isLoadingDosen = ref(false);
 
 const showTanggalPinjamPicker = ref(false);
 const showTanggalKembaliPicker = ref(false);
@@ -512,7 +601,12 @@ const defaultForm = {
     tanggal_kembali: '',
     nama_acara: '',
     organisasi_penyelenggara: '',
+
+    dosen_pj_user_id: null,
     dosen_penanggung_jawab: '',
+    nip_dosen_pj: '',
+
+    // Data mahasiswa
     nama_mahasiswa: '',
     nim_mahasiswa: '',
     email_mahasiswa: '',
@@ -520,33 +614,32 @@ const defaultForm = {
     prodi_mahasiswa: '',
     angkatan_mahasiswa: '',
     kelas_mahasiswa: '',
-    nip_dosen_pj: '',
-    _isMahasiswa: false
+
+    // Data dosen
+    nama_lengkap: '',
+    nip: '',
+
+    _isMahasiswa: false,
+    _isDosen: false
 };
 
 const formCheckout = ref({ ...defaultForm });
 
 const isMahasiswa = computed(() => !!formCheckout.value._isMahasiswa);
+const isDosen = computed(() => !!formCheckout.value._isDosen);
 
-const kategoriOptions = computed(() => {
-    const options = [
-        {
-            value: 'Harian',
-            label: 'Harian',
-            desc: 'Praktikum Reguler'
-        }
-    ];
-
-    if (isMahasiswa.value) {
-        options.push({
-            value: 'Khusus',
-            label: 'Khusus',
-            desc: 'PBL / Skripsi / Organisasi'
-        });
+const kategoriOptions = computed(() => [
+    {
+        value: 'Harian',
+        label: 'Harian',
+        desc: 'Praktikum Reguler'
+    },
+    {
+        value: 'Khusus',
+        label: 'Khusus',
+        desc: 'PBL / Skripsi / Organisasi / Pribadi'
     }
-
-    return options;
-});
+]);
 
 const jenisKhususOptions = [
     {
@@ -563,6 +656,11 @@ const jenisKhususOptions = [
         value: 'Organisasi',
         label: 'Organisasi / Lomba',
         desc: 'Kegiatan organisasi atau perlombaan'
+    },
+    {
+        value: 'Pribadi',
+        label: 'Peminjaman Pribadi',
+        desc: 'Peminjaman khusus untuk kebutuhan pribadi'
     }
 ];
 
@@ -578,15 +676,71 @@ const getJenisKhususLabel = computed(() => {
     );
 });
 
+const selectedDosenLabel = computed(() => {
+    if (!formCheckout.value.dosen_pj_user_id) {
+        return 'Pilih Dosen Penanggung Jawab';
+    }
+
+    const selected = dosenOptions.value.find(
+        dosen => String(dosen.id) === String(formCheckout.value.dosen_pj_user_id)
+    );
+
+    return selected?.nama_lengkap || selected?.nama || selected?.email || 'Dosen dipilih';
+});
+
+const fetchDosenOptions = async () => {
+    isLoadingDosen.value = true;
+
+    try {
+        const response = await api.get('/users/dosen');
+        dosenOptions.value = response.data?.data || [];
+    } catch (error) {
+        console.error('Gagal mengambil data dosen:', error);
+        dosenOptions.value = [];
+        showAlert('Gagal memuat data dosen penanggung jawab.', 'error');
+    } finally {
+        isLoadingDosen.value = false;
+    }
+};
+
+const toggleDosenDropdown = async () => {
+    isDosenOpen.value = !isDosenOpen.value;
+    isKategoriOpen.value = false;
+    isJenisOpen.value = false;
+    closeDatePickers();
+
+    if (isDosenOpen.value && dosenOptions.value.length === 0) {
+        await fetchDosenOptions();
+    }
+};
+
+const selectDosenPJ = (dosen) => {
+    formCheckout.value.dosen_pj_user_id = dosen.id;
+    formCheckout.value.dosen_penanggung_jawab =
+        dosen.nama_lengkap || dosen.nama || dosen.email || '';
+    formCheckout.value.nip_dosen_pj = dosen.nip || '';
+    isDosenOpen.value = false;
+};
+
+const clearDosenPJ = () => {
+    formCheckout.value.dosen_pj_user_id = null;
+    formCheckout.value.dosen_penanggung_jawab = '';
+    formCheckout.value.nip_dosen_pj = '';
+    isDosenOpen.value = false;
+};
+
+
 const toggleKategoriDropdown = () => {
     isKategoriOpen.value = !isKategoriOpen.value;
     isJenisOpen.value = false;
+    isDosenOpen.value = false;
     closeDatePickers();
 };
 
 const toggleJenisDropdown = () => {
     isJenisOpen.value = !isJenisOpen.value;
     isKategoriOpen.value = false;
+    isDosenOpen.value = false;
     closeDatePickers();
 };
 
@@ -607,6 +761,8 @@ const resetKhusus = () => {
         formCheckout.value.jenis_khusus = '';
         formCheckout.value.nama_acara = '';
         formCheckout.value.organisasi_penyelenggara = '';
+        formCheckout.value.dosen_pj_user_id = null;
+        formCheckout.value.dosen_penanggung_jawab = '';
         formCheckout.value.nip_dosen_pj = '';
     }
 };
@@ -691,6 +847,7 @@ const toggleTanggalPinjamPicker = () => {
     showTanggalKembaliPicker.value = false;
     isKategoriOpen.value = false;
     isJenisOpen.value = false;
+    isDosenOpen.value = false;
 
     if (formCheckout.value.tanggal_pinjam) {
         currentTanggalPinjamCal.value = makeLocalDate(formCheckout.value.tanggal_pinjam);
@@ -702,6 +859,7 @@ const toggleTanggalKembaliPicker = () => {
     showTanggalPinjamPicker.value = false;
     isKategoriOpen.value = false;
     isJenisOpen.value = false;
+    isDosenOpen.value = false;
 
     if (formCheckout.value.tanggal_kembali) {
         currentTanggalKembaliCal.value = makeLocalDate(formCheckout.value.tanggal_kembali);
@@ -823,6 +981,10 @@ const handleClickOutside = (event) => {
         isJenisOpen.value = false;
     }
 
+    if (dosenDropdownRef.value && !dosenDropdownRef.value.contains(event.target)) {
+        isDosenOpen.value = false;
+    }
+
     if (tanggalPinjamPickerRef.value && !tanggalPinjamPickerRef.value.contains(event.target)) {
         showTanggalPinjamPicker.value = false;
     }
@@ -836,24 +998,90 @@ watch(() => props.isOpen, (newVal) => {
     if (newVal) {
         isKategoriOpen.value = false;
         isJenisOpen.value = false;
+        isDosenOpen.value = false;
         closeDatePickers();
 
         const userStr = localStorage.getItem('user');
-        const currentUser = userStr ? JSON.parse(userStr) : {};
+        let currentUser = {};
 
-        const isMahasiswaUser = !!currentUser.nim;
+        try {
+            currentUser = userStr ? JSON.parse(userStr) : {};
+        } catch (error) {
+            currentUser = {};
+        }
+
+        const roleId = Number(currentUser.role_id || currentUser.role?.id || 0);
+
+        const roleName = String(
+            currentUser.role_name ||
+            currentUser.nama_role ||
+            currentUser.role?.nama_role ||
+            ''
+        ).trim().toLowerCase();
+
+        const isDosenUser =
+            roleId === 4 ||
+            roleName === 'dosen' ||
+            !!currentUser.nip;
+
+        const isMahasiswaUser =
+            roleId === 5 ||
+            roleName === 'mahasiswa' ||
+            !!currentUser.nim;
+
         formCheckout.value._isMahasiswa = isMahasiswaUser;
+        formCheckout.value._isDosen = isDosenUser;
 
-        formCheckout.value.nama_mahasiswa = currentUser.nama || '-';
-        formCheckout.value.nim_mahasiswa = currentUser.identitas || currentUser.nim || currentUser.nip || '-';
         formCheckout.value.email_mahasiswa = currentUser.email || '';
         formCheckout.value.telepon_mahasiswa = currentUser.no_telepon || '';
-        formCheckout.value.prodi_mahasiswa = currentUser.prodi || '-';
-        formCheckout.value.angkatan_mahasiswa = currentUser.angkatan || '-';
-        formCheckout.value.kelas_mahasiswa = currentUser.kelas || '-';
 
-        if (!isMahasiswaUser) {
-            formCheckout.value.kategori_kebutuhan = 'Harian';
+        if (isDosenUser) {
+            formCheckout.value.nama_lengkap =
+                currentUser.nama_lengkap ||
+                currentUser.nama ||
+                currentUser.name ||
+                '-';
+
+            formCheckout.value.nip =
+                currentUser.nip ||
+                currentUser.identitas ||
+                '-';
+
+            formCheckout.value.nama_mahasiswa = '';
+            formCheckout.value.nim_mahasiswa = '';
+            formCheckout.value.prodi_mahasiswa = '';
+            formCheckout.value.angkatan_mahasiswa = '';
+            formCheckout.value.kelas_mahasiswa = '';
+        } else {
+            formCheckout.value.nama_mahasiswa =
+                currentUser.nama_lengkap ||
+                currentUser.nama ||
+                currentUser.name ||
+                '-';
+
+            formCheckout.value.nim_mahasiswa =
+                currentUser.nim ||
+                currentUser.identitas ||
+                '-';
+
+            formCheckout.value.prodi_mahasiswa =
+                currentUser.prodi ||
+                currentUser.program_studi ||
+                currentUser.detail_tambahan?.prodi ||
+                '-';
+
+            formCheckout.value.angkatan_mahasiswa =
+                currentUser.angkatan ||
+                currentUser.detail_tambahan?.angkatan ||
+                '-';
+
+            formCheckout.value.kelas_mahasiswa =
+                currentUser.kelas ||
+                currentUser.detail_tambahan?.kelas ||
+                '-';
+
+            formCheckout.value.nama_lengkap = '';
+            formCheckout.value.nip = '';
         }
     }
 });
@@ -867,29 +1095,78 @@ onUnmounted(() => {
 });
 
 const submitPeminjaman = async () => {
+    if (isSubmitting.value) return;
+
+    if (!formCheckout.value.tujuan_peminjaman?.trim()) {
+        showAlert('Tujuan atau judul kegiatan wajib diisi.', 'warning');
+        return;
+    }
+
+    if (!formCheckout.value.tanggal_pinjam) {
+        showAlert('Tanggal ambil alat wajib dipilih.', 'warning');
+        showTanggalPinjamPicker.value = true;
+        showTanggalKembaliPicker.value = false;
+        return;
+    }
+
+    if (!formCheckout.value.tanggal_kembali) {
+        showAlert('Tanggal kembali alat wajib dipilih.', 'warning');
+        showTanggalKembaliPicker.value = true;
+        showTanggalPinjamPicker.value = false;
+        return;
+    }
+
+    const tanggalPinjam = makeLocalDate(formCheckout.value.tanggal_pinjam);
+    const tanggalKembali = makeLocalDate(formCheckout.value.tanggal_kembali);
+
+    if (tanggalKembali < tanggalPinjam) {
+        showAlert('Tanggal kembali tidak boleh sebelum tanggal ambil alat.', 'warning');
+        showTanggalKembaliPicker.value = true;
+        showTanggalPinjamPicker.value = false;
+        return;
+    }
+
+    if (
+        formCheckout.value.kategori_kebutuhan === 'Khusus' &&
+        !formCheckout.value.jenis_khusus
+    ) {
+        showAlert('Jenis kegiatan khusus wajib dipilih.', 'warning');
+        isJenisOpen.value = true;
+        return;
+    }
+
+    if (
+        formCheckout.value.kategori_kebutuhan === 'Khusus' &&
+        formCheckout.value.jenis_khusus === 'Organisasi' &&
+        (
+            !formCheckout.value.nama_acara?.trim() ||
+            !formCheckout.value.organisasi_penyelenggara?.trim()
+        )
+    ) {
+        showAlert('Nama acara dan organisasi penyelenggara wajib diisi untuk kegiatan organisasi.', 'warning');
+        return;
+    }
+
     isSubmitting.value = true;
 
     try {
+        const isKhusus = formCheckout.value.kategori_kebutuhan === 'Khusus';
+        const isOrganisasi = isKhusus && formCheckout.value.jenis_khusus === 'Organisasi';
+
         const payload = {
             kategori_kebutuhan: formCheckout.value.kategori_kebutuhan,
             tujuan_peminjaman: formCheckout.value.tujuan_peminjaman,
             tanggal_pinjam: formCheckout.value.tanggal_pinjam,
             tanggal_kembali: formCheckout.value.tanggal_kembali,
 
-            jenis_khusus: formCheckout.value.kategori_kebutuhan === 'Khusus'
-                ? formCheckout.value.jenis_khusus
-                : null,
+            jenis_khusus: isKhusus ? formCheckout.value.jenis_khusus : null,
 
-            dosen_penanggung_jawab: formCheckout.value.dosen_penanggung_jawab || null,
-            nip_dosen_pj: formCheckout.value.nip_dosen_pj || null,
+            dosen_pj_user_id: isKhusus ? formCheckout.value.dosen_pj_user_id : null,
+            dosen_penanggung_jawab: isKhusus ? formCheckout.value.dosen_penanggung_jawab || null : null,
+            nip_dosen_pj: isKhusus ? formCheckout.value.nip_dosen_pj || null : null,
 
-            nama_acara: formCheckout.value.jenis_khusus === 'Organisasi'
-                ? formCheckout.value.nama_acara
-                : null,
-
-            organisasi_penyelenggara: formCheckout.value.jenis_khusus === 'Organisasi'
-                ? formCheckout.value.organisasi_penyelenggara
-                : null,
+            nama_acara: isOrganisasi ? formCheckout.value.nama_acara : null,
+            organisasi_penyelenggara: isOrganisasi ? formCheckout.value.organisasi_penyelenggara : null,
 
             keranjang_barang: props.cart.map(item => ({
                 barang_id: item.id,
@@ -899,12 +1176,11 @@ const submitPeminjaman = async () => {
 
         const response = await api.post('/user/peminjaman/checkout', payload);
 
-        showAlert(response.data.message, 'success');
+        showAlert(response.data.message || 'Permohonan peminjaman berhasil dikirim.', 'success');
         formCheckout.value = { ...defaultForm };
         emit('success');
-
     } catch (error) {
-        console.error('Error Checkout Payload:', error.response?.data);
+        console.error('Error Checkout Payload:', error.response?.data || error);
         showAlert(error.response?.data?.message || 'Gagal mengirim permohonan', 'error');
     } finally {
         isSubmitting.value = false;
@@ -1197,6 +1473,7 @@ const submitPeminjaman = async () => {
 }
 
 @media (max-width: 640px) {
+
     .date-picker-panel-down,
     .date-picker-panel-up {
         width: min(17rem, calc(100vw - 2.5rem));
