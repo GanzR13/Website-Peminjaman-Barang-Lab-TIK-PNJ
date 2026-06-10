@@ -9,6 +9,8 @@ const {
 	sequelize,
 } = require("../models");
 const { Op } = require("sequelize");
+const fs = require("fs");
+const { generateSuratPeminjamanPDF } = require("../utils/suratGenerator");
 
 const attachKalabApprover = async (riwayat = []) => {
 	const plainRiwayat = riwayat.map((item) =>
@@ -120,6 +122,61 @@ const attachDosenPjApprover = async (riwayat = []) => {
 			? dosenMap[item.dosen_pj_user_id] || null
 			: null,
 	}));
+};
+
+exports.previewSuratPeminjaman = async (req, res) => {
+	try {
+		const peminjamanId = req.params.id;
+		const userId = req.user.id;
+
+		const peminjaman = await Peminjaman.findOne({
+			where: {
+				id: peminjamanId,
+				user_id: userId,
+			},
+			attributes: ["id", "kode_peminjaman"],
+		});
+
+		if (!peminjaman) {
+			return res.status(404).json({
+				status: "error",
+				message: "Data peminjaman tidak ditemukan.",
+			});
+		}
+
+		const pdfPath = await generateSuratPeminjamanPDF({
+			peminjaman_id: peminjaman.id,
+			kode_peminjaman: peminjaman.kode_peminjaman,
+		});
+
+		res.setHeader("Content-Type", "application/pdf");
+		res.setHeader(
+			"Content-Disposition",
+			`inline; filename="surat-${peminjaman.kode_peminjaman}.pdf"`
+		);
+
+		const stream = fs.createReadStream(pdfPath);
+
+		stream.on("error", (error) => {
+			console.error("[SURAT] Gagal membaca file PDF:", error);
+			if (!res.headersSent) {
+				res.status(500).json({
+					status: "error",
+					message: "Gagal membaca file surat.",
+				});
+			}
+		});
+
+		stream.pipe(res);
+	} catch (error) {
+		console.error("[SURAT] Gagal preview surat user:", error);
+
+		res.status(500).json({
+			status: "error",
+			message: "Gagal membuat preview surat.",
+			error: error.message,
+		});
+	}
 };
 
 const generateKodePeminjaman = async (transaction) => {

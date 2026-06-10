@@ -10,6 +10,12 @@ const safeParseUser = () => {
 	}
 };
 
+const savedToken = localStorage.getItem("token") || null;
+
+if (savedToken) {
+	api.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+}
+
 const normalizeVerified = (value) => {
 	if (value === true || value === 1) return true;
 
@@ -28,7 +34,7 @@ const normalizeVerified = (value) => {
 };
 
 const normalizeRole = (userData = {}) => {
-	const role = userData.Role || userData.role || {};
+	const role = userData.Role || userData.role || userData.ref_role || {};
 
 	const roleId = userData.role_id || role.id || null;
 
@@ -37,12 +43,14 @@ const normalizeRole = (userData = {}) => {
 		userData.role_name ||
 		role.nama_role ||
 		role.name ||
+		role.role_name ||
 		"User";
 
 	const levelAkses =
 		userData.level_akses ||
 		userData.level ||
 		role.level_akses ||
+		role.level ||
 		"peminjam";
 
 	return {
@@ -54,15 +62,65 @@ const normalizeRole = (userData = {}) => {
 		role: {
 			id: roleId,
 			nama_role: roleName,
+			role_name: roleName,
 			level_akses: levelAkses,
+			level: levelAkses,
 		},
 	};
+};
+
+const getUserPayload = (responseData) => {
+	return responseData?.data || responseData?.user || responseData;
+};
+
+const getMahasiswaData = (userData = {}) => {
+	return (
+		userData.mahasiswa ||
+		userData.Mahasiswa ||
+		userData.detail_mahasiswa ||
+		userData.detail_tambahan?.mahasiswa ||
+		{}
+	);
+};
+
+const getPegawaiData = (userData = {}) => {
+	return (
+		userData.pegawai ||
+		userData.Pegawai ||
+		userData.detail_pegawai ||
+		userData.detail_tambahan?.pegawai ||
+		{}
+	);
+};
+
+const getNamaProdi = (userData = {}, mahasiswa = {}) => {
+	return (
+		mahasiswa.prodi?.nama_prodi ||
+		mahasiswa.ref_prodi?.nama_prodi ||
+		mahasiswa.nama_prodi ||
+		userData.detail_tambahan?.prodi ||
+		userData.prodi?.nama_prodi ||
+		userData.prodi ||
+		"-"
+	);
+};
+
+const getNamaKelas = (userData = {}, mahasiswa = {}) => {
+	return (
+		mahasiswa.kelas?.nama_kelas ||
+		mahasiswa.ref_kelas?.nama_kelas ||
+		mahasiswa.nama_kelas ||
+		userData.detail_tambahan?.kelas ||
+		userData.kelas?.nama_kelas ||
+		userData.kelas ||
+		"-"
+	);
 };
 
 export const useAuthStore = defineStore("auth", {
 	state: () => ({
 		user: safeParseUser(),
-		token: localStorage.getItem("token") || null,
+		token: savedToken,
 		loading: false,
 		error: null,
 	}),
@@ -76,7 +134,14 @@ export const useAuthStore = defineStore("auth", {
 				state.user?.level ||
 				state.user?.role?.level_akses;
 
-			return level === "peminjam";
+			const roleId = Number(state.user?.role_id);
+			const roleName = state.user?.role_name || state.user?.nama_role;
+
+			return (
+				level === "peminjam" ||
+				[4, 5].includes(roleId) ||
+				["Mahasiswa", "Dosen"].includes(roleName)
+			);
 		},
 
 		isAdmin: (state) => {
@@ -96,6 +161,34 @@ export const useAuthStore = defineStore("auth", {
 
 			return level === "super_admin";
 		},
+
+		isMahasiswa: (state) => {
+			return (
+				Number(state.user?.role_id) === 5 ||
+				state.user?.role_name === "Mahasiswa" ||
+				state.user?.nama_role === "Mahasiswa"
+			);
+		},
+
+		isDosen: (state) => {
+			return (
+				Number(state.user?.role_id) === 4 ||
+				state.user?.role_name === "Dosen" ||
+				state.user?.nama_role === "Dosen"
+			);
+		},
+
+		isKalab: (state) => {
+			return (
+				Number(state.user?.role_id) === 1 ||
+				state.user?.role_name === "Kepala Lab" ||
+				state.user?.nama_role === "Kepala Lab"
+			);
+		},
+
+		hasTtdDigital: (state) => {
+			return !!state.user?.ttd_digital;
+		},
 	},
 
 	actions: {
@@ -114,7 +207,16 @@ export const useAuthStore = defineStore("auth", {
 			try {
 				const response = await api.post("/auth/login", credentials);
 
-				this.token = response.data.token;
+				const token =
+					response.data?.token ||
+					response.data?.accessToken ||
+					response.data?.access_token;
+
+				if (!token) {
+					throw new Error("Token login tidak ditemukan dari response backend.");
+				}
+
+				this.token = token;
 				localStorage.setItem("token", this.token);
 
 				this.setAuthHeader();
@@ -124,7 +226,9 @@ export const useAuthStore = defineStore("auth", {
 				return true;
 			} catch (err) {
 				this.error =
-					err.response?.data?.message || "Login gagal, silakan coba lagi.";
+					err.response?.data?.message ||
+					err.message ||
+					"Login gagal, silakan coba lagi.";
 
 				throw err;
 			} finally {
@@ -157,19 +261,36 @@ export const useAuthStore = defineStore("auth", {
 				this.setAuthHeader();
 
 				const response = await api.get("/auth/me");
-				const userData = response.data?.data || response.data?.user || response.data;
+				const userData = getUserPayload(response.data);
 
+				if (!userData || !userData.id) {
+					throw new Error("Data user dari /auth/me tidak valid.");
+				}
+
+				const mahasiswa = getMahasiswaData(userData);
+				const pegawai = getPegawaiData(userData);
 				const roleData = normalizeRole(userData);
+
+				const namaLengkap =
+					userData.nama_lengkap ||
+					userData.nama ||
+					mahasiswa.nama_mahasiswa ||
+					pegawai.nama_lengkap ||
+					this.user?.nama_lengkap ||
+					"Pengguna";
+
+				const nim = userData.nim || mahasiswa.nim || null;
+				const nip = userData.nip || pegawai.nip || null;
 
 				this.user = {
 					...this.user,
 
 					id: userData.id,
-					nama: userData.nama_lengkap || userData.nama || this.user?.nama || "Pengguna",
-					nama_lengkap:
-						userData.nama_lengkap || userData.nama || this.user?.nama || "Pengguna",
+					nama: namaLengkap,
+					nama_lengkap: namaLengkap,
 
-					email: userData.email,
+					email: userData.email || this.user?.email || null,
+
 					email_verified: normalizeVerified(
 						userData.email_verified ??
 							userData.emailVerified ??
@@ -177,19 +298,33 @@ export const useAuthStore = defineStore("auth", {
 							userData.verified
 					),
 
-					no_telepon: userData.no_telepon || "Belum diatur",
+					no_telepon:
+						userData.no_telepon ||
+						userData.telepon ||
+						mahasiswa.no_telepon ||
+						mahasiswa.telepon ||
+						pegawai.no_telepon ||
+						pegawai.telepon ||
+						"Belum diatur",
 
-					identitas: userData.nim || userData.nip || "-",
-					nim: userData.nim || null,
-					nip: userData.nip || null,
+					identitas: nim || nip || "-",
+					nim,
+					nip,
 
 					...roleData,
 
-					prodi: userData.detail_tambahan?.prodi || userData.prodi || "-",
-					kelas: userData.detail_tambahan?.kelas || userData.kelas || "-",
+					prodi: getNamaProdi(userData, mahasiswa),
+					kelas: getNamaKelas(userData, mahasiswa),
 					angkatan:
-						userData.detail_tambahan?.angkatan || userData.angkatan || "-",
+						userData.detail_tambahan?.angkatan ||
+						userData.angkatan ||
+						mahasiswa.angkatan ||
+						"-",
 
+					mahasiswa,
+					pegawai,
+
+					// ttd_digital ada di tabel user, jadi ambil dari userData langsung
 					ttd_digital: userData.ttd_digital || null,
 				};
 
@@ -205,6 +340,15 @@ export const useAuthStore = defineStore("auth", {
 
 				return null;
 			}
+		},
+
+		updateLocalUser(payload = {}) {
+			this.user = {
+				...this.user,
+				...payload,
+			};
+
+			localStorage.setItem("user", JSON.stringify(this.user));
 		},
 
 		logout() {

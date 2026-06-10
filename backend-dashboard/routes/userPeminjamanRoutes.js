@@ -47,4 +47,6 @@ router.post('/laporan', (req, res, next) => {
 router.get('/laporan', laporanUserController.getRiwayatLaporan);
 router.get('/laporan/:id', laporanUserController.getDetailLaporan);
 
+router.get('/:id/surat/preview', peminjamanUserController.previewSuratPeminjaman);
+
 module.exports = router;

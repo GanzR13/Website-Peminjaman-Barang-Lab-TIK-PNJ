@@ -21,9 +21,9 @@ module.exports = (sequelize, DataTypes) => {
 
     Mahasiswa.init(
         {
-            // 1. Tambahkan ID eksplisit sebagai STRING/UUID
+            //UUID
             id: {
-                type: DataTypes.STRING, // atau DataTypes.UUID
+                type: DataTypes.STRING,
                 primaryKey: true,
                 allowNull: false
             },
@@ -34,24 +34,23 @@ module.exports = (sequelize, DataTypes) => {
             nim: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                unique: true // NIM tidak boleh ada yang sama
+                unique: true
             },
             angkatan: {
                 type: DataTypes.INTEGER,
                 allowNull: false
             },
-            // 2. UBAH user_id MENJADI STRING agar cocok dengan UUID di tabel User
             user_id: {
                 type: DataTypes.STRING, 
                 allowNull: false,
-                unique: true // Satu user hanya boleh punya satu profil mahasiswa
+                unique: true 
             },
             prodi_id: {
-                type: DataTypes.INTEGER, // Tetap Integer jika tabel ref_Prodi pakai ID angka
+                type: DataTypes.INTEGER,
                 allowNull: false
             },
             kelas_id: {
-                type: DataTypes.INTEGER, // Tetap Integer jika tabel ref_Kelas pakai ID angka
+                type: DataTypes.INTEGER,
                 allowNull: false
             },
         },

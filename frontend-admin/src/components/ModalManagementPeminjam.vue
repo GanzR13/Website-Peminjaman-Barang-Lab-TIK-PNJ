@@ -56,10 +56,9 @@
                                 </div>
                                 <div v-if="selectedData.kategori_kebutuhan === 'Khusus'"
                                     class="col-span-2 sm:col-span-1">
-                                    <p class="text-[10px] text-blue-400 font-bold mb-1 uppercase tracking-widest">Nomor
-                                        Surat Pengantar</p>
-                                    <p v-if="selectedData.nomor_surat" class="font-bold text-slate-800">{{
-                                        selectedData.nomor_surat }}</p>
+                                    <p class="text-[10px] text-blue-400 font-bold mb-1 uppercase tracking-widest">Kode Peminjaman</p>
+                                    <p v-if="selectedData.kode_peminjaman" class="font-bold text-slate-800">{{
+                                        selectedData.kode_peminjaman }}</p>
                                     <p v-else class="font-bold text-amber-600 text-xs italic">Akan digenerate saat
                                         disetujui</p>
                                 </div>

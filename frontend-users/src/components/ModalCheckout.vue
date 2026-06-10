@@ -275,7 +275,7 @@
                                     </label>
 
                                     <input v-model="formCheckout.tujuan_peminjaman" type="text" required
-                                        placeholder="Cth: Praktikum IoT / Lomba Robotik" class="input-form" />
+                                        placeholder="Cth: Praktikum IoT / PBL" class="input-form" />
                                 </div>
                             </div>
 
@@ -654,8 +654,13 @@ const jenisKhususOptions = [
     },
     {
         value: 'Organisasi',
-        label: 'Organisasi / Lomba',
-        desc: 'Kegiatan organisasi atau perlombaan'
+        label: 'Organisasi',
+        desc: 'Kegiatan organisasi'
+    },
+    {
+        value: 'Lomba',
+        label: 'Lomba',
+        desc: 'Kegiatan perlombaan'
     },
     {
         value: 'Pribadi',

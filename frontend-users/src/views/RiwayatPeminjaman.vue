@@ -131,8 +131,7 @@
                     </div>
 
                     <!-- Detail Dosen PJ -->
-                    <div v-if="hasDosenPJ(transaksi)"
-                        class="mt-3 rounded-2xl border border-blue-100 bg-blue-50 p-3.5">
+                    <div v-if="hasDosenPJ(transaksi)" class="mt-3 rounded-2xl border border-blue-100 bg-blue-50 p-3.5">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
                                 <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">
@@ -244,18 +243,33 @@
                             Surat Belum Dapat Dicetak
                         </p>
                         <p class="text-xs font-medium text-amber-800 leading-relaxed">
-                            Surat dapat dicetak setelah approval yang diperlukan selesai. Jika memilih Dosen PJ, approval dosen harus disetujui. Approval Kepala Lab juga harus disetujui.
+                            Surat dapat dicetak setelah approval yang diperlukan selesai. Jika memilih Dosen PJ,
+                            approval dosen harus disetujui. Approval Kepala Lab juga harus disetujui.
                         </p>
                     </div>
                 </div>
 
                 <!-- Tombol Aksi -->
                 <div class="px-4 pb-4 flex flex-wrap gap-2">
-                    <button v-if="canPrintSurat(transaksi)" @click="cetakSurat(transaksi)"
-                        class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-all active:scale-95 text-xs cursor-pointer shadow-md">
-                        <PrinterIcon class="w-3.5 h-3.5" />
-                        Cetak Surat
-                    </button>
+                    <div v-if="canPrintSurat(transaksi)" class="flex items-center gap-2">
+                        <!-- Preview Surat -->
+                        <button @click="cetakSurat(transaksi)" :disabled="printingId === transaksi.id"
+                            class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-all active:scale-95 text-xs cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                            <div v-if="printingId === transaksi.id"
+                                class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin">
+                            </div>
+
+                            <PrinterIcon v-else class="w-3.5 h-3.5" />
+
+                            {{ printingId === transaksi.id ? 'Membuka Surat...' : 'Preview Surat' }}
+                        </button>
+
+                        <!-- Download Surat -->
+                        <button @click="downloadSurat(transaksi)"
+                            class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all active:scale-95 text-xs cursor-pointer shadow-md">
+                            Download Surat
+                        </button>
+                    </div>
 
                     <button v-if="canAddGoogleCalendarReminder(transaksi)" @click="addGoogleCalendarReminder(transaksi)"
                         class="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 font-bold rounded-xl hover:bg-emerald-100 transition-all active:scale-95 text-xs cursor-pointer">
@@ -304,7 +318,6 @@ import {
     XCircleIcon
 } from '@heroicons/vue/24/outline';
 import ModalLaporMasalah from '../components/ModalLaporMasalah.vue';
-import { generateSuratPDF } from '../utils/printSurat';
 
 const { showAlert } = useAlert();
 const { showConfirm } = useConfirm();
@@ -312,6 +325,7 @@ const { showConfirm } = useConfirm();
 const riwayatList = ref([]);
 const isLoading = ref(true);
 const cancelingId = ref(null);
+const printingId = ref(null);
 
 const isLaporModalOpen = ref(false);
 const selectedPeminjaman = ref(null);
@@ -388,13 +402,73 @@ const canPrintSurat = (transaksi) => {
     );
 };
 
-const cetakSurat = (transaksi) => {
+const cetakSurat = async (transaksi) => {
     if (!canPrintSurat(transaksi)) {
         showAlert('Surat belum dapat dicetak karena approval belum lengkap.', 'warning');
         return;
     }
 
-    generateSuratPDF(transaksi, showAlert);
+    const previewUrl = getDrivePreviewUrl(transaksi);
+
+    if (!previewUrl) {
+        showAlert(
+            'File surat belum tersedia. Pastikan peminjaman sudah disetujui dan surat berhasil diupload ke Google Drive.',
+            'warning'
+        );
+        return;
+    }
+
+    printingId.value = transaksi.id;
+
+    try {
+        window.open(previewUrl, '_blank', 'noopener,noreferrer');
+        showAlert('Surat berhasil dibuka.', 'success');
+    } catch (error) {
+        console.error('Gagal membuka surat:', error);
+        showAlert('Gagal membuka surat.', 'error');
+    } finally {
+        printingId.value = null;
+    }
+};
+
+const downloadSurat = (transaksi) => {
+    if (!canPrintSurat(transaksi)) {
+        showAlert('Surat belum dapat diunduh karena approval belum lengkap.', 'warning');
+        return;
+    }
+
+    const downloadUrl = getDriveDownloadUrl(transaksi);
+
+    if (!downloadUrl) {
+        showAlert('File surat belum tersedia untuk di-download.', 'warning');
+        return;
+    }
+
+    window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+};
+
+const getDrivePreviewUrl = (transaksi) => {
+    if (transaksi?.file_surat_drive_id) {
+        return `https://drive.google.com/file/d/${transaksi.file_surat_drive_id}/preview`;
+    }
+
+    if (transaksi?.file_surat_url) {
+        return transaksi.file_surat_url;
+    }
+
+    return null;
+};
+
+const getDriveDownloadUrl = (transaksi) => {
+    if (transaksi?.file_surat_drive_id) {
+        return `https://drive.google.com/uc?export=download&id=${transaksi.file_surat_drive_id}`;
+    }
+
+    if (transaksi?.file_surat_url) {
+        return transaksi.file_surat_url;
+    }
+
+    return null;
 };
 
 const canAddGoogleCalendarReminder = (transaksi) => {
