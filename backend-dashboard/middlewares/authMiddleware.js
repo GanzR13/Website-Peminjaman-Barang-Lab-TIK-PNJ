@@ -14,7 +14,7 @@ const authenticateToken = (req, res, next) => {
 
 	jwt.verify(
 		token,
-		process.env.JWT_SECRET || "secret_key_kamu",
+		process.env.JWT_SECRET,
 		async (err, decodedUser) => {
 			if (err) {
 				return res.status(403).json({

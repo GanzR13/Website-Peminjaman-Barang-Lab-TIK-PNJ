@@ -8,7 +8,7 @@
                     Manajemen Peminjaman
                 </h2>
                 <p class="text-slate-500 mt-1 text-sm font-medium leading-relaxed">
-                    Kelola persetujuan, antrian harian, dan riwayat alat lab.
+                    Kelola persetujuan, antrian harian, dan riwayat barang lab.
                 </p>
             </div>
 
@@ -339,10 +339,37 @@
                         </div>
                     </div>
 
-                    <button @click="openProcessModal(item)"
-                        class="w-full py-2.5 border border-slate-200 text-blue-600 bg-white font-black rounded-xl transition-colors hover:bg-blue-50 active:scale-95 text-xs cursor-pointer shadow-sm">
-                        Detail / Proses Transaksi
-                    </button>
+                    <div class="space-y-2">
+                        <button @click="openProcessModal(item)"
+                            class="w-full py-2.5 border border-slate-200 text-blue-600 bg-white font-black rounded-xl transition-colors hover:bg-blue-50 active:scale-95 text-xs cursor-pointer shadow-sm">
+                            Detail / Proses Transaksi
+                        </button>
+
+                        <div v-if="item.kategori_kebutuhan === 'Khusus'" class="grid grid-cols-2 gap-2">
+                            <button type="button" @click="previewSurat(item)" :disabled="!hasSurat(item)"
+                                class="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :class="hasSurat(item)
+                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 cursor-pointer'
+                                    : 'bg-slate-50 text-slate-400 border-slate-200'">
+                                <EyeIcon class="w-4 h-4" />
+                                Preview
+                            </button>
+
+                            <button type="button" @click="downloadSurat(item)" :disabled="!hasSurat(item)"
+                                class="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-black transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :class="hasSurat(item)
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 cursor-pointer'
+                                    : 'bg-slate-50 text-slate-400 border-slate-200'">
+                                <ArrowDownTrayIcon class="w-4 h-4" />
+                                Download
+                            </button>
+                        </div>
+
+                        <p v-if="item.kategori_kebutuhan === 'Khusus' && !hasSurat(item)"
+                            class="text-[10px] font-bold text-slate-400 text-center">
+                            Surat belum tersedia
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -437,10 +464,37 @@
                             </td>
 
                             <td class="p-4 pr-6 text-center">
-                                <button @click="openProcessModal(item)"
-                                    class="px-4 py-2 bg-white border border-slate-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors active:scale-95 text-xs cursor-pointer shadow-sm">
-                                    Detail / Proses
-                                </button>
+                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                    <button @click="openProcessModal(item)"
+                                        class="px-3 py-2 bg-white border border-slate-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors active:scale-95 text-xs cursor-pointer shadow-sm">
+                                        Detail / Proses
+                                    </button>
+
+                                    <button v-if="item.kategori_kebutuhan === 'Khusus'" type="button"
+                                        @click="previewSurat(item)" :disabled="!hasSurat(item)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        :class="hasSurat(item)
+                                            ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 cursor-pointer'
+                                            : 'bg-slate-50 text-slate-400 border-slate-200'">
+                                        <EyeIcon class="w-4 h-4" />
+                                        Preview
+                                    </button>
+
+                                    <button v-if="item.kategori_kebutuhan === 'Khusus'" type="button"
+                                        @click="downloadSurat(item)" :disabled="!hasSurat(item)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        :class="hasSurat(item)
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 cursor-pointer'
+                                            : 'bg-slate-50 text-slate-400 border-slate-200'">
+                                        <ArrowDownTrayIcon class="w-4 h-4" />
+                                        Download
+                                    </button>
+                                </div>
+
+                                <p v-if="item.kategori_kebutuhan === 'Khusus' && !hasSurat(item)"
+                                    class="mt-1 text-[9px] font-bold text-slate-400 text-center">
+                                    Surat belum tersedia
+                                </p>
                             </td>
                         </tr>
                     </tbody>
@@ -508,7 +562,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import api from '../plugins/axios';
 import { useAlert } from '../composables/useAlert';
-import { useConfirm } from '../composables/useConfirm'; // IMPORT Confirm Baruu
+import { useConfirm } from '../composables/useConfirm';
 import ModalManagementPeminjam from '../components/ModalManagementPeminjam.vue';
 import {
     format,
@@ -521,12 +575,16 @@ import {
 import { id } from 'date-fns/locale/id';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
+import { format as formatDateFns } from 'date-fns';
 import {
     MagnifyingGlassIcon,
     ClipboardDocumentListIcon,
     DocumentArrowDownIcon,
     DocumentTextIcon,
+    EyeIcon,
+    ArrowDownTrayIcon,
+    ArrowTopRightOnSquareIcon,
     ArrowPathIcon,
     ExclamationTriangleIcon,
     ChevronDownIcon,
@@ -537,7 +595,7 @@ import {
 import { useAuthStore } from '../stores/auth';
 
 const { showAlert } = useAlert();
-const { showConfirm } = useConfirm(); // Panggil fungsi Confirm
+const { showConfirm } = useConfirm();
 
 const authStore = useAuthStore();
 // State Umum
@@ -1026,6 +1084,250 @@ const openProcessModal = (item) => {
     isModalOpen.value = true;
 };
 
+const extractDriveFileId = (item) => {
+    if (!item) return null;
+
+    if (item.file_surat_drive_id) {
+        return item.file_surat_drive_id;
+    }
+
+    const url = item.file_surat_url || '';
+
+    if (!url) return null;
+
+    const patterns = [
+        /\/file\/d\/([a-zA-Z0-9_-]+)/,
+        /[?&]id=([a-zA-Z0-9_-]+)/,
+        /\/open\?id=([a-zA-Z0-9_-]+)/,
+    ];
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+
+        if (match?.[1]) {
+            return match[1];
+        }
+    }
+
+    return null;
+};
+
+const hasSurat = (item) => {
+    return !!(item?.file_surat_url || item?.file_surat_drive_id);
+};
+
+const getSuratPreviewUrl = (item) => {
+    const fileId = extractDriveFileId(item);
+
+    if (fileId) {
+        return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+
+    return item?.file_surat_url || '';
+};
+
+const getSuratViewUrl = (item) => {
+    const fileId = extractDriveFileId(item);
+
+    if (fileId) {
+        return `https://drive.google.com/file/d/${fileId}/view`;
+    }
+
+    return item?.file_surat_url || '';
+};
+
+const getSuratDownloadUrl = (item) => {
+    const fileId = extractDriveFileId(item);
+
+    if (fileId) {
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+    }
+
+    return item?.file_surat_url || '';
+};
+
+const previewSurat = (item) => {
+    if (!hasSurat(item)) {
+        showAlert('Surat belum tersedia. Pastikan surat sudah dibuat dan diupload ke Google Drive.', 'warning');
+        return;
+    }
+
+    const previewUrl = getSuratPreviewUrl(item);
+    const viewUrl = getSuratViewUrl(item);
+    const downloadUrl = getSuratDownloadUrl(item);
+    const kode = item.kode_peminjaman || `Peminjaman-${item.id}`;
+    const fileName = `Surat_${kode}.pdf`;
+
+    const previewWindow = window.open('', '_blank');
+
+    if (!previewWindow) {
+        showAlert('Preview surat diblokir browser. Izinkan pop-up terlebih dahulu.', 'warning');
+        return;
+    }
+
+    previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Preview Surat Peminjaman - ${kode}</title>
+            <style>
+                * {
+                    box-sizing: border-box;
+                }
+
+                body {
+                    margin: 0;
+                    background: #0f172a;
+                    font-family: Arial, sans-serif;
+                    overflow: hidden;
+                }
+
+                .toolbar {
+                    min-height: 60px;
+                    background: #ffffff;
+                    border-bottom: 1px solid #e5e7eb;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 10px 16px;
+                }
+
+                .title {
+                    min-width: 0;
+                }
+
+                .title h1 {
+                    margin: 0;
+                    font-size: 14px;
+                    font-weight: 800;
+                    color: #0f172a;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .title p {
+                    margin: 2px 0 0;
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #64748b;
+                }
+
+                .actions {
+                    display: flex;
+                    gap: 8px;
+                    flex-shrink: 0;
+                }
+
+                a,
+                button {
+                    border: none;
+                    text-decoration: none;
+                    border-radius: 10px;
+                    padding: 9px 13px;
+                    font-size: 12px;
+                    font-weight: 800;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    white-space: nowrap;
+                }
+
+                .download {
+                    background: #2563eb;
+                    color: #ffffff;
+                }
+
+                .open {
+                    background: #f1f5f9;
+                    color: #334155;
+                }
+
+                .close {
+                    background: #fee2e2;
+                    color: #dc2626;
+                }
+
+                iframe {
+                    width: 100vw;
+                    height: calc(100vh - 60px);
+                    border: none;
+                    background: #64748b;
+                }
+
+                @media (max-width: 640px) {
+                    .toolbar {
+                        align-items: stretch;
+                        flex-direction: column;
+                    }
+
+                    .actions {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr 1fr;
+                    }
+
+                    iframe {
+                        height: calc(100vh - 112px);
+                    }
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="toolbar">
+                <div class="title">
+                    <h1>Preview Surat Peminjaman</h1>
+                    <p>${kode}</p>
+                </div>
+
+                <div class="actions">
+                    <a class="download" href="${downloadUrl}" download="${fileName}">
+                        Download
+                    </a>
+
+                    <a class="open" href="${viewUrl}" target="_blank" rel="noopener">
+                        Buka Drive
+                    </a>
+
+                    <button class="close" onclick="window.close()">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+
+            <iframe src="${previewUrl}" allow="autoplay"></iframe>
+        </body>
+        </html>
+    `);
+
+    previewWindow.document.close();
+};
+
+const downloadSurat = (item) => {
+    if (!hasSurat(item)) {
+        showAlert('Surat belum tersedia. Pastikan surat sudah dibuat dan diupload ke Google Drive.', 'warning');
+        return;
+    }
+
+    const downloadUrl = getSuratDownloadUrl(item);
+    const kode = item.kode_peminjaman || `Peminjaman-${item.id}`;
+    const fileName = `Surat_${kode}.pdf`;
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    link.target = '_blank';
+    link.rel = 'noopener';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
 // LOGIKA UPDATE STATUS (MENGGUNAKAN useConfirm)
 const updateStatus = (newStatus) => {
     const currentItem = selectedData.value;
@@ -1070,7 +1372,7 @@ const updateStatus = (newStatus) => {
             btnText = 'Ya, Selesaikan';
             btnColor = 'emerald';
         } else {
-            pesanKonfirmasi = 'Pastikan alat telah dikembalikan dengan lengkap. Selesaikan peminjaman ini?';
+            pesanKonfirmasi = 'Pastikan barang telah dikembalikan dengan lengkap. Selesaikan peminjaman ini?';
             btnText = 'Ya, Selesai';
             btnColor = 'emerald';
         }
@@ -1130,7 +1432,7 @@ const approveKalab = (item) => {
             } catch (error) {
                 showAlert(
                     error.response?.data?.message ||
-                        'Gagal menyetujui peminjaman sebagai Kepala Laboratorium.',
+                    'Gagal menyetujui peminjaman sebagai Kepala Laboratorium.',
                     'error'
                 );
             } finally {
@@ -1159,7 +1461,7 @@ const exportExcel = () => {
             Antrian: item.antrian || item.id,
             'Nama Peminjam': item.nama_peminjam,
             Kategori: item.kategori_kebutuhan || '-',
-            'Nomor Surat': item.nomor_surat || '-',
+            'Kode Peminjaman': item.kode_peminjaman || '-',
             'Barang Dipinjam': listBarang,
             'Mulai Pinjam': formatDate(item.tanggal_pinjam),
             'Tgl Kembali': formatDate(item.tanggal_kembali),
@@ -1177,59 +1479,309 @@ const exportExcel = () => {
 };
 
 // Export PDF
-const exportPDF = () => {
-    if (filteredData.value.length === 0) {
-        return showAlert('Data kosong', 'error');
+const buildPeminjamanPDF = () => {
+    if (!filteredData.value || filteredData.value.length === 0) {
+        showAlert('Data kosong, tidak ada yang bisa diexport ke PDF.', 'error');
+        return null;
     }
 
-    const doc = new jsPDF('l', 'mm', 'a4');
+    const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+    });
 
-    doc.text('LAPORAN PEMINJAMAN BARANG LAB PLP TIK PNJ', 14, 15);
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    const subtitle = startDate.value && endDate.value
-        ? `Periode: ${formatDate(startDate.value)} s.d. ${formatDate(endDate.value)}`
-        : 'Periode: Semua Waktu';
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('LAPORAN PEMINJAMAN BARANG LAB PLP TIK PNJ', pageWidth / 2, 12, {
+        align: 'center',
+    });
 
-    doc.setFontSize(10);
-    doc.text(subtitle, 14, 22);
+    const subtitle =
+        startDate.value && endDate.value
+            ? `Periode: ${formatDate(startDate.value)} s.d. ${formatDate(endDate.value)}`
+            : 'Periode: Semua Waktu';
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(subtitle, pageWidth / 2, 18, {
+        align: 'center',
+    });
+
+    doc.setFontSize(8);
+    doc.text(`Tanggal Export: ${new Date().toLocaleString('id-ID')}`, 8, 26);
 
     const rows = filteredData.value.map((item, index) => {
-        const listBarang = item.detail_barang
-            ?.map(d => `${d.barang?.nama_barang} (${d.jumlah_pinjam})`)
-            .join(',\n') || '-';
+        const listBarang =
+            item.detail_barang
+                ?.map((detail) => {
+                    const namaBarang = detail.barang?.nama_barang || 'Barang Dihapus';
+                    const jumlah = detail.jumlah_pinjam || detail.jumlah || 0;
+
+                    return `${namaBarang} (${jumlah})`;
+                })
+                .join('\n') || '-';
 
         return [
             index + 1,
-            item.antrian || item.id,
-            item.nama_peminjam,
+            item.antrian ? `#${item.antrian}` : '-',
+            item.nama_peminjam || getNamaPeminjam?.(item) || '-',
+            item.kategori_kebutuhan || '-',
+            item.jenis_khusus || '-',
+            item.kode_peminjaman || '-',
             listBarang,
             formatDate(item.tanggal_pinjam),
             formatDate(item.tanggal_kembali),
-            item.status
+            item.status || '-',
+            item.status_approve_kalab || '-',
+            item.status_approve_dosen_pj || '-',
         ];
     });
 
-    doc.autoTable({
-        head: [['No', 'Antrian', 'Peminjam', 'Barang (Jml)', 'Tgl Pinjam', 'Tgl Kembali', 'Status']],
+    autoTable(doc, {
+        startY: 32,
+        margin: {
+            top: 32,
+            left: 8,
+            right: 8,
+            bottom: 10,
+        },
+        tableWidth: pageWidth - 16,
+        theme: 'grid',
+
+        head: [[
+            'No',
+            'Antrian',
+            'Peminjam',
+            'Kategori',
+            'Jenis',
+            'No. Surat',
+            'Barang',
+            'Pinjam',
+            'Kembali',
+            'Status',
+            'Kalab',
+            'Dosen PJ',
+        ]],
+
         body: rows,
-        startY: 30,
-        headStyles: {
-            fillColor: [30, 64, 175]
-        },
+
         styles: {
-            cellPadding: 2,
-            fontSize: 8,
-            overflow: 'linebreak'
+            fontSize: 5.8,
+            cellPadding: 1.2,
+            overflow: 'linebreak',
+            valign: 'top',
+            lineColor: [220, 220, 220],
+            lineWidth: 0.1,
+            textColor: [0, 0, 0],
         },
+
+        headStyles: {
+            fillColor: [30, 64, 175],
+            textColor: 255,
+            fontStyle: 'bold',
+            halign: 'center',
+            valign: 'middle',
+            fontSize: 6.2,
+            cellPadding: 1.5,
+        },
+
+        alternateRowStyles: {
+            fillColor: [248, 250, 252],
+        },
+
         columnStyles: {
-            3: {
-                cellWidth: 50
-            }
-        }
+            0: { cellWidth: 8, halign: 'center' },      // No
+            1: { cellWidth: 14, halign: 'center' },     // Antrian
+            2: { cellWidth: 38 },                       // Peminjam
+            3: { cellWidth: 18, halign: 'center' },     // Kategori
+            4: { cellWidth: 16, halign: 'center' },     // Jenis
+            5: { cellWidth: 30, halign: 'center' },     // No. Surat
+            6: { cellWidth: 62 },                       // Barang
+            7: { cellWidth: 21, halign: 'center' },     // Pinjam
+            8: { cellWidth: 21, halign: 'center' },     // Kembali
+            9: { cellWidth: 18, halign: 'center' },     // Status
+            10: { cellWidth: 18, halign: 'center' },    // Kalab
+            11: { cellWidth: 17, halign: 'center' },    // Dosen PJ
+        },
+
+        didDrawPage: () => {
+            const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+
+            doc.setFontSize(7);
+            doc.setTextColor(100);
+
+            doc.text(
+                `Halaman ${currentPage}`,
+                pageWidth - 8,
+                pageHeight - 6,
+                { align: 'right' }
+            );
+        },
     });
 
-    doc.save(`Laporan_Lab_${format(new Date(), 'ddMMyy')}.pdf`);
-    showAlert('PDF berhasil diunduh', 'success');
+    return doc;
+};
+
+const exportPDF = () => {
+    try {
+        const doc = buildPeminjamanPDF();
+
+        if (!doc) return;
+
+        const fileName = `Laporan_Peminjaman_${formatDateFns(new Date(), 'ddMMyy_HHmm')}.pdf`;
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        const previewWindow = window.open('', '_blank');
+
+        if (!previewWindow) {
+            showAlert('Preview PDF diblokir browser. Izinkan pop-up terlebih dahulu.', 'warning');
+            URL.revokeObjectURL(pdfUrl);
+            return;
+        }
+
+        previewWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="id">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Preview Laporan Peminjaman</title>
+                <style>
+                    * {
+                        box-sizing: border-box;
+                    }
+
+                    body {
+                        margin: 0;
+                        background: #0f172a;
+                        font-family: Arial, sans-serif;
+                        overflow: hidden;
+                    }
+
+                    .toolbar {
+                        height: 58px;
+                        background: #ffffff;
+                        border-bottom: 1px solid #e5e7eb;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0 18px;
+                        gap: 12px;
+                    }
+
+                    .title {
+                        font-size: 14px;
+                        font-weight: 800;
+                        color: #0f172a;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .actions {
+                        display: flex;
+                        gap: 8px;
+                        flex-shrink: 0;
+                    }
+
+                    button, a {
+                        border: none;
+                        text-decoration: none;
+                        border-radius: 10px;
+                        padding: 10px 14px;
+                        font-size: 13px;
+                        font-weight: 800;
+                        cursor: pointer;
+                    }
+
+                    .download {
+                        background: #2563eb;
+                        color: white;
+                    }
+
+                    .print {
+                        background: #f1f5f9;
+                        color: #334155;
+                    }
+
+                    .close {
+                        background: #fee2e2;
+                        color: #dc2626;
+                    }
+
+                    iframe {
+                        width: 100vw;
+                        height: calc(100vh - 58px);
+                        border: none;
+                        background: #64748b;
+                    }
+
+                    @media (max-width: 640px) {
+                        .toolbar {
+                            height: auto;
+                            min-height: 58px;
+                            flex-direction: column;
+                            align-items: stretch;
+                            padding: 10px;
+                        }
+
+                        .actions {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr 1fr;
+                        }
+
+                        button, a {
+                            padding: 9px 10px;
+                            font-size: 12px;
+                            text-align: center;
+                        }
+
+                        iframe {
+                            height: calc(100vh - 105px);
+                        }
+                    }
+                </style>
+            </head>
+
+            <body>
+                <div class="toolbar">
+                    <div class="title">
+                        Preview PDF - ${fileName}
+                    </div>
+
+                    <div class="actions">
+                        <a class="download" href="${pdfUrl}" download="${fileName}">
+                            Download
+                        </a>
+
+                        <button class="print" onclick="document.getElementById('pdfFrame').contentWindow.print()">
+                            Print
+                        </button>
+
+                        <button class="close" onclick="window.close()">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+
+                <iframe id="pdfFrame" src="${pdfUrl}"></iframe>
+            </body>
+            </html>
+        `);
+
+        previewWindow.document.close();
+
+        showAlert('Preview PDF berhasil dibuka.', 'success');
+    } catch (error) {
+        console.error('Export PDF Preview Error:', error);
+        showAlert('Gagal membuka preview PDF.', 'error');
+    }
 };
 </script>
 

@@ -1,5 +1,7 @@
 "use strict";
 
+const fs = require("fs");
+
 const {
 	Peminjaman,
 	DetailPeminjaman,
@@ -10,35 +12,35 @@ const {
 	LaporanMasalah,
 	sequelize,
 } = require("../models");
+
 const { Op } = require("sequelize");
 
 const createAdminLog = require("../utils/adminActionLogger");
-
-// ==========================================
-// 1. FUNGSI HELPER: GENERATE BULAN ROMAWI
-// ==========================================
-const getBulanRomawi = (bulan) => {
-	const romawi = [
-		"",
-		"I",
-		"II",
-		"III",
-		"IV",
-		"V",
-		"VI",
-		"VII",
-		"VIII",
-		"IX",
-		"X",
-		"XI",
-		"XII",
-	];
-	return romawi[bulan];
-};
+const { generateSuratPeminjamanPDF } = require("../utils/suratGenerator");
+const { uploadPdfToDrive } = require("../utils/googleDriveUploader");
 
 const getNumericTargetId = (id) => {
 	const parsed = Number(id);
 	return Number.isInteger(parsed) ? parsed : null;
+};
+
+const normalizeText = (value) => {
+	return String(value || "")
+		.trim()
+		.toLowerCase();
+};
+
+const getJumlahLaporan = (laporanPlain) => {
+	const jumlah = Number(
+		laporanPlain.jumlah_hilang ||
+			laporanPlain.jumlah_rusak ||
+			laporanPlain.jumlah_barang_rusak ||
+			laporanPlain.jumlah_barang_hilang ||
+			laporanPlain.jumlah ||
+			1,
+	);
+
+	return jumlah > 0 ? jumlah : 1;
 };
 
 const getActionByStatus = (status) => {
@@ -60,19 +62,95 @@ const getActionByStatus = (status) => {
 	}
 };
 
+const generateKodePeminjaman = async (transaction) => {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, "0");
+	const yearMonth = `${year}${month}`;
+	const prefix = `REQ-${yearMonth}-`;
+
+	const transaksiTerakhir = await Peminjaman.findOne({
+		where: {
+			kode_peminjaman: {
+				[Op.like]: `${prefix}%`,
+			},
+		},
+		order: [["kode_peminjaman", "DESC"]],
+		transaction,
+	});
+
+	let urutan = "001";
+
+	if (transaksiTerakhir?.kode_peminjaman) {
+		const lastNumber = Number(
+			transaksiTerakhir.kode_peminjaman.split("-").pop(),
+		);
+
+		if (!Number.isNaN(lastNumber)) {
+			urutan = String(lastNumber + 1).padStart(3, "0");
+		}
+	}
+
+	return `REQ-${yearMonth}-${urutan}`;
+};
+
+const uploadSuratPeminjamanKeDrive = async ({ peminjamanId, kodePeminjaman }) => {
+	console.log("[SURAT] Mulai generate surat:", {
+		peminjamanId,
+		kodePeminjaman,
+	});
+
+	const pdfPath = await generateSuratPeminjamanPDF({
+		peminjaman_id: peminjamanId,
+		kode_peminjaman: kodePeminjaman,
+	});
+
+	console.log("[SURAT] PDF path:", pdfPath);
+	console.log("[SURAT] PDF exists:", !!pdfPath && fs.existsSync(pdfPath));
+
+	if (!pdfPath || !fs.existsSync(pdfPath)) {
+		throw new Error(`File PDF surat tidak ditemukan: ${pdfPath}`);
+	}
+
+	const uploaded = await uploadPdfToDrive({
+		filePath: pdfPath,
+		fileName: `${kodePeminjaman}.pdf`,
+	});
+
+	console.log("[SURAT] Upload Drive berhasil:", uploaded);
+
+	await Peminjaman.update(
+		{
+			file_surat_url: uploaded.file_surat_url,
+			file_surat_drive_id: uploaded.file_surat_drive_id,
+		},
+		{
+			where: { id: peminjamanId },
+		},
+	);
+
+	try {
+		fs.unlinkSync(pdfPath);
+	} catch (error) {
+		console.warn("[SURAT] Gagal menghapus file temp:", error.message);
+	}
+
+	return uploaded;
+};
+
 // ==========================================
 // FUNGSI ADMIN: AMBIL SEMUA DATA + PAGINASI
 // ==========================================
 exports.getAllPeminjaman = async (req, res) => {
 	try {
-		const page = parseInt(req.query.page) || 1;
-		const limit = parseInt(req.query.limit) || 10;
+		const page = parseInt(req.query.page, 10) || 1;
+		const limit = parseInt(req.query.limit, 10) || 10;
 		const offset = (page - 1) * limit;
 
 		const { count, rows } = await Peminjaman.findAndCountAll({
-			limit: limit,
-			offset: offset,
-			distinct: true, // Mencegah duplikasi hitungan akibat join banyak tabel
+			limit,
+			offset,
+			distinct: true,
 			include: [
 				{
 					model: User,
@@ -88,14 +166,13 @@ exports.getAllPeminjaman = async (req, res) => {
 					as: "detail_barang",
 					include: [{ model: Barang, as: "barang" }],
 				},
-				// Include data laporan masalah ke frontend
 				{
 					model: LaporanMasalah,
 					as: "laporan_masalah",
 				},
 			],
 			order: [
-				["createdAt", "DESC"], // Biasanya Admin lebih suka melihat antrian terbaru di atas
+				["createdAt", "DESC"],
 				["antrian", "ASC"],
 			],
 		});
@@ -127,21 +204,23 @@ exports.getAllPeminjaman = async (req, res) => {
 			};
 		});
 
-		const totalPages = Math.ceil(count / limit);
-
-		res.status(200).json({
+		return res.status(200).json({
 			status: "success",
 			data: mappedData,
 			pagination: {
 				totalItems: count,
-				totalPages: totalPages,
+				totalPages: Math.ceil(count / limit),
 				currentPage: page,
 				itemsPerPage: limit,
 			},
 		});
 	} catch (error) {
 		console.error("Error Admin GetAllPeminjaman:", error);
-		res.status(500).json({ status: "error", message: error.message });
+
+		return res.status(500).json({
+			status: "error",
+			message: error.message,
+		});
 	}
 };
 
@@ -168,14 +247,24 @@ exports.getTotalPeminjamanMenunggu = async (req, res) => {
 };
 
 // ==========================================
-// FUNGSI ADMIN: UPDATE STATUS (SETUJUI/TOLAK/SELESAI)
+// FUNGSI ADMIN: UPDATE STATUS
 // ==========================================
 exports.updateStatusPeminjaman = async (req, res) => {
 	const t = await sequelize.transaction();
+	let transactionCommitted = false;
 
 	try {
 		const { id } = req.params;
 		const { status, catatan_admin, force_selesai = false } = req.body;
+
+		if (!status) {
+			await t.rollback();
+
+			return res.status(400).json({
+				status: "error",
+				message: "Status peminjaman wajib diisi.",
+			});
+		}
 
 		const peminjaman = await Peminjaman.findByPk(id, {
 			include: [
@@ -212,12 +301,11 @@ exports.updateStatusPeminjaman = async (req, res) => {
 
 			return res.status(404).json({
 				status: "error",
-				message: "Data tidak ditemukan",
+				message: "Data peminjaman tidak ditemukan.",
 			});
 		}
 
 		const plainBefore = peminjaman.toJSON ? peminjaman.toJSON() : peminjaman;
-
 		const statusSaatIni = peminjaman.status;
 		const statusSudahKembali = ["Ditolak", "Dibatalkan", "Selesai"];
 
@@ -268,17 +356,100 @@ exports.updateStatusPeminjaman = async (req, res) => {
 		// 2. KEMBALIKAN STOK JIKA TRANSAKSI SELESAI / BATAL
 		// ============================================================
 		let stokDikembalikan = false;
+		const detailStokDikembalikan = [];
 
-		if (
-			["Ditolak", "Dibatalkan", "Selesai"].includes(status) &&
-			!statusSudahKembali.includes(statusSaatIni)
-		) {
+		const isStatusPengembaliStok = ["Ditolak", "Dibatalkan", "Selesai"].includes(
+			status,
+		);
+		const belumPernahKembali = !statusSudahKembali.includes(statusSaatIni);
+
+		if (isStatusPengembaliStok && belumPernahKembali) {
 			if (peminjaman.detail_barang && peminjaman.detail_barang.length > 0) {
+				const jumlahTertahanByBarangId = {};
+
+				if (status === "Selesai" && peminjaman.laporan_masalah?.length > 0) {
+					for (const laporan of peminjaman.laporan_masalah) {
+						const laporanPlain = laporan.toJSON ? laporan.toJSON() : laporan;
+
+						const statusLaporan = normalizeText(laporanPlain.status);
+						const jenisLaporan = normalizeText(
+							laporanPlain.jenis_laporan ||
+								laporanPlain.jenis_masalah ||
+								laporanPlain.kategori_masalah ||
+								laporanPlain.tipe_laporan ||
+								"",
+						);
+
+						const isBarangHilang =
+							statusLaporan.includes("hilang") ||
+							jenisLaporan.includes("hilang") ||
+							statusLaporan === "dikonfirmasi hilang";
+
+						const isBarangSudahDiganti = statusLaporan === "sudah diganti";
+						const isSelesaiDiperbaiki =
+							statusLaporan === "selesai diperbaiki";
+
+						const isBarangRusakBelumKembali =
+							statusLaporan.includes("barang rusak") ||
+							statusLaporan.includes("rusak total") ||
+							statusLaporan.includes("perlu perbaikan") ||
+							statusLaporan.includes("belum diperbaiki") ||
+							statusLaporan.includes("menunggu perbaikan") ||
+							statusLaporan.includes("sedang diservis") ||
+							jenisLaporan.includes("rusak") ||
+							jenisLaporan.includes("kerusakan");
+
+						// Sudah Diganti = barang pengganti harus kembali saat peminjaman selesai.
+						// Selesai Diperbaiki = barang rusak lama sudah layak masuk stok.
+						// Keduanya tidak ditahan.
+						if (
+							isBarangSudahDiganti ||
+							isSelesaiDiperbaiki ||
+							(!isBarangHilang && !isBarangRusakBelumKembali)
+						) {
+							continue;
+						}
+
+						const barangId =
+							laporanPlain.barang_id ||
+							laporanPlain.id_barang ||
+							laporanPlain.detail_barang?.barang_id ||
+							laporanPlain.detail_peminjaman?.barang_id;
+
+						if (!barangId) continue;
+
+						const jumlahTertahan = getJumlahLaporan(laporanPlain);
+
+						jumlahTertahanByBarangId[barangId] =
+							(jumlahTertahanByBarangId[barangId] || 0) + jumlahTertahan;
+					}
+				}
+
 				for (const item of peminjaman.detail_barang) {
-					await Barang.increment("stok", {
-						by: item.jumlah_pinjam,
-						where: { id: item.barang_id },
-						transaction: t,
+					const barangId = item.barang_id;
+					const jumlahPinjam = Number(item.jumlah_pinjam || 0);
+
+					const jumlahTertahan =
+						status === "Selesai"
+							? Number(jumlahTertahanByBarangId[barangId] || 0)
+							: 0;
+
+					const jumlahKembali = Math.max(jumlahPinjam - jumlahTertahan, 0);
+
+					if (jumlahKembali > 0) {
+						await Barang.increment("stok", {
+							by: jumlahKembali,
+							where: { id: barangId },
+							transaction: t,
+						});
+					}
+
+					detailStokDikembalikan.push({
+						barang_id: barangId,
+						nama_barang: item.barang?.nama_barang || "Barang tidak ditemukan",
+						jumlah_pinjam: jumlahPinjam,
+						jumlah_tertahan: jumlahTertahan,
+						jumlah_stok_dikembalikan: jumlahKembali,
 					});
 				}
 
@@ -286,6 +457,9 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			}
 		}
 
+		// ============================================================
+		// 3. VALIDASI APPROVAL UNTUK PEMINJAMAN KHUSUS
+		// ============================================================
 		if (status === "Disetujui" && peminjaman.kategori_kebutuhan === "Khusus") {
 			if (peminjaman.status_approve_kalab !== "Disetujui") {
 				await t.rollback();
@@ -315,104 +489,98 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			}
 		}
 
-		// ============================================================
-		// 3. GENERATE NOMOR SURAT
-		// ============================================================
-		let nomorSuratBaru = peminjaman.nomor_surat;
+		let kodePeminjamanBaru = peminjaman.kode_peminjaman;
 
-		if (
-			status === "Disetujui" &&
-			peminjaman.kategori_kebutuhan === "Khusus" &&
-			!peminjaman.nomor_surat
-		) {
-			const dateObj = new Date();
-			const tahun = dateObj.getFullYear();
-			const bulanRomawi = getBulanRomawi(dateObj.getMonth() + 1);
-
-			const transaksiTerakhir = await Peminjaman.findOne({
-				where: {
-					nomor_surat: { [Op.not]: null },
-					createdAt: {
-						[Op.gte]: new Date(`${tahun}-01-01`),
-						[Op.lte]: new Date(`${tahun}-12-31T23:59:59.999Z`),
-					},
-				},
-				order: [["nomor_surat", "DESC"]],
-				transaction: t,
-			});
-
-			let urutanKe = 1;
-
-			if (transaksiTerakhir && transaksiTerakhir.nomor_surat) {
-				const urutanSebelumnya = parseInt(
-					transaksiTerakhir.nomor_surat.split("/")[0],
-					10,
-				);
-
-				if (!isNaN(urutanSebelumnya)) {
-					urutanKe = urutanSebelumnya + 1;
-				}
-			}
-
-			const urutanPad = String(urutanKe).padStart(3, "0");
-			nomorSuratBaru = `${urutanPad}/LAB-TI/${bulanRomawi}/${tahun}`;
+		if (status === "Disetujui" && !kodePeminjamanBaru) {
+			kodePeminjamanBaru = await generateKodePeminjaman(t);
 		}
 
-		// ============================================================
-		// 4. SIMPAN PERUBAHAN
-		// ============================================================
+		const perluGenerateSurat =
+			status === "Disetujui" &&
+			peminjaman.kategori_kebutuhan === "Khusus" &&
+			!peminjaman.file_surat_url;
+
 		const catatanFinal = catatan_admin || peminjaman.catatan_admin;
 
 		await peminjaman.update(
 			{
 				status,
 				catatan_admin: catatanFinal,
-				nomor_surat: nomorSuratBaru,
+				kode_peminjaman: kodePeminjamanBaru,
 			},
 			{ transaction: t },
 		);
 
 		await t.commit();
+		transactionCommitted = true;
 
-		// ============================================================
-		// 5. CATAT LOG ACTION ADMIN
-		// ============================================================
-		await createAdminLog({
-			req,
-			action: getActionByStatus(status),
-			module: "Peminjaman",
-			description: `Mengubah status peminjaman ${namaPeminjam} dari ${statusSaatIni} menjadi ${status}`,
-			target_id: getNumericTargetId(peminjaman.id),
-			metadata: {
-				peminjaman_id: peminjaman.id,
-				antrian: peminjaman.antrian,
-				user_id: peminjaman.user_id,
-				nama_peminjam: namaPeminjam,
-				email_peminjam: plainBefore.peminjam?.email || null,
-				status_lama: statusSaatIni,
-				status_baru: status,
-				kategori_kebutuhan: peminjaman.kategori_kebutuhan,
-				nomor_surat: nomorSuratBaru,
-				force_selesai,
-				stok_dikembalikan: stokDikembalikan,
-				jumlah_laporan_masalah: peminjaman.laporan_masalah?.length || 0,
-				barang: barangDipinjam,
-			},
-		});
+		let suratUploaded = null;
+		let suratUploadError = null;
+
+		if (perluGenerateSurat) {
+			try {
+				suratUploaded = await uploadSuratPeminjamanKeDrive({
+					peminjamanId: peminjaman.id,
+					kodePeminjaman: kodePeminjamanBaru,
+				});
+			} catch (error) {
+				suratUploadError = error.message;
+				console.error("Gagal generate/upload surat ke Drive:", error);
+			}
+		}
+
+		try {
+			await createAdminLog({
+				req,
+				action: getActionByStatus(status),
+				module: "Peminjaman",
+				description: `Mengubah status peminjaman ${namaPeminjam} dari ${statusSaatIni} menjadi ${status}`,
+				target_id: getNumericTargetId(peminjaman.id),
+				metadata: {
+					peminjaman_id: peminjaman.id,
+					antrian: peminjaman.antrian,
+					user_id: peminjaman.user_id,
+					nama_peminjam: namaPeminjam,
+					email_peminjam: plainBefore.peminjam?.email || null,
+					status_lama: statusSaatIni,
+					status_baru: status,
+					kategori_kebutuhan: peminjaman.kategori_kebutuhan,
+					kode_peminjaman: kodePeminjamanBaru,
+					file_surat_url: suratUploaded?.file_surat_url || null,
+					file_surat_drive_id: suratUploaded?.file_surat_drive_id || null,
+					surat_upload_error: suratUploadError,
+					force_selesai,
+					stok_dikembalikan: stokDikembalikan,
+					detail_stok_dikembalikan: detailStokDikembalikan,
+					jumlah_laporan_masalah: peminjaman.laporan_masalah?.length || 0,
+					barang: barangDipinjam,
+				},
+			});
+		} catch (logError) {
+			console.error("Gagal mencatat admin log:", logError);
+		}
 
 		return res.status(200).json({
 			status: "success",
-			message: `Peminjaman berhasil diubah menjadi: ${status}`,
-			nomor_surat: nomorSuratBaru,
+			message: suratUploadError
+				? `Peminjaman berhasil diubah menjadi: ${status}, tetapi surat gagal diupload ke Drive.`
+				: `Peminjaman berhasil diubah menjadi: ${status}`,
+			kode_peminjaman: kodePeminjamanBaru,
+			file_surat_url: suratUploaded?.file_surat_url || null,
+			file_surat_drive_id: suratUploaded?.file_surat_drive_id || null,
+			surat_upload_error: suratUploadError,
 		});
 	} catch (error) {
-		if (t) await t.rollback();
+		if (!transactionCommitted) {
+			await t.rollback();
+		}
 
 		console.error("Error Update Status:", error);
 
 		return res.status(500).json({
 			status: "error",
 			message: error.message,
+			detail: error.parent?.detail || error.original?.detail || null,
 		});
 	}
 };
@@ -420,7 +588,6 @@ exports.updateStatusPeminjaman = async (req, res) => {
 exports.approveKalabPeminjaman = async (req, res) => {
 	try {
 		const { id } = req.params;
-
 		const userRoleId = Number(req.user?.role_id);
 
 		if (userRoleId !== 1) {

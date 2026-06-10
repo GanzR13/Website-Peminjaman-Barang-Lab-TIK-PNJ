@@ -8,7 +8,7 @@
                     class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-lg mb-2 border border-blue-200">
                     Pengelolaan Barang
                 </span>
-                <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Katalog Alat & Barang</h2>
+                <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Katalog Barang</h2>
                 <p class="text-slate-500 mt-1 text-xs md:text-sm font-medium">Kelola detail, gambar, dan stok barang
                     laboratorium.
                 </p>
@@ -253,7 +253,6 @@ import * as XLSX from "xlsx";
 const { showAlert } = useAlert();
 const { showConfirm } = useConfirm();
 
-// --- STATE DATA ---
 const barangList = ref([]);
 const isLoading = ref(false);
 const searchQuery = ref("");
@@ -261,7 +260,6 @@ let searchTimeout = null;
 const stockFilter = ref("semua");
 const fileInput = ref(null);
 
-// --- STATE PAGINASI & STATISTIK ---
 const currentPage = ref(1);
 const totalPages = ref(1);
 const totalItems = ref(0);
@@ -270,7 +268,6 @@ const globalTotal = ref(0);
 const globalTersedia = ref(0);
 const globalHabis = ref(0);
 
-// --- STATE DROPDOWN ---
 const showLimitDropdown = ref(false);
 const showStockDropdown = ref(false);
 const limitDropdownRef = ref(null);
@@ -303,13 +300,11 @@ const handleClickOutside = (e) => {
     if (stockDropdownRef.value && !stockDropdownRef.value.contains(e.target)) showStockDropdown.value = false;
 };
 
-// --- STATE MODAL ---
 const isDetailOpen = ref(false);
 const isModalFormOpen = ref(false);
 const isEditMode = ref(false);
 const selectedBarang = ref(null);
 
-// --- WATCHERS ---
 watch(searchQuery, () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
@@ -318,7 +313,6 @@ watch(searchQuery, () => {
     }, 500);
 });
 
-// --- FETCH DATA ---
 const fetchBarang = async () => {
     isLoading.value = true;
     try {

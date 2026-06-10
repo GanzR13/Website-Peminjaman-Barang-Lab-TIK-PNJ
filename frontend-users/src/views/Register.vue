@@ -178,10 +178,12 @@
                             class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email
                             Institusi
                             <span class="text-red-500">*</span></label>
-                        <input v-model="form.email" type="email"
+
+                        <input v-model="form.email" @input="form.email = form.email.toLowerCase()" type="email"
                             :class="errors.email ? 'border-red-400 focus:ring-red-50 focus:border-red-500' : 'border-slate-200 focus:ring-blue-50 focus:border-blue-500'"
                             class="w-full px-4 py-3.5 bg-slate-50 border rounded-xl focus:ring-4 focus:bg-white outline-none transition-all text-sm font-medium"
                             placeholder="user@pnj.ac.id" />
+
                         <p v-if="errors.email"
                             class="text-[11px] font-bold text-red-500 mt-1.5 ml-1 flex items-center gap-1"><span
                                 class="w-1 h-1 rounded-full bg-red-500"></span>{{ errors.email }}</p>
@@ -335,12 +337,12 @@ watch(() => form.password, (val) => {
 watch(() => form.email, (val) => {
     // 1. Regex dasar untuk format email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     if (val.length === 0) {
         errors.email = "";
     } else if (!emailRegex.test(val)) {
         errors.email = "Format email tidak valid";
-    } 
+    }
     // 2. Validasi Khusus PNJ
     else if (!val.toLowerCase().endsWith('pnj.ac.id')) {
         errors.email = "Wajib menggunakan email institusi pnj.ac.id";
@@ -355,10 +357,10 @@ const pilihAngkatan = (y) => { form.angkatan = y; activeDropdown.value = null; }
 
 const gantiKategori = (kategoriBaru) => {
     // 1. Mencegah error jika user mengklik tombol yang sudah aktif
-    if (form.kategori === kategoriBaru) return; 
+    if (form.kategori === kategoriBaru) return;
 
     form.kategori = kategoriBaru;
-    
+
     // 2. Kosongkan semua data yang spesifik dengan role
     form.nim = "";
     form.nip = "";
@@ -368,26 +370,26 @@ const gantiKategori = (kategoriBaru) => {
 
     // 3. Reset semua pesan error saat pindah kategori
     Object.keys(errors).forEach(key => errors[key] = "");
-    
+
     activeDropdown.value = null;
 };
 
 onMounted(async () => {
     try {
         const [resProdi, resKelas] = await Promise.all([api.get("/ref/prodi"), api.get("/ref/kelas")]);
-        
+
         // PERBAIKAN: Ambil properti 'data' di dalam 'data' (jika backend mengirim { status: "success", data: [...] })
         // Gunakan fallback (|| resProdi.data) untuk berjaga-jaga jika backend memang mengirim Array secara langsung
         ref_prodi.value = resProdi.data.data || resProdi.data || [];
         ref_kelas.value = resKelas.data.data || resKelas.data || [];
-        
+
     } catch (err) {
         console.error("Gagal memuat data referensi:", err);
         // Pastikan nilainya tetap array agar template tidak crash saat API gagal
         ref_prodi.value = [];
         ref_kelas.value = [];
     }
-    
+
     window.addEventListener("click", (e) => {
         if (!e.target.closest(".custom-select")) activeDropdown.value = null;
     });

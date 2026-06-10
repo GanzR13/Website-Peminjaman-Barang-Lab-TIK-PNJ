@@ -89,7 +89,7 @@
 
                                 <button v-else disabled
                                     class="w-full flex items-center justify-center gap-2 px-6 py-4 bg-slate-100 text-slate-400 font-black rounded-xl cursor-not-allowed text-base">
-                                    Stok Alat Sedang Kosong
+                                    Stok Barang Sedang Kosong
                                 </button>
                             </div>
                         </div>

@@ -427,7 +427,7 @@ export const generateSuratPDF = (transaksi = {}, showAlert) => {
 	const tanggalPinjam = formatTanggalIndonesia(transaksi.tanggal_pinjam);
 	const tanggalKembali = formatTanggalIndonesia(transaksi.tanggal_kembali);
 	const tanggalSurat = formatTanggalIndonesia(new Date());
-	const nomorSurat = transaksi.nomor_surat || "......./LAB-TI/......./.......";
+	const kodePeminjaman = transaksi.kode_peminjaman || "-";
 	const acaraLabel = getAcaraLabel(transaksi);
 	const tujuanPeminjaman = transaksi.tujuan_peminjaman || "-";
 
@@ -748,7 +748,7 @@ export const generateSuratPDF = (transaksi = {}, showAlert) => {
 
                 <div class="title">
                     <h3>Surat Peminjaman Barang Laboratorium</h3>
-                    <p>Nomor: ${safeText(nomorSurat)}</p>
+                    <p>Kode Peminjaman: ${safeText(kodePeminjaman)}</p>
                 </div>
 
                 <p class="paragraph">

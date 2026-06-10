@@ -2,7 +2,6 @@
   <div class="h-full bg-slate-50 overflow-y-auto custom-scrollbar animate-fade-in">
     <div class="p-4 md:p-8">
       <div class="max-w-5xl mx-auto">
-        <!-- Back -->
         <div class="mb-4 md:mb-6">
           <router-link to="/admin/dashboard"
             class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-blue-600 transition-colors group w-fit">
@@ -14,7 +13,6 @@
           </router-link>
         </div>
 
-        <!-- Loading -->
         <div v-if="isLoading" class="min-h-[60vh] flex flex-col items-center justify-center text-center">
           <div class="w-11 h-11 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
           <p class="text-slate-500 font-bold text-sm animate-pulse">
@@ -23,16 +21,13 @@
         </div>
 
         <template v-else>
-          <!-- Profile Card -->
           <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden animate-fade-in">
-            <!-- Cover -->
             <div class="h-32 md:h-44 bg-linear-to-r from-slate-900 via-slate-800 to-blue-900 relative overflow-hidden">
               <div class="absolute top-0 right-0 -mt-12 -mr-12 w-52 h-52 bg-white/10 rounded-full blur-2xl"></div>
               <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-56 h-56 bg-blue-400/20 rounded-full blur-3xl"></div>
             </div>
 
             <div class="px-5 md:px-8 pb-8">
-              <!-- Identity Row -->
               <div
                 class="relative flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 -mt-12 md:-mt-16 mb-7">
                 <div class="flex flex-col sm:flex-row sm:items-end gap-4">
@@ -76,9 +71,7 @@
 
               <hr class="border-slate-100 mb-7" />
 
-              <!-- Content -->
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <!-- Left -->
                 <section class="lg:col-span-2 space-y-5">
                   <div class="flex items-center gap-2">
                     <UserIcon class="w-4 h-4 text-slate-400" />
@@ -135,7 +128,6 @@
                   </div>
                 </section>
 
-                <!-- Right TTD -->
                 <section class="space-y-5">
                   <div class="flex items-center gap-2">
                     <PencilIcon class="w-4 h-4 text-slate-400" />
@@ -181,7 +173,6 @@
             </div>
           </div>
 
-          <!-- Logout -->
           <div
             class="mt-6 md:mt-8 bg-red-50 rounded-2xl p-5 md:p-6 border border-red-100 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4 animate-fade-in">
             <div>
@@ -203,15 +194,15 @@
       </div>
     </div>
 
-    <!-- MODAL EDIT PROFIL -->
     <Teleport to="body">
       <transition name="fade">
         <div v-if="isEditProfileOpen"
           class="fixed inset-0 z-9999 flex items-center justify-center bg-slate-950/60 backdrop-blur-md p-4"
           @click.self="closeEditProfile">
-          <div class="w-full max-w-xl max-h-[92vh] bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <!-- Header Modal -->
-            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0">
+          
+          <div class="w-full max-w-xl max-h-[92vh] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+            
+            <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
               <div>
                 <h3 class="text-xl font-black text-slate-900">
                   Edit Profil
@@ -227,10 +218,20 @@
               </button>
             </div>
 
-            <!-- Body Modal Scroll -->
-            <form @submit.prevent="submitEditProfile"
-              class="flex-1 overflow-y-auto hidden-scrollbar px-6 py-5 space-y-5">
-              <div class="p-5 md:p-6 space-y-4 overflow-y-auto hidden-scrollbar">
+            <form @submit.prevent="submitEditProfile" class="flex flex-col min-h-0 flex-1 overflow-hidden">
+              
+              <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-6 space-y-5 bg-white">
+                
+                <div>
+                  <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                    NIP / Identitas
+                  </label>
+                  <input v-model="editProfileForm.nip" 
+                    @input="editProfileForm.nip = editProfileForm.nip.replace(/\D/g, '').slice(0, 18)" 
+                    type="text" inputmode="numeric" placeholder="Masukkan NIP Anda"
+                    class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-bold transition-all" />
+                </div>
+
                 <div>
                   <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
                     Nama Lengkap
@@ -249,7 +250,6 @@
                     class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-bold transition-all" />
                 </div>
 
-                <!-- Upload TTD -->
                 <div>
                   <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
                     Upload TTD Digital
@@ -296,33 +296,31 @@
                 <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 flex gap-2 items-start">
                   <InformationCircleIcon class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                   <p class="text-[10px] text-blue-700 font-bold leading-relaxed">
-                    Email institusi dan NIP/NIM tidak dapat diubah secara mandiri. Silakan hubungi Super Admin jika
-                    terdapat
-                    kesalahan data.
+                    Email institusi tidak dapat diubah secara mandiri. Silakan hubungi Super Admin jika terdapat kesalahan data email.
                   </p>
                 </div>
               </div>
-              <div
-                class="sticky bottom-0 -mx-6 -mb-5 px-6 py-4 bg-white border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+
+              <div class="shrink-0 px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-3 rounded-b-3xl">
                 <button type="button" @click="closeEditProfile"
-                  class="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-100 text-slate-600 text-sm font-black hover:bg-slate-200 transition-all cursor-pointer">
+                  class="w-full sm:w-auto px-5 py-3 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-black hover:bg-slate-100 transition-all cursor-pointer">
                   Batal
                 </button>
 
                 <button type="submit" :disabled="isSubmitting"
-                  class="w-full sm:flex-1 px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-black hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-2">
+                  class="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 text-white text-sm font-black hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center gap-2">
                   <span v-if="isSubmitting"
                     class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
                   {{ isSubmitting ? 'Menyimpan...' : 'Simpan Perubahan' }}
                 </button>
               </div>
+
             </form>
           </div>
         </div>
       </transition>
     </Teleport>
 
-    <!-- MODAL UBAH KATA SANDI -->
     <Teleport to="body">
     <transition name="fade">
       <div v-if="isEditPasswordOpen"
@@ -425,6 +423,7 @@ const ttdPreview = ref(null);
 // --- STATE MODAL EDIT PROFIL ---
 const isEditProfileOpen = ref(false);
 const editProfileForm = reactive({
+  nip: '', // Ditambahkan state NIP
   nama_lengkap: '',
   no_telepon: '',
   ttd_digital_file: null,
@@ -509,6 +508,7 @@ onMounted(() => fetchUserProfile());
 
 // --- FUNGSI UPDATE PROFIL ---
 const openEditProfile = () => {
+  editProfileForm.nip = authStore.user?.identitas || authStore.user?.nip || ''; // Ambil NIP
   editProfileForm.nama_lengkap = authStore.user?.nama || '';
   editProfileForm.no_telepon = authStore.user?.no_telepon || '';
   resetTtdDigital();
@@ -563,6 +563,9 @@ const resetTtdDigital = () => {
 };
 
 const submitEditProfile = async () => {
+  if (!editProfileForm.nip.trim()) {
+    return showAlert('NIP/Identitas wajib diisi.', 'error');
+  }
   if (!editProfileForm.nama_lengkap.trim()) {
     return showAlert('Nama lengkap wajib diisi.', 'error');
   }
@@ -580,6 +583,7 @@ const submitEditProfile = async () => {
   try {
     const formData = new FormData();
 
+    formData.append('nip', editProfileForm.nip.trim()); // Kirim NIP
     formData.append('nama_lengkap', editProfileForm.nama_lengkap.trim());
     formData.append('no_telepon', editProfileForm.no_telepon.trim());
 

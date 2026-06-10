@@ -48,10 +48,18 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
-			nomor_surat: {
-				type: DataTypes.STRING(100),
-				allowNull: true,
+			kode_peminjaman: {
+				type: DataTypes.STRING,
+				allowNull: false,
 				unique: true,
+			},
+			file_surat_url: {
+				type: DataTypes.TEXT,
+				allowNull: true,
+			},
+			file_surat_drive_id: {
+				type: DataTypes.STRING,
+				allowNull: true,
 			},
 			organisasi_penyelenggara: {
 				type: DataTypes.STRING,
@@ -93,6 +101,15 @@ module.exports = (sequelize, DataTypes) => {
 
 			dosen_pj_approved_at: {
 				type: DataTypes.DATE,
+				allowNull: true,
+			},
+			file_surat_url: {
+				type: DataTypes.TEXT,
+				allowNull: true,
+			},
+
+			file_surat_drive_id: {
+				type: DataTypes.STRING,
 				allowNull: true,
 			},
 			tanggal_pinjam: {

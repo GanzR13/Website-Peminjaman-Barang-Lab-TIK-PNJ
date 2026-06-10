@@ -1,21 +1,22 @@
 # Dependency directories
 node_modules/
-npm-debug.log
-npm-debug.log.*
-yarn-error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Environment variables (Sangat penting agar kredensial tidak bocor ke dalam image)
+# Environment variables
 .env
-.env.test
-.env.production
+.env.*
+!.env.example
 
 # Git
-.git
+.git/
 .gitignore
 
-# Docker configuration (Opsional, tapi bagus agar image lebih bersih)
-Dockerfile
+# Docker files
 docker-compose.yml
+docker-compose.*.yml
 .dockerignore
 
 # IDE and Editor files
@@ -31,5 +32,17 @@ docker-compose.yml
 coverage/
 .nyc_output/
 
-# macOS file
+# OS files
 .DS_Store
+Thumbs.db
+
+# Credentials
+credentials/
+*.pem
+*.key
+*.crt
+
+# Build/cache files
+.cache/
+.tmp/
+temp/

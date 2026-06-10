@@ -186,31 +186,39 @@ const emit = defineEmits(['close', 'save']);
 
 const localForm = ref({
     status: '',
-    tindakan_penyelesaian: ''
+    tindakan_penyelesaian: '',
+    jumlah_proses: 1
 });
 
 const isDropdownOpen = ref(false);
 
 const statusOptions = [
     { value: 'Menunggu Tindakan', label: 'Baru: Menunggu Tindakan' },
-    { value: 'Perlu Perbaikan', label: 'Barang Rusak (Ganti Unit Baru, Stok Berkurang)' },
+    { value: 'Perlu Perbaikan', label: 'Perlu Perbaikan / Barang Rusak' },
     { value: 'Sedang Diservis', label: 'Sedang Diservis (Dikirim ke Teknisi)' },
-    { value: 'Selesai Diperbaiki', label: 'Selesai Diperbaiki (Stok Lab Bertambah)' },
-    { value: 'Rusak Total', label: 'Rusak Total / Dibuang (Stok Hangus)' }
+    { value: 'Sudah Diganti', label: 'Sudah Diganti (Unit Pengganti Keluar, Stok Berkurang)' },
+    { value: 'Selesai Diperbaiki', label: 'Selesai Diperbaiki (Barang Lama Kembali, Stok Bertambah)' },
+    { value: 'Rusak Total', label: 'Rusak Total / Tidak Bisa Diperbaiki' }
 ];
 
 watch(() => props.item, (newVal) => {
     if (newVal) {
         localForm.value = {
             status: newVal.status || '',
-            tindakan_penyelesaian: newVal.tindakan_penyelesaian || ''
+            tindakan_penyelesaian: newVal.tindakan_penyelesaian || '',
+            jumlah_proses: Number(newVal.jumlah || 1)
         };
+
         isDropdownOpen.value = false;
     }
 }, { immediate: true });
 
 const isStatusLockedPermanently = computed(() => {
-    return props.item?.status === 'Selesai Diperbaiki' || props.item?.status === 'Rusak Total';
+    return [
+        'Selesai Diperbaiki',
+        'Rusak Total',
+        'Dikonfirmasi Hilang'
+    ].includes(props.item?.status);
 });
 
 const getSelectedStatusLabel = computed(() => {
@@ -267,6 +275,18 @@ const getStatusBadgeClass = (status) => {
         default: return 'bg-slate-100 text-slate-500 ring-slate-200';
     }
 };
+
+const totalUnitLaporan = computed(() => {
+    return Number(props.item?.jumlah || 1);
+});
+
+const showJumlahProsesInput = computed(() => {
+    return totalUnitLaporan.value > 1 && !isStatusLockedPermanently.value;
+});
+
+const jumlahSisa = computed(() => {
+    return Math.max(totalUnitLaporan.value - Number(localForm.value.jumlah_proses || 1), 0);
+});
 </script>
 
 <style scoped>

@@ -122,6 +122,38 @@ const attachDosenPjApprover = async (riwayat = []) => {
 	}));
 };
 
+const generateKodePeminjaman = async (transaction) => {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = String(now.getMonth() + 1).padStart(2, "0");
+	const yearMonth = `${year}${month}`;
+	const prefix = `REQ-${yearMonth}-`;
+
+	const transaksiTerakhir = await Peminjaman.findOne({
+		where: {
+			kode_peminjaman: {
+				[Op.like]: `${prefix}%`,
+			},
+		},
+		order: [["kode_peminjaman", "DESC"]],
+		transaction,
+	});
+
+	let urutan = "001";
+
+	if (transaksiTerakhir?.kode_peminjaman) {
+		const lastNumber = Number(
+			transaksiTerakhir.kode_peminjaman.split("-").pop(),
+		);
+
+		if (!Number.isNaN(lastNumber)) {
+			urutan = String(lastNumber + 1).padStart(3, "0");
+		}
+	}
+
+	return `REQ-${yearMonth}-${urutan}`;
+};
+
 exports.checkoutPeminjaman = async (req, res) => {
 	const t = await sequelize.transaction();
 
@@ -142,16 +174,72 @@ exports.checkoutPeminjaman = async (req, res) => {
 
 		const user_id = req.user.id;
 
-		if (!keranjang_barang || keranjang_barang.length === 0) {
+		if (!Array.isArray(keranjang_barang) || keranjang_barang.length === 0) {
+			await t.rollback();
+
 			return res.status(400).json({
 				status: "error",
 				message: "Keranjang barang tidak boleh kosong!",
 			});
 		}
 
-		// --- TAMBAHAN LOGIKA BISNIS: VALIDASI & POTONG STOK ---
-		// Kita loop keranjang untuk mengecek stok di DB secara realtime
+		if (!kategori_kebutuhan) {
+			await t.rollback();
+
+			return res.status(400).json({
+				status: "error",
+				message: "Kategori kebutuhan wajib dipilih.",
+			});
+		}
+
+		if (!tujuan_peminjaman) {
+			await t.rollback();
+
+			return res.status(400).json({
+				status: "error",
+				message: "Tujuan peminjaman wajib diisi.",
+			});
+		}
+
+		if (!tanggal_pinjam || !tanggal_kembali) {
+			await t.rollback();
+
+			return res.status(400).json({
+				status: "error",
+				message: "Tanggal pinjam dan tanggal kembali wajib diisi.",
+			});
+		}
+
+		if (kategori_kebutuhan === "Khusus" && !jenis_khusus) {
+			await t.rollback();
+
+			return res.status(400).json({
+				status: "error",
+				message: "Jenis kegiatan khusus wajib dipilih.",
+			});
+		}
+
+		if (
+			kategori_kebutuhan === "Khusus" &&
+			jenis_khusus === "Organisasi" &&
+			(!nama_acara || !organisasi_penyelenggara)
+		) {
+			await t.rollback();
+
+			return res.status(400).json({
+				status: "error",
+				message:
+					"Nama acara dan organisasi penyelenggara wajib diisi untuk peminjaman organisasi.",
+			});
+		}
+
 		for (const item of keranjang_barang) {
+			const jumlah = Number(item.jumlah || 0);
+
+			if (!item.barang_id || jumlah < 1) {
+				throw new Error("Data barang pada keranjang tidak valid.");
+			}
+
 			const barangLokal = await Barang.findByPk(item.barang_id, {
 				transaction: t,
 			});
@@ -160,26 +248,24 @@ exports.checkoutPeminjaman = async (req, res) => {
 				throw new Error(`Barang dengan ID ${item.barang_id} tidak ditemukan.`);
 			}
 
-			if (barangLokal.stok < item.jumlah) {
-				// Jika stok tidak cukup, lemparkan error agar transaksi otomatis di-rollback
+			if (barangLokal.stok < jumlah) {
 				throw new Error(
 					`Stok "${barangLokal.nama_barang}" tidak mencukupi. Sisa stok: ${barangLokal.stok}`,
 				);
 			}
 
-			// Kurangi stok barang sejumlah yang dipinjam
-			await barangLokal.decrement("stok", { by: item.jumlah, transaction: t });
+			await barangLokal.decrement("stok", {
+				by: jumlah,
+				transaction: t,
+			});
 		}
-		// -----------------------------------------------------
 
-		// --- TAMBAHAN LOGIKA BISNIS: GENERATE ANTRIAN HARIAN ---
 		const awalHariIni = new Date();
 		awalHariIni.setHours(0, 0, 0, 0);
 
 		const awalBesok = new Date(awalHariIni);
 		awalBesok.setDate(awalBesok.getDate() + 1);
 
-		// Cari peminjaman terakhir yang dibuat pada hari ini
 		const transaksiTerakhir = await Peminjaman.findOne({
 			where: {
 				createdAt: {
@@ -191,30 +277,61 @@ exports.checkoutPeminjaman = async (req, res) => {
 			transaction: t,
 		});
 
-		// Jika hari ini sudah ada transaksi, tambah 1. Jika belum, mulai dari 1.
 		const nomorAntrianBaru =
 			transaksiTerakhir && transaksiTerakhir.antrian
 				? transaksiTerakhir.antrian + 1
 				: 1;
-		// -----------------------------------------------------
 
-		// Simpan data ke tabel Induk (Peminjaman)
+		const kodePeminjaman = await generateKodePeminjaman(t);
+
 		const peminjamanBaru = await Peminjaman.create(
 			{
 				user_id,
-				antrian: nomorAntrianBaru, // <-- Masukkan nomor antrian ke sini
+				antrian: nomorAntrianBaru,
+				kode_peminjaman: kodePeminjaman,
+
 				kategori_kebutuhan,
-				jenis_khusus: jenis_khusus || null,
+				jenis_khusus:
+					kategori_kebutuhan === "Khusus" ? jenis_khusus || null : null,
 				tujuan_peminjaman,
-				nama_acara: nama_acara || null,
-				organisasi_penyelenggara: organisasi_penyelenggara || null,
-				dosen_pj_user_id: dosen_pj_user_id || null,
-				status_approve_dosen_pj: dosen_pj_user_id
-					? "Menunggu"
-					: "Tidak Diperlukan",
+
+				nama_acara:
+					kategori_kebutuhan === "Khusus" && jenis_khusus === "Organisasi"
+						? nama_acara || null
+						: null,
+
+				organisasi_penyelenggara:
+					kategori_kebutuhan === "Khusus" && jenis_khusus === "Organisasi"
+						? organisasi_penyelenggara || null
+						: null,
+
+				dosen_pj_user_id:
+					kategori_kebutuhan === "Khusus" ? dosen_pj_user_id || null : null,
+
+				status_approve_dosen_pj:
+					kategori_kebutuhan === "Khusus" && dosen_pj_user_id
+						? "Menunggu"
+						: "Tidak Diperlukan",
+
 				dosen_pj_approved_at: null,
-				dosen_penanggung_jawab: dosen_penanggung_jawab || null,
-				nip_dosen_pj: nip_dosen_pj || null,
+
+				dosen_penanggung_jawab:
+					kategori_kebutuhan === "Khusus"
+						? dosen_penanggung_jawab || null
+						: null,
+
+				nip_dosen_pj:
+					kategori_kebutuhan === "Khusus" ? nip_dosen_pj || null : null,
+
+				status_approve_kalab:
+					kategori_kebutuhan === "Khusus" ? "Menunggu" : "Tidak Diperlukan",
+
+				kalab_approved_by: null,
+				kalab_approved_at: null,
+
+				file_surat_url: null,
+				file_surat_drive_id: null,
+
 				tanggal_pinjam,
 				tanggal_kembali,
 				status: "Menunggu",
@@ -222,37 +339,40 @@ exports.checkoutPeminjaman = async (req, res) => {
 			{ transaction: t },
 		);
 
-		// Siapkan data untuk tabel DetailPeminjaman
-		const detailData = keranjang_barang.map((item) => {
-			return {
-				peminjaman_id: peminjamanBaru.id,
-				barang_id: item.barang_id,
-				jumlah_pinjam: item.jumlah,
-				status_barang: "Dipinjam",
-			};
-		});
+		const detailData = keranjang_barang.map((item) => ({
+			peminjaman_id: peminjamanBaru.id,
+			barang_id: item.barang_id,
+			jumlah_pinjam: Number(item.jumlah),
+			status_barang: "Dipinjam",
+		}));
 
-		// Simpan banyak data sekaligus (Bulk Insert) ke tabel DetailPeminjaman
 		await DetailPeminjaman.bulkCreate(detailData, { transaction: t });
 
-		// Jika semua berhasil (insert Peminjaman, insert Detail, dan potong Stok), COMMIT transaksinya!
 		await t.commit();
 
-		res.status(201).json({
+		return res.status(201).json({
 			status: "success",
-			message: `Permohonan peminjaman berhasil dikirim! Nomor Antrian Anda: #${nomorAntrianBaru}`, // <-- Pesan sukses diperbarui
+			message: `Permohonan peminjaman berhasil dikirim! Kode Peminjaman: ${kodePeminjaman}, Nomor Antrian: #${nomorAntrianBaru}`,
 			data: peminjamanBaru,
 		});
 	} catch (error) {
-		// BATALKAN SEMUANYA jika ada error (Termasuk mengembalikan stok yang tadinya sempat mau dipotong)
-		await t.rollback();
-		// Bedakan status code: jika error dari stok kurang, kirim 400 (Bad Request). Jika error server, 500.
-		const statusCode = error.message.includes("Stok") ? 400 : 500;
-		res.status(statusCode).json({ status: "error", message: error.message });
+		if (t) await t.rollback();
+
+		const statusCode =
+			error.message.includes("Stok") ||
+			error.message.includes("tidak valid") ||
+			error.message.includes("tidak ditemukan")
+				? 400
+				: 500;
+
+		return res.status(statusCode).json({
+			status: "error",
+			message: error.message,
+		});
 	}
 };
 
-// FUNGSI 2: GET RIWAYAT SAYA (Khusus untuk user yang sedang login)
+// FUNGSI GET Riwayat Saya
 exports.getRiwayatSaya = async (req, res) => {
 	try {
 		const user_id = req.user.id;
@@ -292,17 +412,14 @@ exports.getRiwayatSaya = async (req, res) => {
 	}
 };
 
-// FUNGSI 3: BATALKAN PEMINJAMAN (Hanya jika masih 'Menunggu')
+// FUNGSI Batalkan Peminjaman (Hanya jika masih status 'Menunggu')
 exports.batalkanPeminjaman = async (req, res) => {
-	// Memulai transaksi agar jika satu proses gagal, semua dibatalkan (aman)
 	const t = await sequelize.transaction();
 
 	try {
-		const { id } = req.params; // ID Peminjaman dari URL
-		const user_id = req.user.id; // ID User dari middleware auth
+		const { id } = req.params;
+		const user_id = req.user.id;
 
-		// 1. Cari data peminjaman HANYA berdasarkan ID dan User_id
-		// (Kita pisahkan Include-nya sementara agar pencarian utama tidak terganggu jika alias salah)
 		const peminjaman = await Peminjaman.findOne({
 			where: {
 				id: id,
@@ -311,7 +428,6 @@ exports.batalkanPeminjaman = async (req, res) => {
 			transaction: t,
 		});
 
-		// 2. Validasi keberadaan data (Inilah yang melempar 404 sebelumnya)
 		if (!peminjaman) {
 			await t.rollback();
 			return res.status(404).json({
@@ -321,7 +437,6 @@ exports.batalkanPeminjaman = async (req, res) => {
 			});
 		}
 
-		// 3. Validasi status (Hanya bisa batal jika masih 'Menunggu')
 		if (peminjaman.status !== "Menunggu") {
 			await t.rollback();
 			return res.status(400).json({
@@ -331,13 +446,11 @@ exports.batalkanPeminjaman = async (req, res) => {
 			});
 		}
 
-		// 4. Tarik data DetailPeminjaman secara manual (Aman dari error alias Include)
 		const detailBarang = await DetailPeminjaman.findAll({
 			where: { peminjaman_id: id },
 			transaction: t,
 		});
 
-		// 5. KEMBALIKAN STOK: Iterasi setiap barang dalam detail
 		if (detailBarang && detailBarang.length > 0) {
 			for (const item of detailBarang) {
 				const barangLokal = await Barang.findByPk(item.barang_id, {
@@ -354,18 +467,18 @@ exports.batalkanPeminjaman = async (req, res) => {
 			}
 		}
 
-		// 6. HAPUS DATA (Urutan anak lalu induk sangat krusial di PostgreSQL)
+		// Hapus Dadata Peminjam
 
-		// Hapus detailnya dulu (anak)
+		// Hapus detailnya dulu
 		await DetailPeminjaman.destroy({
 			where: { peminjaman_id: id },
 			transaction: t,
 		});
 
-		// Hapus data peminjaman utama (induk)
+		// Hapus data peminjaman utama
 		await peminjaman.destroy({ transaction: t });
 
-		// 7. Simpan semua perubahan (Commit)
+		// Simpan semua perubahan
 		await t.commit();
 
 		return res.status(200).json({
@@ -381,12 +494,11 @@ exports.batalkanPeminjaman = async (req, res) => {
 		return res.status(500).json({
 			status: "error",
 			message: "Terjadi kesalahan server saat membatalkan peminjaman.",
-			error_detail: error.message, // Berguna untuk melihat pesan error asli dari Sequelize
+			error_detail: error.message,
 		});
 	}
 };
 
-// FUNGSI 4: UPDATE PEMINJAMAN (Hanya jika masih 'Menunggu')
 exports.updatePeminjamanSaya = async (req, res) => {
 	const t = await sequelize.transaction();
 
@@ -437,7 +549,6 @@ exports.updatePeminjamanSaya = async (req, res) => {
 				.json({ status: "error", message: "Keranjang tidak boleh kosong!" });
 		}
 
-		// --- PERBAIKAN FATAL: KEMBALIKAN STOK LAMA DULU ---
 		const detailLama = await DetailPeminjaman.findAll({
 			where: { peminjaman_id: peminjaman.id },
 			transaction: t,
@@ -455,13 +566,11 @@ exports.updatePeminjamanSaya = async (req, res) => {
 			}
 		}
 
-		// Hapus detail lama
 		await DetailPeminjaman.destroy({
 			where: { peminjaman_id: peminjaman.id },
 			transaction: t,
 		});
 
-		// --- PERBAIKAN FATAL: POTONG STOK BARU SEKALIGUS VALIDASI ---
 		for (const item of keranjang_barang) {
 			const barangLokal = await Barang.findByPk(item.barang_id, {
 				transaction: t,
@@ -476,7 +585,6 @@ exports.updatePeminjamanSaya = async (req, res) => {
 			await barangLokal.decrement("stok", { by: item.jumlah, transaction: t });
 		}
 
-		// Update Data Induk
 		await peminjaman.update(
 			{
 				kategori_kebutuhan,
@@ -512,13 +620,21 @@ exports.updatePeminjamanSaya = async (req, res) => {
 				nip_dosen_pj:
 					kategori_kebutuhan === "Khusus" ? nip_dosen_pj || null : null,
 
+				status_approve_kalab:
+					kategori_kebutuhan === "Khusus" ? "Menunggu" : "Tidak Diperlukan",
+
+				kalab_approved_by: null,
+				kalab_approved_at: null,
+
+				file_surat_url: null,
+				file_surat_drive_id: null,
+
 				tanggal_pinjam,
 				tanggal_kembali,
 			},
 			{ transaction: t },
 		);
 
-		// Masukkan detail baru
 		const detailDataBaru = keranjang_barang.map((item) => ({
 			peminjaman_id: peminjaman.id,
 			barang_id: item.barang_id,

@@ -28,7 +28,7 @@
             <router-link to="/catalog"
               class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-bold transition-colors text-slate-500 hover:text-blue-600 hover:border-blue-600"
               active-class="!border-blue-600 !text-blue-600">
-              Katalog Alat
+              Katalog Barang
             </router-link>
             <router-link to="/riwayat"
               class="inline-flex items-center px-1 border-b-2 border-transparent text-sm font-bold transition-colors text-slate-500 hover:text-blue-600 hover:border-blue-600"
@@ -82,7 +82,7 @@
               active-class="bg-blue-50 !text-blue-600">Beranda</router-link>
             <router-link to="/catalog"
               class="block px-4 py-3.5 rounded-xl text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-colors active:scale-95"
-              active-class="bg-blue-50 !text-blue-600">Katalog Alat</router-link>
+              active-class="bg-blue-50 !text-blue-600">Katalog Barang</router-link>
             <router-link to="/riwayat"
               class="block px-4 py-3.5 rounded-xl text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-colors active:scale-95"
               active-class="bg-blue-50 !text-blue-600">Peminjaman Saya</router-link>

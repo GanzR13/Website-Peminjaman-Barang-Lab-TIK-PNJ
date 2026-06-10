@@ -277,24 +277,36 @@ exports.createUser = async (req, res) => {
 
 		await t.commit();
 
-		await createAdminLog({
-			req,
-			action: "CREATE",
-			module: selectedRole.level_akses === "peminjam" ? "Peminjam" : "Pegawai",
-			description: `Menambahkan user ${selectedRole.nama_role}: ${nama_lengkap}`,
-			target_id: null,
-			metadata: {
-				created_user_id: newUser.id,
-				email,
-				nama_lengkap,
-				role_id,
-				role: selectedRole.nama_role,
-				level_akses: selectedRole.level_akses,
-				nim: isMahasiswa ? nim : null,
-				nip: !isMahasiswa ? nip : null,
-				ttd_digital: ttdDigitalUrl,
-			},
-		});
+		// HANYA CATAT LOG JIKA YANG MELAKUKAN REQUEST ADALAH ADMIN / SUPER ADMIN
+		const requesterId = req.user?.id;
+        if (requesterId) {
+            // Cari tau peran asli si pembuat request dari database
+            const requester = await User.findByPk(requesterId, {
+                include: [{ model: Role, attributes: ["level_akses"] }]
+            });
+
+            // Jika dia benar admin/super_admin, catat aktivitasnya
+            if (['admin', 'super_admin'].includes(requester?.Role?.level_akses)) {
+                await createAdminLog({
+                    req,
+                    action: "CREATE",
+                    module: selectedRole.level_akses === "peminjam" ? "Peminjam" : "Pegawai",
+                    description: `Menambahkan user ${selectedRole.nama_role}: ${nama_lengkap}`,
+                    target_id: null,
+                    metadata: {
+                        created_user_id: newUser.id,
+                        email,
+                        nama_lengkap,
+                        role_id,
+                        role: selectedRole.nama_role,
+                        level_akses: selectedRole.level_akses,
+                        nim: isMahasiswa ? nim : null,
+                        nip: !isMahasiswa ? nip : null,
+                        ttd_digital: ttdDigitalUrl,
+                    },
+                });
+            }
+        }
 
 		return res.status(201).json({
 			status: "success",
@@ -456,39 +468,45 @@ exports.updateUser = async (req, res) => {
 			await deleteCloudinaryFile(oldTtdDigital);
 		}
 
-		await createAdminLog({
-			req,
-			action:
-				role_id && Number(role_id) !== Number(oldData.role_id)
-					? "UPDATE_ROLE"
-					: "UPDATE",
-			module: newRole?.level_akses === "peminjam" ? "Peminjam" : "Pegawai",
-			description:
-				role_id && Number(role_id) !== Number(oldData.role_id)
-					? `Mengubah role user ${oldName} dari ${oldData.role} menjadi ${newRole?.nama_role || role_id}`
-					: `Memperbarui data user: ${nama_lengkap || oldName}`,
-			target_id: null,
-			metadata: {
-				updated_user_id: id,
-				before: oldData,
-				after: {
-					user_id: id,
-					email,
-					no_telepon,
-					email_verified,
-					role_id: role_id || oldData.role_id,
-					role: newRole?.nama_role || oldData.role,
-					level_akses: newRole?.level_akses || oldData.level_akses,
-					nama_lengkap: nama_lengkap || oldName,
-					nim: nim || oldData.nim,
-					nip: nip || oldData.nip,
-					angkatan: angkatan || oldData.angkatan,
-					prodi_id: prodi_id || oldData.prodi_id,
-					kelas_id: kelas_id || oldData.kelas_id,
-					ttd_digital: ttdDigitalUrl,
-				},
-			},
-		});
+		const requesterId = req.user?.id;
+        if (requesterId) {
+            const requester = await User.findByPk(requesterId, {
+                include: [{ model: Role, attributes: ["level_akses"] }]
+            });
+
+            // Jika dia benar admin/super_admin, catat aktivitasnya
+            if (['admin', 'super_admin'].includes(requester?.Role?.level_akses)) {
+                await createAdminLog({
+                    req,
+                    action: role_id && Number(role_id) !== Number(oldData.role_id) ? "UPDATE_ROLE" : "UPDATE",
+                    module: newRole?.level_akses === "peminjam" ? "Peminjam" : "Pegawai",
+                    description: role_id && Number(role_id) !== Number(oldData.role_id)
+                        ? `Mengubah role user ${oldName} dari ${oldData.role} menjadi ${newRole?.nama_role || role_id}`
+                        : `Memperbarui data user: ${nama_lengkap || oldName}`,
+                    target_id: null,
+                    metadata: {
+                        updated_user_id: id,
+                        before: oldData,
+                        after: {
+                            user_id: id,
+                            email,
+                            no_telepon,
+                            email_verified,
+                            role_id: role_id || oldData.role_id,
+                            role: newRole?.nama_role || oldData.role,
+                            level_akses: newRole?.level_akses || oldData.level_akses,
+                            nama_lengkap: nama_lengkap || oldName,
+                            nim: nim || oldData.nim,
+                            nip: nip || oldData.nip,
+                            angkatan: angkatan || oldData.angkatan,
+                            prodi_id: prodi_id || oldData.prodi_id,
+                            kelas_id: kelas_id || oldData.kelas_id,
+                            ttd_digital: ttdDigitalUrl,
+                        },
+                    },
+                });
+            }
+        }
 
 		return res.status(200).json({
 			status: "success",
@@ -587,23 +605,30 @@ exports.deleteUser = async (req, res) => {
 
 		await t.commit();
 
-		await createAdminLog({
-			req,
-			action: "DELETE",
-			module:
-				deletedRole === "Mahasiswa" || deletedRole === "Dosen"
-					? "Peminjam"
-					: "Pegawai",
-			description: `Menghapus user ${deletedRole}: ${deletedName}`,
-			target_id: null,
-			metadata: {
-				deleted_user_id: id,
-				email: plainUser.email,
-				nama: deletedName,
-				role: deletedRole,
-				role_id: plainUser.role_id,
-			},
-		});
+		const requesterId = req.user?.id;
+        if (requesterId) {
+            const requester = await User.findByPk(requesterId, {
+                include: [{ model: Role, attributes: ["level_akses"] }]
+            });
+
+            // Jika dia benar admin/super_admin, catat aktivitasnya
+            if (['admin', 'super_admin'].includes(requester?.Role?.level_akses)) {
+                await createAdminLog({
+                    req,
+                    action: "DELETE",
+                    module: deletedRole === "Mahasiswa" || deletedRole === "Dosen" ? "Peminjam" : "Pegawai",
+                    description: `Menghapus user ${deletedRole}: ${deletedName}`,
+                    target_id: null,
+                    metadata: {
+                        deleted_user_id: id,
+                        email: plainUser.email,
+                        nama: deletedName,
+                        role: deletedRole,
+                        role_id: plainUser.role_id,
+                    },
+                });
+            }
+        }
 
 		return res.status(200).json({
 			status: "success",
@@ -825,53 +850,53 @@ exports.updatePassword = async (req, res) => {
 };
 
 exports.getDosenUsers = async (req, res) => {
-    try {
-        const data = await User.findAll({
-            attributes: ["id", "email", "no_telepon", "ttd_digital", "role_id"],
-            include: [
-                {
-                    model: Role,
-                    attributes: ["id", "nama_role", "level_akses"],
-                    where: {
-                        nama_role: "Dosen",
-                    },
-                },
-                {
-                    model: Pegawai,
-                    as: "pegawai",
-                    attributes: ["nama_lengkap", "nip"],
-                    required: true,
-                },
-            ],
-            order: [[{ model: Pegawai, as: "pegawai" }, "nama_lengkap", "ASC"]],
-        });
+	try {
+		const data = await User.findAll({
+			attributes: ["id", "email", "no_telepon", "ttd_digital", "role_id"],
+			include: [
+				{
+					model: Role,
+					attributes: ["id", "nama_role", "level_akses"],
+					where: {
+						nama_role: "Dosen",
+					},
+				},
+				{
+					model: Pegawai,
+					as: "pegawai",
+					attributes: ["nama_lengkap", "nip"],
+					required: true,
+				},
+			],
+			order: [[{ model: Pegawai, as: "pegawai" }, "nama_lengkap", "ASC"]],
+		});
 
-        const mappedData = data.map((user) => {
-            const plain = user.get({ plain: true });
+		const mappedData = data.map((user) => {
+			const plain = user.get({ plain: true });
 
-            return {
-                id: plain.id,
-                email: plain.email,
-                no_telepon: plain.no_telepon,
-                role_id: plain.role_id,
-                nama_role: plain.Role?.nama_role,
-                level_akses: plain.Role?.level_akses,
-                nama_lengkap: plain.pegawai?.nama_lengkap,
-                nip: plain.pegawai?.nip,
-                ttd_digital: plain.ttd_digital,
-            };
-        });
+			return {
+				id: plain.id,
+				email: plain.email,
+				no_telepon: plain.no_telepon,
+				role_id: plain.role_id,
+				nama_role: plain.Role?.nama_role,
+				level_akses: plain.Role?.level_akses,
+				nama_lengkap: plain.pegawai?.nama_lengkap,
+				nip: plain.pegawai?.nip,
+				ttd_digital: plain.ttd_digital,
+			};
+		});
 
-        return res.status(200).json({
-            status: "success",
-            data: mappedData,
-        });
-    } catch (error) {
-        console.error("Error Get Dosen Users:", error);
+		return res.status(200).json({
+			status: "success",
+			data: mappedData,
+		});
+	} catch (error) {
+		console.error("Error Get Dosen Users:", error);
 
-        return res.status(500).json({
-            status: "error",
-            message: "Gagal mengambil data dosen.",
-        });
-    }
+		return res.status(500).json({
+			status: "error",
+			message: "Gagal mengambil data dosen.",
+		});
+	}
 };

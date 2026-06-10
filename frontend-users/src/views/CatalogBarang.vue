@@ -4,7 +4,7 @@
         <!-- HEADER -->
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-6 md:mb-8">
             <div>
-                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Katalog Alat Lab</h2>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Katalog Barang Lab</h2>
                 <p class="text-slate-500 mt-1 md:mt-2 text-xs md:text-sm max-w-2xl font-medium leading-relaxed">
                     Cari dan temukan komponen elektronik, alat ukur, atau modul untuk keperluan praktikum dan proyekmu.
                 </p>
@@ -39,7 +39,7 @@
                 <div
                     class="animate-spin inline-block w-10 h-10 md:w-12 md:h-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4">
                 </div>
-                <p class="text-slate-500 font-bold animate-pulse text-sm md:text-base">Memuat katalog alat dari
+                <p class="text-slate-500 font-bold animate-pulse text-sm md:text-base">Memuat katalog barang dari
                     server...</p>
             </div>
 
@@ -180,7 +180,7 @@
                                 <ShoppingCartIcon class="w-16 h-16 md:w-20 md:h-20 text-slate-200" />
                                 <div>
                                     <p class="text-base md:text-lg font-bold text-slate-800">Keranjang masih kosong</p>
-                                    <p class="text-xs md:text-sm text-slate-500 font-medium mt-1">Silakan pilih alat
+                                    <p class="text-xs md:text-sm text-slate-500 font-medium mt-1">Silakan pilih barang
                                         dari katalog.</p>
                                 </div>
                                 <button @click="isCartOpen = false"

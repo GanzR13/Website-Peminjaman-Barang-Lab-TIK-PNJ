@@ -29,7 +29,7 @@
                             </h2>
 
                             <p class="text-slate-500 text-sm font-medium mt-2 max-w-xl leading-relaxed">
-                                Lengkapi informasi peminjaman alat laboratorium dengan benar sebelum mengirim
+                                Lengkapi informasi peminjaman barang laboratorium dengan benar sebelum mengirim
                                 permohonan.
                             </p>
                         </div>
@@ -38,7 +38,7 @@
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
                             <div class="relative" ref="tanggalPinjamPickerRef">
                                 <label class="label-form">
-                                    Tgl Ambil Alat <span class="text-red-500">*</span>
+                                    Tgl Ambil Barang <span class="text-red-500">*</span>
                                 </label>
 
                                 <button type="button" @click.stop="toggleTanggalPinjamPicker" class="date-filter-button"
@@ -1103,14 +1103,14 @@ const submitPeminjaman = async () => {
     }
 
     if (!formCheckout.value.tanggal_pinjam) {
-        showAlert('Tanggal ambil alat wajib dipilih.', 'warning');
+        showAlert('Tanggal ambil barang wajib dipilih.', 'warning');
         showTanggalPinjamPicker.value = true;
         showTanggalKembaliPicker.value = false;
         return;
     }
 
     if (!formCheckout.value.tanggal_kembali) {
-        showAlert('Tanggal kembali alat wajib dipilih.', 'warning');
+        showAlert('Tanggal kembali barang wajib dipilih.', 'warning');
         showTanggalKembaliPicker.value = true;
         showTanggalPinjamPicker.value = false;
         return;
@@ -1120,7 +1120,7 @@ const submitPeminjaman = async () => {
     const tanggalKembali = makeLocalDate(formCheckout.value.tanggal_kembali);
 
     if (tanggalKembali < tanggalPinjam) {
-        showAlert('Tanggal kembali tidak boleh sebelum tanggal ambil alat.', 'warning');
+        showAlert('Tanggal kembali tidak boleh sebelum tanggal ambil barang.', 'warning');
         showTanggalKembaliPicker.value = true;
         showTanggalPinjamPicker.value = false;
         return;

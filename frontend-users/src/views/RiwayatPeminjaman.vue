@@ -6,7 +6,7 @@
                 Riwayat Peminjaman
             </h2>
             <p class="text-slate-500 mt-1 text-xs md:text-sm font-medium">
-                Pantau status, approval dosen PJ, approval kepala lab, dan riwayat peminjaman alat lab Anda.
+                Pantau status, approval dosen PJ, approval kepala lab, dan riwayat peminjaman barang lab Anda.
             </p>
         </div>
 
@@ -148,7 +148,7 @@
 
                             <span v-if="transaksi.approved_dosen_pj?.ttd_digital"
                                 class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 text-[9px] font-black uppercase tracking-widest shrink-0">
-                                TTD Ada
+                                Disetujui dengan TTD Digital
                             </span>
                         </div>
 
@@ -176,7 +176,7 @@
 
                             <span v-if="transaksi.approved_kalab.ttd_digital"
                                 class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 text-[9px] font-black uppercase tracking-widest shrink-0">
-                                TTD Ada
+                                Disetujui dengan TTD Digital
                             </span>
                         </div>
                     </div>

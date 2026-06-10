@@ -10,7 +10,7 @@
                 </span>
                 <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Data Analitik Pengadaan Tahunan
                 </h2>
-                <p class="text-slate-500 mt-1 text-sm font-medium">Rekomendasi pengadaan alat laboratorium berbasis
+                <p class="text-slate-500 mt-1 text-sm font-medium">Rekomendasi pengadaan barang laboratorium berbasis
                     Rule-Based Analytics</p>
             </div>
 
@@ -250,7 +250,7 @@
                     1 }}</h2>
                 <div class="relative w-full md:w-72">
                     <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input v-model="searchQuery" type="text" placeholder="Cari nama alat..."
+                    <input v-model="searchQuery" type="text" placeholder="Cari nama barang..."
                         class="w-full pl-10 pr-4 py-2 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium" />
                 </div>
             </div>
@@ -266,7 +266,7 @@
                 </div>
                 <div v-else-if="filteredAnalitik.length === 0"
                     class="py-12 text-center text-slate-500 font-medium text-sm px-4">
-                    Data alat tidak ditemukan atau belum ada aktivitas pada tahun {{ selectedYear }}.
+                    Data barang tidak ditemukan atau belum ada aktivitas pada tahun {{ selectedYear }}.
                 </div>
                 <div v-else v-for="item in filteredAnalitik" :key="item.kode" class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-2">
@@ -424,7 +424,6 @@ const { showConfirm } = useConfirm();
 const searchQuery = ref('');
 const isLoading = ref(true);
 const isLoadingUser = ref(true);
-
 const currentYear = new Date().getFullYear();
 const availableYears = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
 const selectedYear = ref(currentYear);
@@ -534,12 +533,9 @@ watch(selectedYear, () => {
 const generateRecommendation = (item) => {
     const isHighDemand = item.total_dipinjam >= 50;
     const isLowStock = item.stok_saat_ini <= 5;
-
-    // Total kendala (unit yang secara fisik rusak/hilang sehingga stok efektif berkurang)
     const totalKendala = item.rusak + item.hilang + item.rusak_total;
     const hasProblem = totalKendala > 0;
 
-    // 1. Kondisi Sangat Kritis: Permintaan tinggi & barang banyak yang rusak
     if (isHighDemand && totalKendala >= 2) {
         return {
             type: 'kritis',
@@ -548,15 +544,12 @@ const generateRecommendation = (item) => {
         };
     }
 
-    // 2. Prioritas Tinggi: Permintaan tinggi & stok menipis
     if (isHighDemand && isLowStock) {
         let act = 'Wajib tambah pengadaan stok.';
-        // Jika ada masalah juga, kita sebutkan
         if (hasProblem) act += ` (Sekaligus ganti ${totalKendala} unit rusak/hilang).`;
         return { type: 'prioritas_tinggi', label: 'Prioritas Tinggi', action: act };
     }
 
-    // 3. PENGGANTIAN WAJIB: Meskipun jarang dipinjam, kalau ada barang rusak/hilang, wajib diganti
     if (hasProblem) {
         return {
             type: 'ganti_unit',
@@ -565,17 +558,14 @@ const generateRecommendation = (item) => {
         };
     }
 
-    // 4. Prioritas Menengah: Permintaan tinggi tapi stok masih aman
     if (isHighDemand && !isLowStock) {
         return { type: 'prioritas_menengah', label: 'Prioritas Menengah', action: 'Stok aman, tambah cadangan jika ada dana.' };
     }
 
-    // 5. Tinjau Ulang: Stok menipis tapi alatnya jarang dipakai
     if (!isHighDemand && isLowStock) {
         return { type: 'prioritas_menengah', label: 'Tinjau Ulang', action: 'Stok menipis tapi jarang dipakai. Tinjau urgensi.' };
     }
 
-    // 6. Aman
     return { type: 'aman', label: 'Status Aman', action: 'Kondisi 100% normal. Tidak perlu pengadaan.' };
 };
 

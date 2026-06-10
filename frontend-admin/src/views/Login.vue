@@ -12,20 +12,16 @@ const router = useRouter();
 const authStore = useAuthStore();
 const { showAlert } = useAlert();
 
-// STATE UX ERROR
 const loginError = ref(false);
 const errorMessage = ref("");
 
-// Ref untuk memanipulasi elemen input di HTML
 const passwordInputRef = ref(null);
 const emailInputRef = ref(null);
 
-// HELPER: Penanganan Error Terpusat
 const triggerError = (msg) => {
     errorMessage.value = msg;
     loginError.value = true;
 
-    // Tahan popup password Chrome
     setTimeout(() => {
         if (passwordInputRef.value) {
             passwordInputRef.value.select();
@@ -34,7 +30,6 @@ const triggerError = (msg) => {
 };
 
 const handleLogin = async () => {
-    // Reset state saat tombol kembali ditekan
     loginError.value = false;
     errorMessage.value = "";
 
@@ -51,26 +46,24 @@ const handleLogin = async () => {
         });
 
         if (success) {
-            // Trik lepas fokus untuk memicu Chrome Save Password
             if (emailInputRef.value) emailInputRef.value.blur();
             if (passwordInputRef.value) passwordInputRef.value.blur();
 
             showAlert("Login berhasil!", "success");
             await router.push("/admin/dashboard");
         } else {
-            // Gagal tapi tidak lempar exception (contoh: error dari store)
             triggerError(authStore.error || "Email atau password yang Anda masukkan salah.");
         }
     } catch (err) {
-		console.error("Login Catch Error:", err);
+        console.error("Login Catch Error:", err);
 
-		const msg = err.response?.data?.errors
-			|| err.response?.data?.message
-			|| authStore.error
-			|| "Gagal terhubung ke server. Periksa koneksi Anda.";
+        const msg = err.response?.data?.errors
+            || err.response?.data?.message
+            || authStore.error
+            || "Gagal terhubung ke server. Periksa koneksi Anda.";
 
-		triggerError(msg);
-	}
+        triggerError(msg);
+    }
 };
 </script>
 

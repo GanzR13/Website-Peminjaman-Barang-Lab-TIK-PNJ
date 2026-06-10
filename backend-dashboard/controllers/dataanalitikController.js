@@ -139,7 +139,6 @@ const dataanalitikController = {
                 return kendalaB - kendalaA;
             });
 
-            // ✅ PERBAIKAN: Potong array sesuai nilai limit yang diminta Postman
             if (limit && limit > 0) {
                 hasilAnalitik = hasilAnalitik.slice(0, limit);
             }
