@@ -199,34 +199,16 @@ Cara ini direkomendasikan karena seluruh service dapat dijalankan melalui satu p
 ### 1. Masuk ke root project
 
 ```bash
-cd SI-LAB-TIK
+cd Website-Peminjaman-Barang-Lab-PLP-PNJ
 ```
 
 ### 2. Jalankan Docker Compose
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
-### 3. Melihat container yang berjalan
-
-```bash
-docker compose ps
-```
-
-### 4. Melihat log service
-
-```bash
-docker compose logs -f
-```
-
-Untuk melihat log service tertentu:
-
-```bash
-docker compose logs -f backend
-```
-
-### 5. Menghentikan service
+### 3. Menghentikan service
 
 ```bash
 docker compose down
@@ -242,8 +224,7 @@ Selain menggunakan Docker, setiap service juga dapat dijalankan secara manual.
 
 ```bash
 cd backend-dashboard
-npm install
-npm run dev
+docker compose up --build -d
 ```
 
 Backend akan berjalan pada:
@@ -256,7 +237,6 @@ http://localhost:3000
 
 ```bash
 cd frontend-admin
-npm install
 npm run dev
 ```
 
@@ -270,7 +250,6 @@ http://localhost:5173
 
 ```bash
 cd frontend-users
-npm install
 npm run dev
 ```
 
@@ -290,7 +269,7 @@ Sistem ini menggunakan PostgreSQL sebagai database utama.
 
 Contoh nama database:
 
-```sql
+```postgresql
 silab_tik
 ```
 
@@ -333,33 +312,6 @@ Setelah seluruh service berjalan, aplikasi dapat diakses melalui alamat berikut:
 | Backend API    | `http://localhost:3000/api` |
 | Frontend Admin | `http://localhost:5173`     |
 | Frontend Users | `http://localhost:5174`     |
-
----
-
-## Dokumentasi API
-
-Pengujian API dapat dilakukan menggunakan Postman. Dokumentasi API mencakup beberapa modul utama berikut:
-
-* Authentication
-* User
-* Barang
-* Peminjaman
-* Peminjaman Admin
-* Laporan Masalah
-* Dashboard Analitik
-* Surat Peminjaman
-
-Contoh endpoint utama:
-
-```bash
-POST /api/auth/login
-GET /api/barang
-GET /api/user/peminjaman/riwayat
-POST /api/user/peminjaman
-GET /api/admin/peminjaman
-PUT /api/admin/peminjaman/:id/status
-GET /api/admin/dashboard/analitik
-```
 
 ---
 
@@ -473,24 +425,6 @@ Menjalankan semua service:
 docker compose up -d
 ```
 
-Menjalankan ulang service:
-
-```bash
-docker compose restart
-```
-
-Melihat log semua service:
-
-```bash
-docker compose logs -f
-```
-
-Melihat log backend:
-
-```bash
-docker compose logs -f backend
-```
-
 Menghentikan semua service:
 
 ```bash
@@ -545,3 +479,5 @@ Nama: Muhammad Rizki Awaluddin Mubin
 Program Studi: Teknik Informatika
 Jurusan: Teknik Informatika dan Komputer
 Institusi: Politeknik Negeri Jakarta
+
+Since 2026
