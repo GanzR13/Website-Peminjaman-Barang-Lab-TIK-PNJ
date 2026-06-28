@@ -6,9 +6,7 @@ const router = express.Router();
 const laporanAdminController = require("../controllers/laporanAdminController");
 const { authenticateToken } = require("../middlewares/authMiddleware");
 
-// ==========================================
 // Route Laporan Masalah (Admin)
-// ==========================================
 
 // Mengambil semua data laporan
 router.get(

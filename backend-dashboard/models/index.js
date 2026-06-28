@@ -23,8 +23,8 @@ if (config.use_env_variable) {
         config.password,
         {
             ...config,
-            logging: false, // Matikan log SQL query di terminal
-            timezone: "+07:00" // Pastikan Sequelize menggunakan zona waktu Jakarta
+            logging: false,
+            timezone: "+07:00"
         }
     );
 }

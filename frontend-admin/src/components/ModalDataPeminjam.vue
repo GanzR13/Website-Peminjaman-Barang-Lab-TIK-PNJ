@@ -330,7 +330,6 @@ watch(() => props.initialFormData, (newVal) => {
     formData.value = {
         ...newVal,
         email_verified: newVal.email_verified || false,
-        // Pastikan password kosong saat modal edit dibuka
         password: ""
     };
 }, { deep: true });

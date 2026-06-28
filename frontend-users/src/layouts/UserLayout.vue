@@ -2,12 +2,10 @@
   <div class="min-h-screen bg-slate-50 flex flex-col font-sans relative overflow-x-hidden">
 
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-      <!-- Tambahan relative z-50 bg-white di wrapper dalam agar selalu di atas backdrop -->
       <div class="w-full px-4 sm:px-6 md:px-8 lg:px-10 relative z-50 bg-white">
         <div class="flex justify-between items-center h-16 md:h-20">
 
           <div class="flex items-center gap-3 md:gap-4 shrink-0">
-            <!-- Tombol Hamburger Mobile -->
             <button @click="isMobileMenuOpen = !isMobileMenuOpen"
               class="md:hidden p-2 text-slate-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer active:scale-95">
               <Bars3Icon v-if="!isMobileMenuOpen" class="w-6 h-6" />
@@ -65,14 +63,14 @@
         </div>
       </div>
 
-      <!-- BACKDROP / OVERLAY MOBILE MENU -->
+      <!-- Backdrop Mobile Menu -->
       <transition name="fade-backdrop">
         <div v-if="isMobileMenuOpen" @click="isMobileMenuOpen = false"
           class="md:hidden fixed inset-0 top-16 bg-slate-900/30 backdrop-blur-sm z-40 cursor-pointer">
         </div>
       </transition>
 
-      <!-- DROPDOWN MOBILE MENU -->
+      <!-- Dropdown Mobile Menu -->
       <transition name="dropdown">
         <div v-if="isMobileMenuOpen"
           class="md:hidden absolute top-full left-0 w-full bg-white border-t border-slate-100 shadow-xl overflow-hidden z-50">

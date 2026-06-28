@@ -1,7 +1,5 @@
 <template>
     <div class="p-4 md:p-8 h-full flex flex-col relative animate-fade-in">
-
-        <!-- HEADER -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
             <div>
                 <span
@@ -152,7 +150,6 @@
                 </p>
             </div>
 
-            <!-- GRID DATA BARANG (Disesuaikan menjadi 2 kolom di mobile) -->
             <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pb-8">
                 <div v-for="barang in filteredBarang" :key="barang.id" @click="openDetailModal(barang)"
                     class="bg-white rounded-2xl md:rounded-3xl border border-slate-100 p-3 md:p-4 flex flex-col group hover:shadow-2xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer relative overflow-hidden">
@@ -203,7 +200,7 @@
                 </div>
             </div>
 
-            <!-- PAGINASI -->
+            <!-- Paginasi -->
             <div v-if="!isLoading && totalItems > 0"
                 class="flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 pt-5 md:pt-6 mt-auto pb-4 gap-4">
                 <p class="text-sm text-slate-500 font-medium text-center sm:text-left w-full sm:w-auto">

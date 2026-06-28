@@ -1,9 +1,8 @@
 import { ref } from 'vue';
 
-// State global alert biasa
 const isOpen = ref(false);
 const message = ref('');
-const alertType = ref('success'); // success | error | warning | info
+const alertType = ref('success');
 
 let timeoutId = null;
 

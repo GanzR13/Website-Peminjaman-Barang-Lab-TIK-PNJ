@@ -30,10 +30,10 @@
 <script setup>
 const props = defineProps({
     isOpen: { type: Boolean, required: true },
-    maxWidth: { type: String, default: 'max-w-xl' }, // Bisa diubah dari luar, misal 'max-w-4xl'
-    paddingClass: {      // <--- TAMBAHKAN BAGIAN INI
+    maxWidth: { type: String, default: 'max-w-xl' },
+    paddingClass: {      
         type: String,
-        default: 'p-6'   // Padding default jika tidak diisi
+        default: 'p-6'  
     }
 });
 
@@ -42,7 +42,7 @@ const closeModal = () => emit('close');
 </script>
 
 <style scoped>
-/* Pindahkan CSS animasi modal-fade ke sini (Hanya ditulis 1 kali seumur hidup) */
+
 .modal-fade-enter-active,
 .modal-fade-leave-active {
     transition: opacity 0.3s ease;

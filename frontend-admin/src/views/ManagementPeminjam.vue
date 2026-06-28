@@ -1,7 +1,5 @@
 <template>
     <div class="p-4 md:p-8 h-full flex flex-col relative animate-fade-in bg-slate-50 tracking-tight">
-
-        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
             <div>
                 <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
@@ -34,7 +32,6 @@
             <div class="flex flex-col lg:flex-row gap-3 items-start lg:items-end">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:flex-1">
 
-                    <!-- Start Date -->
                     <div class="relative w-full" ref="startPickerRef">
                         <label
                             class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
@@ -104,7 +101,6 @@
                         </transition>
                     </div>
 
-                    <!-- End Date -->
                     <div class="relative w-full" ref="endPickerRef">
                         <label
                             class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
@@ -189,7 +185,7 @@
 
                     <button @click="setThisWeek"
                         class="flex-1 lg:flex-none px-4 py-2.5 bg-indigo-50 text-indigo-700 text-[11px] font-black rounded-xl hover:bg-indigo-100 ring-1 ring-indigo-200/50 transition-all cursor-pointer">
-                        Mg. Ini
+                        Minggu Ini
                     </button>
 
                     <button @click="resetDateFilter"

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [vue(), tailwindcss()],
   server: {
     port: 5174, // Mengunci port ke 5174
-    strictPort: true, // Jika port 5174 dipakai, Vite akan error alih-alih pindah ke port lain
+    strictPort: true, // Jika port 5174 dipakai, Vite akan error
     host: true // Penting agar bisa diakses dari luar container (Docker)
   }
 })

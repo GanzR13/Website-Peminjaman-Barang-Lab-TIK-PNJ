@@ -4,14 +4,12 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class DetailPeminjaman extends Model {
     static associate(models) {
-      // Relasi ke Peminjaman
+      
       DetailPeminjaman.belongsTo(models.Peminjaman, {
         foreignKey: "peminjaman_id",
         as: "peminjaman"
       });
 
-      // Relasi ke Barang - Pastikan models.Barang (Huruf Besar) 
-      // merujuk ke modelName yang ada di Barang.js
       DetailPeminjaman.belongsTo(models.Barang, {
         foreignKey: "barang_id",
         as: "barang"
@@ -36,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'DetailPeminjaman',
-    tableName: 'detail_peminjaman', // Huruf kecil sesuai database
+    tableName: 'detail_peminjaman', 
     timestamps: true
   });
 

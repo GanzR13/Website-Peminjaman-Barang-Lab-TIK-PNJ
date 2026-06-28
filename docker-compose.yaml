@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. Backend API
+  # Backend API
   backend:
     build: ./backend-dashboard
     container_name: dashboard_api
@@ -18,7 +18,7 @@ services:
       - ./backend-dashboard:/app
       - /app/node_modules
 
-  # 2. Frontend Admin
+  # Frontend Admin
   frontend-admin:
     build: ./frontend-admin
     container_name: dashboard_admin
@@ -30,7 +30,7 @@ services:
       - ./frontend-admin:/app
       - /app/node_modules
 
-  # 3. Frontend Users
+  # Frontend Users
   frontend-users:
     build: ./frontend-users
     container_name: dashboard_users

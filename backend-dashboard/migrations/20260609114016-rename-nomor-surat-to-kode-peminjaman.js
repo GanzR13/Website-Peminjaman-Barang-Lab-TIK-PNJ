@@ -7,7 +7,7 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    // Rollback: mengembalikan nama ke nomor_surat
+    // Mengembalikan nama kolom dari kode_peminjaman menjadi nomor_surat
     await queryInterface.renameColumn('peminjaman', 'kode_peminjaman', 'nomor_surat');
   }
 };

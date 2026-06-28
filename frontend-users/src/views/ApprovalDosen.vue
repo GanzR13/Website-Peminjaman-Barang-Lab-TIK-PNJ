@@ -1,6 +1,5 @@
 <template>
     <div class="min-h-full bg-slate-50 px-4 py-5 sm:px-6 md:px-8">
-        <!-- Header -->
         <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div class="min-w-0">
                 <span
@@ -106,7 +105,6 @@
 
         <!-- Main Card -->
         <div class="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
-            <!-- Toolbar -->
             <div class="border-b border-slate-100 p-4 md:p-6">
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div class="min-w-0">
@@ -144,7 +142,6 @@
                 </div>
             </div>
 
-            <!-- Loading -->
             <div v-if="isLoading" class="flex flex-col items-center justify-center p-10 text-center sm:p-12">
                 <div class="mb-4 h-10 w-10 animate-spin rounded-full border-[3px] border-blue-600 border-t-transparent"></div>
                 <p class="text-sm font-bold text-slate-500">
@@ -152,7 +149,6 @@
                 </p>
             </div>
 
-            <!-- Empty -->
             <div v-else-if="filteredApprovalList.length === 0" class="p-10 text-center sm:p-12">
                 <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -173,7 +169,6 @@
                 </p>
             </div>
 
-            <!-- List -->
             <div v-else class="grid grid-cols-1 gap-4 p-4 md:p-6 xl:grid-cols-2">
                 <article
                     v-for="item in filteredApprovalList"

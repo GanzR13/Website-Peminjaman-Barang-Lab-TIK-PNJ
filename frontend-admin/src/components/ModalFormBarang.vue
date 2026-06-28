@@ -144,7 +144,6 @@ const props = defineProps({ isOpen: Boolean, isEditMode: Boolean, dataEdit: Obje
 const emit = defineEmits(['close', 'refresh-data']);
 const { showAlert } = useAlert();
 
-// STATE BARU: Untuk melacak status loading
 const isLoading = ref(false);
 
 const defaultForm = { id: null, nama_barang: '', stok: 0, deskripsi: '', gambar: '', gambarPreview: null, fileUpload: null };
@@ -184,10 +183,10 @@ const onFileChange = (e) => {
 const closeModal = () => emit('close');
 
 const submitData = async () => {
-    // Cegah submit berulang jika sedang loading
+
     if (isLoading.value) return;
 
-    isLoading.value = true; // Nyalakan loading
+    isLoading.value = true;
 
     const formData = new FormData();
     formData.append('nama_barang', form.value.nama_barang);
@@ -208,7 +207,6 @@ const submitData = async () => {
     } catch (error) {
         showAlert(`Gagal menyimpan: ${error.response?.data?.message || 'Terjadi kesalahan'}`, 'error');
     } finally {
-        // Matikan loading baik saat sukses maupun gagal
         isLoading.value = false;
     }
 };

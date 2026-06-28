@@ -172,7 +172,7 @@
                                             <transition name="fade">
                                                 <div v-if="isDatePickerOpen"
                                                     class="absolute top-full left-0 right-0 md:right-auto md:w-70 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl z-90 p-3 md:p-3">
-                                                    <!-- Header Kalender -->
+
                                                     <div class="flex items-center justify-between mb-3">
                                                         <button type="button" @click="previousMonth"
                                                             class="w-9 h-9 rounded-xl bg-slate-50 hover:bg-orange-50 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors">
@@ -218,7 +218,6 @@
                                                         </button>
                                                     </div>
 
-                                                    <!-- Footer -->
                                                     <div
                                                         class="flex items-center justify-between gap-2 mt-4 pt-4 border-t border-slate-100">
                                                         <button type="button" @click="clearDate"

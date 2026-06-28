@@ -3,14 +3,14 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // 1. Hapus tabel yang cacat (jika ada)
+    // Hapus tabel laporan_masalah jika sudah ada, untuk memastikan migrasi ini bisa dijalankan tanpa error
     await queryInterface.dropTable('laporan_masalah').catch(() => {});
     
-    // 2. Bersihkan sisa ENUM di database agar tidak bentrok
+    // Bersihkan sisa ENUM di database agar tidak bentrok
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_laporan_masalah_jenis_laporan" CASCADE;').catch(() => {});
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_laporan_masalah_status" CASCADE;').catch(() => {});
 
-    // 3. Buat ulang tabel dengan struktur yang benar 100%
+    // Buat ulang tabel dengan struktur yang benar
     await queryInterface.createTable('laporan_masalah', {
       id: {
         allowNull: false,
@@ -33,7 +33,7 @@ module.exports = {
         onDelete: 'SET NULL'
       },
       pelapor_id: {
-        type: Sequelize.STRING, // <-- Tipe STRING sesuai dengan tabel Users kamu
+        type: Sequelize.STRING,
         allowNull: true,
         references: { model: 'user', key: 'id' },
         onUpdate: 'CASCADE',

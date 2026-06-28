@@ -6,7 +6,7 @@ module.exports = {
     // Menambahkan kolom 'jenis_khusus' ke tabel 'peminjaman'
     await queryInterface.addColumn('peminjaman', 'jenis_khusus', {
       type: Sequelize.STRING(100),
-      allowNull: true, // Boleh null karena peminjaman "Harian" tidak butuh ini
+      allowNull: true,
     });
   },
 

@@ -257,7 +257,6 @@ const toggleDropdown = (name) => {
     activeDropdown.value = activeDropdown.value === name ? null : name;
 };
 
-// --- STATE FORM ---
 const currentYear = new Date().getFullYear();
 const years = computed(() => {
     const list = [];
@@ -356,19 +355,15 @@ const pilihKelas = (k) => { form.kelas_id = k.id; errors.kelas_id = ""; activeDr
 const pilihAngkatan = (y) => { form.angkatan = y; activeDropdown.value = null; };
 
 const gantiKategori = (kategoriBaru) => {
-    // 1. Mencegah error jika user mengklik tombol yang sudah aktif
     if (form.kategori === kategoriBaru) return;
 
     form.kategori = kategoriBaru;
-
-    // 2. Kosongkan semua data yang spesifik dengan role
     form.nim = "";
     form.nip = "";
     form.prodi_id = "";
     form.kelas_id = "";
     form.angkatan = currentYear;
 
-    // 3. Reset semua pesan error saat pindah kategori
     Object.keys(errors).forEach(key => errors[key] = "");
 
     activeDropdown.value = null;
@@ -377,15 +372,11 @@ const gantiKategori = (kategoriBaru) => {
 onMounted(async () => {
     try {
         const [resProdi, resKelas] = await Promise.all([api.get("/ref/prodi"), api.get("/ref/kelas")]);
-
-        // PERBAIKAN: Ambil properti 'data' di dalam 'data' (jika backend mengirim { status: "success", data: [...] })
-        // Gunakan fallback (|| resProdi.data) untuk berjaga-jaga jika backend memang mengirim Array secara langsung
         ref_prodi.value = resProdi.data.data || resProdi.data || [];
         ref_kelas.value = resKelas.data.data || resKelas.data || [];
 
     } catch (err) {
         console.error("Gagal memuat data referensi:", err);
-        // Pastikan nilainya tetap array agar template tidak crash saat API gagal
         ref_prodi.value = [];
         ref_kelas.value = [];
     }

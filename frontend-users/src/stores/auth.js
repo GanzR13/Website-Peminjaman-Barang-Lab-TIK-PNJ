@@ -324,7 +324,6 @@ export const useAuthStore = defineStore("auth", {
 					mahasiswa,
 					pegawai,
 
-					// ttd_digital ada di tabel user, jadi ambil dari userData langsung
 					ttd_digital: userData.ttd_digital || null,
 				};
 

@@ -2,24 +2,22 @@ import { createRouter, createWebHistory } from "vue-router";
 import Login from "../views/Login.vue";
 
 const routes = [
-	// 1. Rute Redirect Awal
+
 	{
 		path: "/",
 		redirect: "/admin/login",
 	},
 
-	// 2. Rute Bebas Layout (Halaman Login Berdiri Sendiri)
 	{
 		path: "/admin/login",
 		name: "AdminLogin",
 		component: Login,
 	},
 
-	// 3. Rute Utama (Menggunakan SidebarOnlyLayout untuk semua halaman)
 	{
 		path: "/",
 		component: () => import("../layouts/SidebarOnlyLayout.vue"),
-		meta: { requiresAuth: true }, // Semua children di dalamnya otomatis butuh login
+		meta: { requiresAuth: true },
 		children: [
 			{
 				path: "/admin/dashboard",
@@ -92,21 +90,18 @@ const router = createRouter({
 	routes,
 });
 
-// NAVIGATION GUARD (Satpam Rute)
 router.beforeEach((to, from) => {
 	const token = localStorage.getItem("token");
 	const user = JSON.parse(localStorage.getItem("user") || "{}");
 	const isAuthenticated = !!token;
 
-	// Cek apakah user adalah Admin/Pegawai (Role ID 1 s/d 4)
+	// Cek apakah user adalah Admin/Pegawai (Role Id 1 s/d 4)
 	const isAdmin = user.role_id <= 4;
 
-	// Jika butuh login tapi belum ada token
 	if (to.meta.requiresAuth && !isAuthenticated) {
 		return { name: "AdminLogin" };
 	}
 
-	// Jika sudah login pakai akun Mahasiswa tapi mencoba masuk rute Admin
 	if (to.meta.requiresAuth && isAuthenticated && !isAdmin) {
 		localStorage.clear();
 
@@ -115,7 +110,6 @@ router.beforeEach((to, from) => {
 		return { name: "AdminLogin" };
 	}
 
-	// Jika sudah login sebagai Admin, lalu mencoba buka halaman Login lagi
 	if (to.path === "/admin/login" && isAuthenticated && isAdmin) {
 		return { name: "AdminDashboard" };
 	}

@@ -1,6 +1,5 @@
 <template>
     <div class="p-4 md:p-8 h-full flex flex-col relative">
-        <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
             <div>
                 <h2 class="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
@@ -23,10 +22,8 @@
             </button>
         </div>
 
-        <!-- Container -->
         <div
             class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1 min-h-128">
-            <!-- Toolbar -->
             <div
                 class="p-4 md:p-6 border-b border-gray-100 flex flex-col lg:flex-row justify-between lg:items-center gap-4">
                 <div>
@@ -62,7 +59,6 @@
                 </div>
             </div>
 
-            <!-- Loading -->
             <div v-if="isLoading" class="p-12 md:p-20 text-center flex-1 flex flex-col items-center justify-center">
                 <div
                     class="animate-spin inline-block w-10 h-10 border-[3px] border-blue-600 border-t-transparent rounded-full mb-4">
@@ -72,9 +68,7 @@
                 </p>
             </div>
 
-            <!-- Content -->
             <div v-else class="flex-1 flex flex-col">
-                <!-- Empty -->
                 <div v-if="filteredUsers.length === 0"
                     class="p-12 md:p-20 text-center flex-1 flex flex-col items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mb-4" fill="none"
@@ -287,7 +281,6 @@
             @click.self="closeDetailModal">
             <div
                 class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all relative">
-                <!-- Header -->
                 <div class="relative bg-linear-to-r from-blue-600 to-indigo-600 p-6 pt-8">
                     <button type="button" @click="closeDetailModal"
                         class="absolute top-4 right-4 w-9 h-9 flex items-center justify-center bg-white/20 hover:bg-white/40 text-white rounded-full backdrop-blur-md transition-all z-10 cursor-pointer active:scale-95"
@@ -334,7 +327,6 @@
                     </div>
                 </div>
 
-                <!-- Body -->
                 <div class="p-6 space-y-3 max-h-[70vh] overflow-y-auto hidden-scrollbar">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100">

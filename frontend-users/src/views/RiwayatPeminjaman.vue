@@ -1,6 +1,6 @@
 <template>
     <div class="animate-fade-in pb-10">
-        <!-- Header -->
+
         <div class="mb-6">
             <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                 Riwayat Peminjaman
@@ -10,7 +10,6 @@
             </p>
         </div>
 
-        <!-- Loading -->
         <div v-if="isLoading" class="flex flex-col items-center justify-center py-20">
             <div
                 class="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4">
@@ -20,7 +19,6 @@
             </p>
         </div>
 
-        <!-- Empty -->
         <div v-else-if="riwayatList.length === 0"
             class="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200 shadow-sm">
             <ClipboardDocumentListIcon class="w-16 h-16 text-slate-300 mx-auto" />
@@ -43,7 +41,7 @@
         <div v-else class="space-y-4">
             <div v-for="transaksi in riwayatList" :key="transaksi.id"
                 class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <!-- Header Kartu -->
+
                 <div class="px-4 py-3.5 border-b border-slate-100 bg-slate-50">
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex-1 min-w-0">
@@ -79,7 +77,6 @@
                     </p>
                 </div>
 
-                <!-- Informasi Khusus dan Approval -->
                 <div v-if="transaksi.kategori_kebutuhan === 'Khusus'" class="px-4 pt-4">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
                         <div class="rounded-2xl border border-purple-100 bg-purple-50 p-3.5">
@@ -130,7 +127,6 @@
                         </div>
                     </div>
 
-                    <!-- Detail Dosen PJ -->
                     <div v-if="hasDosenPJ(transaksi)" class="mt-3 rounded-2xl border border-blue-100 bg-blue-50 p-3.5">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
@@ -157,7 +153,6 @@
                         </p>
                     </div>
 
-                    <!-- Detail Kepala Lab -->
                     <div v-if="transaksi.approved_kalab"
                         class="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-3.5">
                         <div class="flex items-start justify-between gap-3">
@@ -181,7 +176,6 @@
                     </div>
                 </div>
 
-                <!-- Daftar Barang -->
                 <div class="p-4">
                     <div class="flex items-center justify-between mb-3">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -222,7 +216,6 @@
                     </div>
                 </div>
 
-                <!-- Catatan Admin -->
                 <div v-if="transaksi.catatan_admin" class="px-4 pb-3">
                     <div class="bg-yellow-50 px-3 py-2.5 rounded-xl border border-yellow-100">
                         <p class="text-[10px] font-black text-yellow-600 uppercase tracking-widest mb-0.5">
@@ -235,7 +228,6 @@
                     </div>
                 </div>
 
-                <!-- Alert jika belum boleh cetak -->
                 <div v-if="transaksi.kategori_kebutuhan === 'Khusus' && transaksi.status === 'Disetujui' && !canPrintSurat(transaksi)"
                     class="px-4 pb-3">
                     <div class="bg-amber-50 px-3 py-2.5 rounded-xl border border-amber-100">
@@ -249,10 +241,9 @@
                     </div>
                 </div>
 
-                <!-- Tombol Aksi -->
                 <div class="px-4 pb-4 flex flex-wrap gap-2">
                     <div v-if="canPrintSurat(transaksi)" class="flex items-center gap-2">
-                        <!-- Preview Surat -->
+                    
                         <button @click="cetakSurat(transaksi)" :disabled="printingId === transaksi.id"
                             class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 transition-all active:scale-95 text-xs cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
                             <div v-if="printingId === transaksi.id"
@@ -264,7 +255,6 @@
                             {{ printingId === transaksi.id ? 'Membuka Surat...' : 'Preview Surat' }}
                         </button>
 
-                        <!-- Download Surat -->
                         <button @click="downloadSurat(transaksi)"
                             class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all active:scale-95 text-xs cursor-pointer shadow-md">
                             Download Surat

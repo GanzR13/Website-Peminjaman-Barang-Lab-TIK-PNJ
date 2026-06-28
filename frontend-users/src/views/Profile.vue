@@ -492,7 +492,6 @@ const profileForm = ref({
   ttd_digital_file: null
 });
 
-// === STATE UNTUK MODAL KATA SANDI ===
 const isPasswordModalOpen = ref(false);
 const isSubmittingPassword = ref(false);
 const showOldPassword = ref(false);
@@ -568,7 +567,6 @@ const handleLogout = () => {
   );
 };
 
-// === FUNGSI EDIT PROFIL ===
 const resetTtdDigital = () => {
   profileForm.value.ttd_digital_file = null;
 
@@ -672,7 +670,6 @@ const submitProfile = async () => {
   }
 };
 
-// === FUNGSI EDIT PASSWORD ===
 const openEditPassword = () => {
   passwordForm.value = {
     password_lama: '',
@@ -686,7 +683,7 @@ const openEditPassword = () => {
 };
 
 const submitPassword = async () => {
-  // 1. Validasi Frontend Dasar
+
   if (!passwordForm.value.password_lama) {
     showAlert("Password lama wajib diisi!", "error");
     return;
@@ -707,12 +704,11 @@ const submitPassword = async () => {
     return;
   }
 
-  // 2. Cegah Double Submit
+  // Mencegah Double Submit
   if (isSubmittingPassword.value) return;
   isSubmittingPassword.value = true;
 
   try {
-    // 3. Tembak API Backend
     await api.put(`/users/password/${authStore.user?.id}`, {
       old_password: passwordForm.value.password_lama,
       new_password: passwordForm.value.password_baru
@@ -721,7 +717,6 @@ const submitPassword = async () => {
     showAlert("Kata sandi berhasil diubah!", "success");
     isPasswordModalOpen.value = false;
 
-    // 4. Bersihkan Form setelah sukses agar aman
     passwordForm.value = { password_lama: '', password_baru: '', konfirmasi_password: '' };
     showOldPassword.value = false;
     showNewPassword.value = false;
@@ -730,8 +725,6 @@ const submitPassword = async () => {
   } catch (error) {
     console.error("Error update password:", error);
 
-    // PERBAIKAN KRUSIAL: Menangkap respons dari express-validator
-    // Backend mengirim pesan error spesifik di dalam objek "errors", bukan "message"
     const errorMessage = error.response?.data?.errors
       || error.response?.data?.message
       || "Gagal mengubah kata sandi. Pastikan password lama benar.";

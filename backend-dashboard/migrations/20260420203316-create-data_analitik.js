@@ -8,7 +8,7 @@ module.exports = {
       tanggal_pencatatan: {
         type: Sequelize.DATEONLY, allowNull: false
       },
-      // Metrik Global (Sesuai diskusi sebelumnya)
+      // Kolom Utama Untuk Data Analitik
       total_inventaris_global: { type: Sequelize.INTEGER, defaultValue: 0 },
       total_barang_tersedia: { type: Sequelize.INTEGER, defaultValue: 0 },
       total_barang_dipinjam: { type: Sequelize.INTEGER, defaultValue: 0 },
@@ -16,7 +16,6 @@ module.exports = {
       jumlah_peminjaman_hari_ini: { type: Sequelize.INTEGER, defaultValue: 0 },
       jumlah_pengembalian_hari_ini: { type: Sequelize.INTEGER, defaultValue: 0 },
       
-      // --- KOLOM TAMBAHAN UNTUK PREDIKSI ---
       skor_popularitas: { 
         type: Sequelize.FLOAT, defaultValue: 0,
         comment: 'Dihitung dari frekuensi peminjaman relatif terhadap barang lain'

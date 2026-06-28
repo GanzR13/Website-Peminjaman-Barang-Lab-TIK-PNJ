@@ -1,7 +1,5 @@
 <template>
     <div class="p-4 md:p-8 relative h-full flex flex-col bg-slate-50 lg:overflow-y-auto custom-scrollbar">
-
-        <!-- Header -->
         <div class="mb-6 md:mb-8 flex flex-col gap-4">
             <div>
                 <span
@@ -199,7 +197,6 @@
                 </div>
             </div>
 
-            <!-- Rule Matrix — collapsible di mobile -->
             <div class="bg-slate-800 rounded-2xl p-5 md:p-6 text-white shadow-lg">
                 <button @click="showMatrix = !showMatrix"
                     class="flex items-center justify-between w-full lg:cursor-default"
@@ -217,21 +214,21 @@
                 <ul v-if="showMatrix || isDesktop" class="space-y-3 text-sm font-medium text-slate-300 mt-4 lg:mt-0">
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Kritis:</strong> Dipinjam ≥ 50x & Kendala ≥ 2x. (Ganti & Tambah
-                            Stok)</p>
+                        <p><strong class="text-white">Kritis:</strong> Dipinjam ≥ 50x & Kendala ≥ 2x (Ganti & Tambah
+                            Stok).</p>
                     </li>
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Prioritas Tinggi:</strong> Dipinjam ≥ 50x & Stok ≤ 5. (Wajib Tambah
-                                Stok)</p>
+                        <p><strong class="text-white">Prioritas Tinggi:</strong> Dipinjam ≥ 50x & Stok ≤ 5 (Wajib Tambah
+                                Stok).</p>
                     </li>
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-orange-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Perlu Penggantian:</strong> Ada barang rusak/hilang. (Wajib Restock)</p>
+                        <p><strong class="text-white">Perlu Penggantian:</strong> Ada barang rusak/hilang (Wajib Restock).</p>
                     </li>
                     <li class="flex items-start gap-2">
                         <span class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Prioritas Menengah:</strong> Dipinjam ≥ 50x (Stok Aman), ATAU Stok Tipis.
+                        <p><strong class="text-white">Prioritas Menengah:</strong> Dipinjam ≥ 50x (Stok Aman) atau Stok Tipis.
                         </p>
                     </li>
                     <li class="flex items-start gap-2">
@@ -590,7 +587,6 @@ const totalMasalahTahunIni = computed(() => {
     return rawDataAnalitik.value.reduce((sum, item) => sum + item.rusak + item.hilang + item.rusak_total, 0);
 });
 
-// Hitung juga yang perlu penggantian ke dalam prioritas tinggi
 const prioritasTinggiCount = computed(() => analitikWithRekomendasi.value.filter(a =>
     a.rekomendasi.type === 'prioritas_tinggi' ||
     a.rekomendasi.type === 'kritis' ||

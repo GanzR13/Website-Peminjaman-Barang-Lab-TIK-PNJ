@@ -21,13 +21,10 @@ const togglePassword = () => {
 	isPasswordVisible.value = !isPasswordVisible.value;
 };
 
-// HELPER KHUSUS: Mengamankan pemunculan error dan menahan popup Chrome
 const triggerError = (msg) => {
 	errorMessage.value = msg;
 	loginError.value = true;
 
-	// Memberikan jeda waktu 50ms agar Vue selesai me-render warna merah di layar, 
-	// barulah teks password di-block (highlight)
 	setTimeout(() => {
 		if (passwordInputRef.value) {
 			passwordInputRef.value.select();
@@ -36,7 +33,7 @@ const triggerError = (msg) => {
 };
 
 const handleSubmit = async () => {
-	// 1. Reset state layar setiap kali tombol ditekan
+
 	loginError.value = false;
 	errorMessage.value = "";
 
@@ -46,24 +43,21 @@ const handleSubmit = async () => {
 	}
 
 	try {
-		// 2. Eksekusi ke Pinia Store
+	
 		const success = await authStore.login(form);
 
 		if (success) {
-			// JIKA SUKSES: Lepas fokus input agar Chrome mau menyimpan sandi
 			if (emailInputRef.value) emailInputRef.value.blur();
 			if (passwordInputRef.value) passwordInputRef.value.blur();
 
 			showAlert("Berhasil login!", "success");
 			await router.push("/dashboard");
 		} else {
-			// JIKA GAGAL (Store me-return false tanpa melempar error)
 			triggerError(authStore.error || "Email atau password yang Anda masukkan salah.");
 		}
 	} catch (err) {
 		console.error("Login Catch Error:", err);
 
-		// PERBAIKAN: Tukar posisi 'errors' agar dibaca duluan daripada 'message'!
 		const msg = err.response?.data?.errors
 			|| err.response?.data?.message
 			|| authStore.error

@@ -124,7 +124,6 @@ export const useAuthStore = defineStore("auth", {
 
 				localStorage.setItem("user", JSON.stringify(this.user));
 
-				// Ambil data user terbaru dari /auth/me, termasuk role dari tabel role
 				await this.fetchMe();
 
 				return true;
@@ -165,7 +164,7 @@ export const useAuthStore = defineStore("auth", {
 
 					prodi: userData.detail_tambahan?.prodi || userData.prodi || "-",
 					kelas: userData.detail_tambahan?.kelas || userData.kelas || "-",
-          ttd_digital: userData.ttd_digital || null,
+          			ttd_digital: userData.ttd_digital || null,
 					angkatan:
 						userData.detail_tambahan?.angkatan || userData.angkatan || "-",
 

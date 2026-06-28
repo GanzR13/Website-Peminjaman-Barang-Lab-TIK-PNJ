@@ -6,9 +6,7 @@ const { authenticateToken } = require("../middlewares/authMiddleware");
 const { validateRegister } = require("../middlewares/authValidator");
 const { uploadTtdDigital } = require("../middlewares/uploadCloudinary");
 
-// ===============================
 // Route User
-// ===============================
 
 // Ambil semua user
 router.get("/", authenticateToken, userController.getAllUsers);
@@ -19,7 +17,7 @@ router.get("/dosen", authenticateToken, userController.getDosenUsers);
 router.get("/pegawai", authenticateToken, userController.getPegawai);
 router.get("/peminjam", authenticateToken, userController.getPeminjam);
 
-// Ambil data detail per ID
+// Ambil data detail per Id
 router.get("/pegawai/:id", authenticateToken, userController.getPegawaiById);
 router.get("/peminjam/:id", authenticateToken, userController.getPeminjamById);
 

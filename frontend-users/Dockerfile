@@ -7,15 +7,18 @@ WORKDIR /app
 # Salin file package.json dan package-lock.json (jika ada)
 COPY package*.json ./
 
-# Instal semua library (dependensi)
-RUN npm install
+# Instal semua library
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm install
 
 # Salin seluruh kode program frontend ke dalam container
 COPY . .
 
-# Beritahu port yang digunakan (Vite default 5174, tapi kita sesuaikan di compose)
+# Mengekspos port aplikasi
 EXPOSE 5174
 
 # Jalankan perintah untuk development
-# Flag --host penting agar bisa diakses dari luar container
 CMD ["npm", "run", "dev", "--", "--host"]

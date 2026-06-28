@@ -1,5 +1,5 @@
 "use strict";
-const { Model, Op } = require("sequelize"); // Pastikan ini tidak error, jika error gunakan: const { Op } = require('sequelize');
+const { Model, Op } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
 	class Peminjaman extends Model {

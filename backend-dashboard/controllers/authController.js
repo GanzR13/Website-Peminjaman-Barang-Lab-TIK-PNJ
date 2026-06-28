@@ -11,7 +11,6 @@ exports.login = async (req, res) => {
     try {
         const { email, password, portal } = req.body;
         
-        // 1. Ambil relasi Role, Pegawai, dan Mahasiswa sekaligus
         const user = await User.findOne({ 
             where: { email }, 
             include: [
@@ -21,10 +20,7 @@ exports.login = async (req, res) => {
             ] 
         });
 
-        // ==========================================
-        // PERBAIKAN KEAMANAN: Cek User & Password
-        // Pesan error disamakan menjadi 401 Unauthorized
-        // ==========================================
+    
         if (!user) {
             return res.status(401).json({ 
                 status: "fail",
@@ -40,7 +36,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        // 2. Pengecekan Verifikasi Email
+        // Cek Verifikasi Email
         if (!user.email_verified || user.email_verified === 0 || user.email_verified === '0' || user.email_verified === 'false') {
             return res.status(403).json({ 
                 status: "fail",
@@ -48,7 +44,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        // 3. Pengecekan Portal Akses
+        // Cek Portal Akses
         if (portal === "admin") {
             if (user.role_id >= 4) {
                 return res.status(403).json({ 
@@ -65,11 +61,11 @@ exports.login = async (req, res) => {
             });
         }
 
-        // 4. Tentukan nama berdasarkan Role
+        // Tentukan nama berdasarkan Role
         const isMahasiswa = user.Role.nama_role === "Mahasiswa";
         const namaUser = isMahasiswa ? user.mahasiswa?.nama_mahasiswa : user.pegawai?.nama_lengkap;
 
-        // 5. Generate Token
+        // Generate Token
         const token = jwt.sign(
             { 
                 id: user.id, 
@@ -80,7 +76,6 @@ exports.login = async (req, res) => {
             { expiresIn: "7d" },
         );
 
-        // 6. Kirim Response
         res.status(200).json({
             status: "success",
             token,

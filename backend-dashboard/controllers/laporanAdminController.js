@@ -25,7 +25,6 @@ const getJumlahLaporan = (laporan) => {
 	return jumlah > 0 ? jumlah : 1;
 };
 
-// 1. GET ALL LAPORAN
 exports.getAllLaporan = async (req, res) => {
 	try {
 		const laporanList = await LaporanMasalah.findAll({
@@ -100,7 +99,6 @@ exports.getAllLaporan = async (req, res) => {
 	}
 };
 
-// 2. UPDATE STATUS LAPORAN
 exports.updateStatusLaporan = async (req, res) => {
 	const t = await sequelize.transaction();
 
@@ -224,12 +222,8 @@ exports.updateStatusLaporan = async (req, res) => {
 		let jumlahPerubahanStok = 0;
 		let laporanSisaId = null;
 
-		// ==========================================================
-		// LOGIKA STOK PER JUMLAH YANG DIPROSES
-		// ==========================================================
 		// Sudah Diganti:
-		// Admin memberikan barang pengganti dari stok lab.
-		// Maka stok BERKURANG sesuai jumlah yang diproses.
+		// Admin memberikan barang pengganti dari stok lab, maka stok berkurang sesuai jumlah yang diproses.
 		if (statusLama !== "Sudah Diganti" && statusBaru === "Sudah Diganti") {
 			const stokSaatIni = Number(barang.stok || 0);
 
@@ -270,9 +264,8 @@ exports.updateStatusLaporan = async (req, res) => {
 			jumlahPerubahanStok = jumlahProses;
 		}
 
-		// ==========================================================
-		// SPLIT LAPORAN JIKA HANYA SEBAGIAN UNIT DIPROSES
-		// ==========================================================
+		// Split Laporan:
+		// Jika jumlah yang diproses lebih kecil dari total laporan, maka akan dibuat laporan baru untuk sisa unit.
 		if (jumlahSisa > 0) {
 			const dataSisa = laporanBefore;
 

@@ -9,7 +9,7 @@ const {
 	DetailPeminjaman,
 	ref_Prodi,
 	ref_Kelas,
-	sequelize, // Pastikan ini ter-import untuk transaction
+	sequelize,
 } = require("../models");
 const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
@@ -51,7 +51,6 @@ const deleteCloudinaryFile = async (url) => {
 	}
 };
 
-// Fungsi GET All Users (Admin Only)
 exports.getAllUsers = async (req, res) => {
 	try {
 		const users = await User.findAll({
@@ -77,7 +76,6 @@ exports.getAllUsers = async (req, res) => {
 	}
 };
 
-// Fungsi GET Pegawai (Pengelola, admin, dan dosen)
 exports.getPegawai = async (req, res) => {
 	try {
 		const page = parseInt(req.query.page) || 1;
@@ -117,7 +115,6 @@ exports.getPegawai = async (req, res) => {
 	}
 };
 
-// Fungsi GET Peminjam (Gabungan Mahasiswa & Dosen)
 exports.getPeminjam = async (req, res) => {
 	try {
 		const page = parseInt(req.query.page) || 1;
@@ -185,7 +182,6 @@ exports.getPeminjam = async (req, res) => {
 	}
 };
 
-// Fungsi CREATE User dengan Transaction
 exports.createUser = async (req, res) => {
 	const t = await sequelize.transaction();
 
@@ -277,10 +273,10 @@ exports.createUser = async (req, res) => {
 
 		await t.commit();
 
-		// HANYA CATAT LOG JIKA YANG MELAKUKAN REQUEST ADALAH ADMIN / SUPER ADMIN
+		// Hanya catat Log jika admin/super_admin yang membuat user baru
 		const requesterId = req.user?.id;
         if (requesterId) {
-            // Cari tau peran asli si pembuat request dari database
+            // Cari requester beserta level aksesnya
             const requester = await User.findByPk(requesterId, {
                 include: [{ model: Role, attributes: ["level_akses"] }]
             });
@@ -338,7 +334,6 @@ exports.createUser = async (req, res) => {
 	}
 };
 
-// Fungsi UPDATE Users dengan Transaction
 exports.updateUser = async (req, res) => {
 	const t = await sequelize.transaction();
 
@@ -531,7 +526,6 @@ exports.updateUser = async (req, res) => {
 	}
 };
 
-// Fungsi DELETE User
 exports.deleteUser = async (req, res) => {
 	const t = await sequelize.transaction();
 
@@ -649,8 +643,6 @@ exports.deleteUser = async (req, res) => {
 	}
 };
 
-// --- Fungsi Tambahan Sesuai Router ---
-
 exports.getMahasiswa = async (req, res) => {
 	req.query.role = "Mahasiswa";
 	return exports.getPeminjam(req, res);
@@ -742,7 +734,6 @@ exports.getMe = async (req, res) => {
 		const userId = req.user.id;
 
 		const user = await User.findByPk(userId, {
-			// FIX PENTING: Tambahkan 'email_verified' di dalam attributes agar bisa diakses
 			attributes: [
 				"id",
 				"email",
@@ -811,7 +802,7 @@ exports.updatePassword = async (req, res) => {
 		const { id } = req.params; // UUID dari user yang sedang login
 		const { old_password, new_password } = req.body;
 
-		// 1. Cari user di database
+		// Cari user di database
 		const user = await User.findByPk(id);
 		if (!user) {
 			return res.status(404).json({
@@ -820,20 +811,20 @@ exports.updatePassword = async (req, res) => {
 			});
 		}
 
-		// 2. Cek kecocokan password lama menggunakan bcrypt
+		// Cek kecocokan password lama menggunakan bcrypt
 		const isMatch = await bcrypt.compare(old_password, user.password);
 		if (!isMatch) {
-			// Menggunakan format { errors: ... } agar ditangkap presisi oleh validasi Vue kamu
+			// Menggunakan format { errors: ... } agar ditangkap oleh validasi di frontend
 			return res.status(400).json({
 				status: "fail",
 				errors: "Kata sandi lama yang Anda masukkan salah.",
 			});
 		}
 
-		// 3. Enkripsi (Hash) password baru
+		// Enkripsi (Hash) password baru
 		const hashedNewPassword = await bcrypt.hash(new_password, 10);
 
-		// 4. Update password ke database
+		// Update password ke database
 		await user.update({ password: hashedNewPassword });
 
 		res.status(200).json({

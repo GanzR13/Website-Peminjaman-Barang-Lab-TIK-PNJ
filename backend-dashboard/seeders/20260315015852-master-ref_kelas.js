@@ -27,19 +27,18 @@ module.exports = {
       }
     };
 
-    // 1. Program Reguler (Semester 1-8, Kelas A, B, C)
+    // Program Reguler (Semester 1-8, Kelas A, B, C)
     const regulerProdi = ['TI', 'TMJ', 'TMD'];
     regulerProdi.forEach(prefix => generateClasses(prefix, 8, ['A', 'B', 'C']));
 
-    // 2. Program CCIT (Semester 1-6, Kelas A, B)
+    // Program CCIT (Semester 1-6, Kelas A, B)
     const ccitProdi = ['TI-CCIT', 'TMJ-CCIT', 'TMD-CCIT'];
     ccitProdi.forEach(prefix => generateClasses(prefix, 6, ['A', 'B']));
 
-    // 3. Program MSU (Semester 1-6, Tanpa huruf di belakang)
+    // Program MSU (Semester 1-6, Tanpa huruf di belakang)
     const msuProdi = ['TI MSU', 'TMJ-MSU', 'TMD-MSU'];
     msuProdi.forEach(prefix => generateClasses(prefix, 6, []));
 
-    // Eksekusi insert massal ke database
     await queryInterface.bulkInsert('ref_kelas', dataKelas, {});
   },
 

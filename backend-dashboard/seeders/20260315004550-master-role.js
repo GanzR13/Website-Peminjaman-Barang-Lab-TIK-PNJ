@@ -18,7 +18,7 @@ module.exports = {
         updatedAt: new Date()
       },
       {
-        id: 3, // <--- WAJIB DITULIS
+        id: 3,
         nama_role: 'Staff Pengelola Lab',
         level_akses: 'admin', 
         createdAt: new Date(),

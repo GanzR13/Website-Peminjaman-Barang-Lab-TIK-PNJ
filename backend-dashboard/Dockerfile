@@ -7,7 +7,7 @@ WORKDIR /app
 # Menyalin file package.json dan package-lock.json
 COPY package*.json ./
 
-# Menginstal dependensi
+# Instal semua library
 RUN npm install
 
 # Menyalin seluruh kode sumber
@@ -16,5 +16,5 @@ COPY . .
 # Mengekspos port aplikasi
 EXPOSE 3000
 
-# Perintah untuk menjalankan aplikasi dalam mode dev
+# Jalankan perintah untuk development
 CMD ["npm", "run", "dev"]

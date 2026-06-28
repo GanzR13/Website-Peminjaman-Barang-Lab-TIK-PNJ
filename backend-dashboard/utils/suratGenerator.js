@@ -413,9 +413,8 @@ const generateSuratPeminjamanPDF = async ({
 
 		const buildPdf = async () => {
 			try {
-				// =========================
-				// KOP SURAT
-				// =========================
+				
+				// Kop Surat
 				const logoPath = path.join(__dirname, "../assets/logo_pnj.png");
 
 				if (fs.existsSync(logoPath)) {
@@ -468,9 +467,7 @@ const generateSuratPeminjamanPDF = async ({
 				doc.moveTo(50, 130).lineTo(545, 130).lineWidth(1.5).stroke();
 				doc.moveTo(50, 133).lineTo(545, 133).lineWidth(0.5).stroke();
 
-				// =========================
-				// JUDUL
-				// =========================
+				// Judul
 				doc.font("Times-Bold").fontSize(13);
 				drawTextCenter(
 					doc,
@@ -529,9 +526,7 @@ const generateSuratPeminjamanPDF = async ({
 
 				y += 24;
 
-				// =========================
-				// TABEL BARANG
-				// =========================
+				// Tabel Barang
 				y = ensureSpace(doc, y, 80, 60);
 
 				doc
@@ -636,9 +631,7 @@ const generateSuratPeminjamanPDF = async ({
 
 				y += 22;
 
-				// =========================
-				// PENUTUP
-				// =========================
+				// Penutup
 				const penutup =
 					"Demikian surat peminjaman ini dibuat dengan sebenar-benarnya. Pemohon bertanggung jawab atas penggunaan dan pengembalian barang sesuai dengan waktu yang telah ditentukan.";
 
@@ -660,9 +653,7 @@ const generateSuratPeminjamanPDF = async ({
 
 				y += penutupHeight + 35;
 
-				// =========================
-				// TANDA TANGAN
-				// =========================
+				// Tanda Tangan
 				const hasDosenPJ = Boolean(
 					data.dosen_pj_user_id ||
 					data.dosen_penanggung_jawab ||

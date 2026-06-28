@@ -10,7 +10,7 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        unique: true, // <-- Mencegah email kembar terdaftar dua kali
+        unique: true, // Mencegah email kembar terdaftar dua kali
         allowNull: false
       },
       password: {
@@ -22,7 +22,7 @@ module.exports = {
       },
       tanggal_daftar: {
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW // Atau bisa pakai Sequelize.literal('CURRENT_TIMESTAMP')
+        defaultValue: Sequelize.NOW
       },
       email_verified: {
         type: Sequelize.BOOLEAN,
@@ -31,11 +31,11 @@ module.exports = {
       role_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'role', // <-- Merujuk ke nama tabel Roles
-          key: 'id'       // <-- Merujuk ke kolom id di tabel Roles
+          model: 'role', 
+          key: 'id'       
         },
         onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT' // <-- Mencegah Role dihapus jika masih ada User yang memakainya
+        onDelete: 'RESTRICT' // Mencegah Role dihapus jika masih ada User yang memakainya
       },
       ttd_digital: {
         type: Sequelize.STRING,

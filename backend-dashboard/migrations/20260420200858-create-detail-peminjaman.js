@@ -34,7 +34,6 @@ module.exports = {
         allowNull: false,
         defaultValue: 1
       },
-      // Status per barang (karena kadang pinjam 3 alat, tapi yang 1 dikembalikan duluan atau rusak)
       status_barang: {
         type: Sequelize.ENUM('Dipinjam', 'Dikembalikan', 'Rusak', 'Hilang'),
         defaultValue: 'Dipinjam',

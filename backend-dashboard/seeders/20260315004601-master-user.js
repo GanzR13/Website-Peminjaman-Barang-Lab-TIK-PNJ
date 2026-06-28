@@ -1,6 +1,6 @@
 'use strict';
 const bcrypt = require('bcrypt');
-const { v4: uuidv4 } = require('uuid'); // 1. Import UUID
+const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
   async up (queryInterface, Sequelize) {
@@ -9,7 +9,7 @@ module.exports = {
     
     await queryInterface.bulkInsert('user', [
       {
-        id: uuidv4(), // 2. Generate UUID otomatis
+        id: uuidv4(), // Generate UUID otomatis
         email: 'kepalalab@pnj.ac.id',
         password: hashedPassword,
         no_telepon: '081234567890',

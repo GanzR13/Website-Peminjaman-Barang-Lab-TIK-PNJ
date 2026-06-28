@@ -3,7 +3,7 @@ const { cloudinary } = require("../middlewares/uploadCloudinary");
 const { Op } = require("sequelize");
 const createAdminLog = require("../utils/adminActionLogger");
 
-// --- FUNGSI BANTUAN UNTUK MENGHAPUS GAMBAR DI CLOUDINARY ---
+// Fungsi Bantuan Untuk Menghapus Gambar di Cloudinary Berdasarkan URL
 const getPublicIdFromUrl = (url) => {
 	if (!url) return null;
 
@@ -19,7 +19,7 @@ const getNumericTargetId = (id) => {
 };
 
 const barangController = {
-	// 1. Mengambil Semua Data Barang
+	// Mengambil Semua Data Barang
 	getAllBarang: async (req, res) => {
 		try {
 			const page = parseInt(req.query.page) || 1;
@@ -92,7 +92,6 @@ const barangController = {
 		}
 	},
 
-	// 2. Mengambil Detail 1 Barang
 	getBarangById: async (req, res) => {
 		try {
 			const { id } = req.params;
@@ -117,7 +116,6 @@ const barangController = {
 		}
 	},
 
-	// 3. Menambah Barang Baru
 	createBarang: async (req, res) => {
 		try {
 			const { nama_barang, stok, deskripsi } = req.body;
@@ -162,7 +160,6 @@ const barangController = {
 		}
 	},
 
-	// 4. Update Barang
 	updateBarang: async (req, res) => {
 		try {
 			const { id } = req.params;
@@ -254,7 +251,6 @@ const barangController = {
 		}
 	},
 
-	// 5. Menghapus Barang
 	deleteBarang: async (req, res) => {
 		try {
 			const { id } = req.params;

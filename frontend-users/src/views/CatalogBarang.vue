@@ -1,7 +1,6 @@
 <template>
     <div class="h-full flex flex-col relative animate-fade-in">
 
-        <!-- HEADER -->
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-6 md:mb-8">
             <div>
                 <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Katalog Barang Lab</h2>
@@ -11,7 +10,6 @@
             </div>
         </div>
 
-        <!-- SEARCH & CART PANEL -->
         <div
             class="bg-white p-4 md:p-5 rounded-2xl md:rounded-3xl border border-slate-100 shadow-sm mb-6 md:mb-8 flex flex-col sm:flex-row gap-3 md:gap-4 items-center relative z-10">
             <!-- Search -->
@@ -34,7 +32,7 @@
         </div>
 
         <div class="flex-1 flex flex-col">
-            <!-- LOADING STATE -->
+          
             <div v-if="isLoading" class="text-center py-20 md:py-24">
                 <div
                     class="animate-spin inline-block w-10 h-10 md:w-12 md:h-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4">
@@ -43,7 +41,6 @@
                     server...</p>
             </div>
 
-            <!-- EMPTY STATE -->
             <div v-else-if="filteredBarang.length === 0"
                 class="text-center py-20 md:py-24 bg-white/50 rounded-3xl border border-slate-200 border-dashed mt-2 md:mt-4 mx-4 md:mx-0">
                 <CubeTransparentIcon class="w-20 h-20 md:w-24 md:h-24 text-slate-300 mx-auto mb-4 md:mb-6" />
@@ -52,33 +49,28 @@
                     lain.</p>
             </div>
 
-            <!-- GRID KATALOG (Diubah menjadi grid-cols-2 untuk mobile) -->
             <div v-else
                 class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pb-8">
                 <div v-for="barang in filteredBarang" :key="barang.id" @click="openDetailModal(barang)"
                     class="bg-white rounded-2xl md:rounded-3xl border border-slate-100 p-3 md:p-5 flex flex-col group hover:shadow-2xl hover:border-blue-200 transition-all duration-300 cursor-pointer relative overflow-hidden">
 
-                    <!-- Badge Selected -->
                     <div v-if="isInCart(barang.id)"
                         class="absolute -right-8 md:-right-10 top-3 md:top-5 bg-emerald-500 text-white text-[8px] md:text-[10px] font-black uppercase tracking-widest py-1 md:py-1.5 px-8 md:px-10 rotate-45 z-10 shadow-sm shadow-emerald-500/30">
                         Dipilih
                     </div>
 
-                    <!-- Gambar -->
                     <div
                         class="relative w-full h-28 sm:h-36 md:h-60 rounded-xl md:rounded-2xl overflow-hidden bg-slate-50 mb-3 md:mb-5 border border-slate-100 shrink-0">
                         <img :src="getImageUrl(barang.gambar)" :alt="barang.nama_barang"
                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     </div>
 
-                    <!-- Detail Barang -->
                     <div class="flex-1 flex flex-col">
                         <h3
                             class="text-sm md:text-lg font-black text-slate-900 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors mb-1 md:mb-2">
                             {{ barang.nama_barang }}
                         </h3>
 
-                        <!-- Info Stok (Dibuat wrap agar tidak tumpah di HP) -->
                         <div class="flex items-center gap-1.5 md:gap-2 mb-1 md:mb-2 mt-1 flex-wrap">
                             <span v-if="barang.stok > 0"
                                 class="inline-flex items-center gap-1 md:gap-1.5 px-1.5 md:px-2.5 py-0.5 md:py-1.5 rounded-md md:rounded-lg text-[8px] md:text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">
@@ -94,16 +86,14 @@
                             </span>
                         </div>
 
-                        <!-- Deskripsi -->
                         <p
                             class="text-[10px] md:text-xs text-slate-500 mt-1 md:mt-1.5 font-medium leading-relaxed line-clamp-2">
                             {{ barang.deskripsi || "Tidak ada deskripsi." }}
                         </p>
                     </div>
 
-                    <!-- Tombol Aksi Card -->
                     <div class="mt-3 md:mt-5 pt-3 md:pt-5 border-t border-slate-100 space-y-2">
-                        <!-- Tombol Detail -->
+                        
                         <button type="button" @click.stop="openDetailModal(barang)"
                             class="w-full py-2 md:py-2.5 bg-slate-50 text-blue-700 font-bold text-[11px] md:text-sm rounded-lg md:rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer">
                             Detail
@@ -111,7 +101,6 @@
                                 class="w-3 h-3 md:w-4 md:h-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
                         </button>
 
-                        <!-- Tombol Tambah Keranjang -->
                         <button v-if="barang.stok > 0 && !isInCart(barang.id)" type="button"
                             @click.stop="addToCart(barang)"
                             class="w-full py-2 md:py-2.5 bg-blue-600 text-white font-black text-[11px] md:text-sm rounded-lg md:rounded-xl hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-1.5 md:gap-2 shadow-md shadow-blue-600/20 cursor-pointer">
@@ -121,7 +110,7 @@
                 </div>
             </div>
 
-            <!-- PAGINASI BAWAH -->
+            <!-- Paginasi -->
             <div v-if="!isLoading && totalPages > 1"
                 class="flex items-center justify-center border-t border-slate-200 pt-6 md:pt-8 mt-auto mb-6 md:mb-8">
                 <div class="flex items-center justify-center gap-1.5 md:gap-2 w-full sm:w-auto px-4 sm:px-0">
@@ -145,7 +134,7 @@
             </div>
         </div>
 
-        <!-- MODAL & SIDEBAR KERANJANG -->
+        <!-- Modal & Sidebar Keranjang -->
         <Teleport to="body">
             <div>
                 <!-- Backdrop Keranjang -->
@@ -158,7 +147,7 @@
                 <transition name="slide-right">
                     <div v-if="isCartOpen"
                         class="fixed inset-y-0 right-0 z-1001 w-full sm:w-100 md:max-w-md bg-white shadow-2xl flex flex-col border-l border-slate-100">
-                        <!-- Header Keranjang -->
+
                         <div
                             class="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
                             <div class="flex items-center gap-3">
@@ -203,7 +192,6 @@
                                                 {{ item.nama_barang }}
                                             </h4>
 
-                                            <!-- BADGE PERINGATAN -->
                                             <span v-if="item.stok === 0"
                                                 class="inline-block mt-1 px-1.5 md:px-2 py-0.5 bg-red-100 text-red-600 text-[9px] md:text-[10px] font-black rounded-md border border-red-200">
                                                 Habis Dipinjam
@@ -242,7 +230,6 @@
                             </div>
                         </div>
 
-                        <!-- Footer/Checkout Keranjang -->
                         <div v-if="cart.length > 0"
                             class="p-4 md:p-6 border-t border-slate-100 bg-white/95 backdrop-blur-md shrink-0">
                             <button @click="openCheckoutModal" :disabled="validCartItems.length === 0"
@@ -294,11 +281,9 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const limit = ref(12);
 
-// --- INISIALISASI KERANJANG DARI LOCAL STORAGE ---
 const savedCart = localStorage.getItem('cart_peminjaman');
 const cart = ref(savedCart ? JSON.parse(savedCart) : []);
 
-// Array yang berisi keranjang yang VALID saja (Stok > 0 dan Jumlah > 0)
 const validCartItems = computed(() => {
     return cart.value.filter(item => item.stok > 0 && item.jumlah > 0);
 });
@@ -322,7 +307,7 @@ watch(searchQuery, () => {
 
 const filteredBarang = computed(() => barangList.value);
 
-// --- SINKRONISASI STOK LOKAL DENGAN SERVER ---
+// --- Sinkronisasi Stok Local Dengan Server ---
 const syncCartWithServerData = (serverDataList) => {
     let hasChanges = false;
     serverDataList.forEach(serverItem => {

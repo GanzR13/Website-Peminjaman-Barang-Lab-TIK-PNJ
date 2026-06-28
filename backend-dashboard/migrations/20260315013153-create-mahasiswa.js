@@ -6,8 +6,7 @@ module.exports = {
       id: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.STRING, // UBAH: Menjadi STRING/UUID
-        // HAPUS: autoIncrement: true
+        type: Sequelize.STRING,
       },
       nama_mahasiswa: {
         type: Sequelize.STRING,
@@ -16,18 +15,18 @@ module.exports = {
       nim: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true // UBAH: Tambahkan unique agar NIM tidak duplikat
+        unique: true
       },
       angkatan: {
         type: Sequelize.INTEGER,
         allowNull: false
       },
       user_id: {
-        type: Sequelize.STRING, // UBAH: Harus STRING karena ID User sekarang UUID
+        type: Sequelize.STRING, 
         allowNull: false,
-        unique: true, // Satu akun user = satu mahasiswa
-        references: { // Sangat disarankan untuk menjaga integritas data
-          model: 'user', // Nama tabel referensi (huruf kecil)
+        unique: true, 
+        references: { 
+          model: 'user', 
           key: 'id'
         },
         onUpdate: 'CASCADE',

@@ -2,7 +2,6 @@
 
 const { LaporanMasalah, Barang, Peminjaman } = require("../models");
 
-// 1. Fungsi Membuat Laporan Baru
 exports.buatLaporan = async (req, res) => {
 	try {
 		const {
@@ -70,7 +69,6 @@ exports.buatLaporan = async (req, res) => {
 	console.log("JUMLAH DITERIMA:", req.body.jumlah);
 };
 
-// 2. Fungsi Mengambil Semua Riwayat Laporan Milik Mahasiswa Terkait
 exports.getRiwayatLaporan = async (req, res) => {
 	try {
 		const laporanSaya = await LaporanMasalah.findAll({
@@ -96,13 +94,12 @@ exports.getRiwayatLaporan = async (req, res) => {
 	}
 };
 
-// 3. Fungsi Mengambil Detail Satu Laporan Spesifik
 exports.getDetailLaporan = async (req, res) => {
 	try {
 		const laporan = await LaporanMasalah.findOne({
 			where: {
 				id: req.params.id,
-				pelapor_id: req.user.id, // Keamanan ekstra: mahasiswa cuma bisa lihat laporannya sendiri
+				pelapor_id: req.user.id,
 			},
 			include: [
 				{

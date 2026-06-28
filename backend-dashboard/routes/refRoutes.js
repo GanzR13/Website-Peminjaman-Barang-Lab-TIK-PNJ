@@ -6,25 +6,19 @@ const router = express.Router();
 const refController = require("../controllers/refController");
 const { authenticateToken } = require("../middlewares/authMiddleware");
 
-// ===============================
-// PRODI
-// ===============================
+// Route Prodi
 router.get("/prodi", refController.getAllProdi);
 router.post("/prodi", authenticateToken, refController.createProdi);
 router.put("/prodi/:id", authenticateToken, refController.updateProdi);
 router.delete("/prodi/:id", authenticateToken, refController.deleteProdi);
 
-// ===============================
-// KELAS
-// ===============================
+// Route Kelas
 router.get("/kelas", refController.getAllKelas);
 router.post("/kelas", authenticateToken, refController.createKelas);
 router.put("/kelas/:id", authenticateToken, refController.updateKelas);
 router.delete("/kelas/:id", authenticateToken, refController.deleteKelas);
 
-// ===============================
-// ROLES
-// ===============================
+// Route Role
 router.get("/role", authenticateToken, refController.getAllRoles);
 
 module.exports = router;

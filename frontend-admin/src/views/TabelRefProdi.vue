@@ -1,6 +1,5 @@
 <template>
   <div class="p-4 md:p-8">
-    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
       <div>
         <span
@@ -27,9 +26,7 @@
       </button>
     </div>
 
-    <!-- Card -->
     <div class="bg-white border border-slate-100 rounded-2xl md:rounded-3xl shadow-sm overflow-hidden">
-      <!-- Toolbar -->
       <div class="p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 class="text-lg font-black text-slate-900">
@@ -61,13 +58,11 @@
         </div>
       </div>
 
-      <!-- Loading -->
       <div v-if="isLoading" class="p-10 flex flex-col items-center justify-center text-center">
         <div class="w-10 h-10 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
         <p class="text-sm font-bold text-slate-500">Memuat data prodi...</p>
       </div>
 
-      <!-- Empty -->
       <div v-else-if="filteredProdi.length === 0" class="p-10 text-center">
         <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-50 text-slate-300 flex items-center justify-center mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 0,
 			},
 			deskripsi: {
-				type: DataTypes.TEXT, // Menggunakan TEXT karena deskripsi bisa sangat panjang
+				type: DataTypes.TEXT, 
 				allowNull: true,
 			},
 			gambar: {
@@ -38,18 +38,18 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			createdAt: {
 				type: DataTypes.DATE,
-				allowNull: true, // Mengizinkan kolom ini kosong saat data di-import
+				allowNull: true,
 			},
 			updatedAt: {
 				type: DataTypes.DATE,
-				allowNull: true, // Mengizinkan kolom ini kosong saat data di-import
+				allowNull: true,
 			},
 		},
 		{
 			sequelize,
 			modelName: "Barang",
 			tableName: "barang",
-			freezeTableName: true, // Memaksa nama tabel menjadi 'barang' (tanpa tambahan 's')
+			freezeTableName: true,
 		},
 	);
 

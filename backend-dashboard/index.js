@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-
 const db = require("./models"); 
 
 const authRoutes = require("./routes/authRoutes");
@@ -16,13 +15,11 @@ const adminLaporanRoutes = require('./routes/adminLaporanRoutes');
 const adminActionLogRoutes = require("./routes/adminActionLogRoutes");
 const dosenApprovalRoutes = require("./routes/dosenApprovalRoutes");
 
-
-
 const app = express();
 
 app.set("trust proxy", true);
 
-// CUSTOM LOG MANUAL
+// Custom Log Manual
 app.use((req, res, next) => {
     const start = Date.now();
     res.on('finish', () => {
@@ -64,11 +61,11 @@ app.use('/api/admin/laporan', adminLaporanRoutes);
 app.use("/api/admin-action-logs", adminActionLogRoutes);
 app.use("/api/dosen", dosenApprovalRoutes);
 
-// REDIRECT Rute Utama
+// Redirect Rute Utama
 app.get("/", (req, res) => {
     res.json({
         status: "success",
-        message: "API SI-LAB PLP TIK berjalan normal 🚀",
+        message: "API SI-LAB PLP TIK berjalan normal",
         docs: "https://documenter.getpostman.com/view/40256156/2sBXiqFpKy"
     });
 });
@@ -87,19 +84,19 @@ const PORT = process.env.PORT || 3000;
 db.sequelize
     .authenticate()
     .then(() => {
-        console.log("✅ Koneksi PostgreSQL Berhasil.");
+        console.log("Koneksi PostgreSQL Berhasil.");
         return db.sequelize.sync({ force: false, logging: false });
     })
     .then(() => {
         app.listen(PORT, () => {
             console.log("-----------------------------------------");
-            console.log(`🕒 Waktu Server    : ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`);
-            console.log(`🚀 Server Berjalan : http://localhost:${PORT}`);
-            console.log(`📄 API Docs        : https://documenter.getpostman.com/view/40256156/2sBXiqFpKy`);
+            console.log(`Waktu Server    : ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`);
+            console.log(`Server Berjalan : http://localhost:${PORT}`);
+            console.log(`API Docs        : https://documenter.getpostman.com/view/40256156/2sBXiqFpKy`);
             console.log("-----------------------------------------");
         });
     })
     .catch((err) => {
-        console.error("❌ Gagal terhubung ke database:", err.message);
+        console.error("Gagal terhubung ke database:", err.message);
         process.exit(1);
     });

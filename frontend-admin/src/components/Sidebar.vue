@@ -1,6 +1,6 @@
 <template>
   <aside class="w-64 bg-slate-900 text-white h-full flex flex-col shadow-2xl shrink-0">
-    <!-- Header -->
+    
     <div class="p-6 text-xl font-bold border-b border-slate-800 flex items-center justify-between shrink-0">
       <div class="flex items-center space-x-3 min-w-0">
         <div class="bg-blue-600 p-2 rounded-lg shadow-lg shadow-blue-900/50 shrink-0">
@@ -20,7 +20,6 @@
       </div>
     </div>
 
-    <!-- Navigation -->
     <nav class="flex-1 p-4 space-y-1.5 mt-2 overflow-y-auto custom-scrollbar">
       <router-link
         to="/admin/dashboard"
@@ -105,7 +104,6 @@
         <span class="font-medium text-sm">Data Barang</span>
       </router-link>
 
-      <!-- Super Admin Menu -->
       <template v-if="isSuperAdmin">
         <div class="pt-4 mt-2 mb-1">
           <p class="px-3 text-[10px] font-black tracking-widest text-slate-500 uppercase">
@@ -211,7 +209,6 @@
         </router-link>
       </template>
 
-      <!-- Pengaturan -->
       <div class="pt-4 mt-2 mb-1">
         <p class="px-3 text-[10px] font-black tracking-widest text-slate-500 uppercase">
           Pengaturan
@@ -237,7 +234,6 @@
       </router-link>
     </nav>
 
-    <!-- Logout -->
     <div class="p-4 border-t border-slate-800 shrink-0">
       <button
         @click="handleLogout"

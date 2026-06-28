@@ -3,21 +3,19 @@
         <transition name="modal-fade">
             <div v-if="isOpen"
                 class="fixed inset-0 z-1000 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm p-0 sm:p-4 md:p-6">
-                <!-- Overlay -->
+
                 <div class="absolute inset-0 cursor-pointer" @click="$emit('close')"></div>
 
-                <!-- Modal Box -->
                 <div
                     class="modal-box relative z-10 w-full sm:max-w-4xl bg-white shadow-2xl ring-1 ring-slate-100 overflow-hidden flex flex-col rounded-t-3xl sm:rounded-3xl max-h-[94vh] sm:max-h-[90vh] lg:max-h-[82vh]">
-                    <!-- Close Button -->
+
                     <button @click="$emit('close')"
                         class="absolute top-3 right-3 md:top-4 md:right-4 z-50 p-2 bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-500 rounded-full transition-colors backdrop-blur-md cursor-pointer active:scale-95 shadow-sm border border-slate-100">
                         <XMarkIcon class="w-5 h-5 md:w-6 md:h-6" />
                     </button>
 
-                    <!-- Content -->
                     <div class="flex flex-col lg:flex-row w-full overflow-y-auto lg:overflow-hidden custom-scrollbar">
-                        <!-- Image Section -->
+
                         <div
                             class="lg:w-5/12 bg-slate-50 border-b lg:border-b-0 lg:border-r border-slate-100 p-6 md:p-8 flex items-center justify-center shrink-0">
                             <div
@@ -28,7 +26,6 @@
                             </div>
                         </div>
 
-                        <!-- Detail Section -->
                         <div class="lg:w-7/12 flex flex-col bg-white relative min-h-0">
                             <div class="p-5 md:p-8 flex-1 overflow-y-auto custom-scrollbar pr-12 md:pr-14 lg:pr-8">
                                 <h1
@@ -36,7 +33,6 @@
                                     {{ barang?.nama_barang || 'Detail Alat' }}
                                 </h1>
 
-                                <!-- Stock Card -->
                                 <div
                                     class="bg-blue-50/50 p-4 md:p-5 rounded-xl border border-blue-100/50 w-fit pr-8 md:pr-10 mb-6 md:mb-8">
                                     <p
@@ -58,7 +54,6 @@
                                     </p>
                                 </div>
 
-                                <!-- Description -->
                                 <div class="mb-4">
                                     <h3
                                         class="text-[11px] md:text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2 md:pb-3 mb-3 md:mb-4">
@@ -72,7 +67,6 @@
                                 </div>
                             </div>
 
-                            <!-- Desktop Action -->
                             <div
                                 class="hidden lg:block p-6 md:p-8 border-t border-slate-100 bg-white/95 backdrop-blur-md shrink-0">
                                 <template v-if="(barang?.stok || 0) > 0">

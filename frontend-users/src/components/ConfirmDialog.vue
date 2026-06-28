@@ -5,16 +5,14 @@
                 v-if="isOpen"
                 class="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
             >
-                <!-- Overlay -->
+               
                 <div class="absolute inset-0" @click="closeConfirm"></div>
 
-                <!-- Dialog -->
                 <div
                     class="relative z-10 w-full max-w-sm sm:max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden"
                 >
                     <div class="p-5 sm:p-6">
                         <div class="flex items-start gap-4">
-                            <!-- Icon -->
                             <div
                                 class="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
                                 :class="iconClass"
@@ -34,7 +32,6 @@
                                 </svg>
                             </div>
 
-                            <!-- Text -->
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-base sm:text-lg font-black text-slate-900 leading-tight">
                                     {{ title }}
@@ -46,7 +43,6 @@
                             </div>
                         </div>
 
-                        <!-- Actions -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6">
                             <button
                                 type="button"
@@ -67,7 +63,6 @@
                         </div>
                     </div>
 
-                    <!-- Accent Bar -->
                     <div class="h-1 w-full" :class="barClass"></div>
                 </div>
             </div>

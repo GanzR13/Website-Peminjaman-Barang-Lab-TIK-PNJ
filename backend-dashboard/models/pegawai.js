@@ -10,9 +10,8 @@ module.exports = (sequelize, DataTypes) => {
 
     Pegawai.init(
         {
-            // Tambahkan ID sebagai UUID agar konsisten dengan Mahasiswa
             id: {
-                type: DataTypes.STRING, // atau DataTypes.UUID
+                type: DataTypes.STRING, 
                 primaryKey: true,
                 allowNull: false
             },
@@ -23,13 +22,12 @@ module.exports = (sequelize, DataTypes) => {
             nip: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                unique: true // NIP harus unik
+                unique: true 
             },
-            // PENTING: user_id harus STRING/UUID karena merujuk ke User.id yang UUID
             user_id: {
                 type: DataTypes.STRING, 
                 allowNull: false,
-                unique: true // Satu user hanya boleh punya satu profil pegawai
+                unique: true
             },
         },
         {

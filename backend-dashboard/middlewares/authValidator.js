@@ -11,9 +11,7 @@ const checkValidation = (req, res, next) => {
 	next();
 };
 
-// ==========================================
-// HELPER: VALIDASI DOMAIN EMAIL PNJ
-// ==========================================
+// Helper: Validasi domain email PNJ
 const isPnjEmail = (value) => {
 	if (!value.toLowerCase().endsWith("pnj.ac.id")) {
 		throw new Error("Bukan email institusi Politeknik Negeri Jakarta");
@@ -21,9 +19,7 @@ const isPnjEmail = (value) => {
 	return true;
 };
 
-// ==========================================
-// VALIDATOR: LOGIN
-// ==========================================
+// Validator untuk Login
 const validateLogin = [
 	body("email")
 		.trim()
@@ -38,9 +34,7 @@ const validateLogin = [
 	checkValidation,
 ];
 
-// ==========================================
-// VALIDATOR: REGISTRASI
-// ==========================================
+// Validator untuk registrasi user baru (Mahasiswa dan Dosen)
 const validateRegister = [
 	body("nama_lengkap")
 		.trim()
@@ -61,7 +55,7 @@ const validateRegister = [
 		.withMessage("Nomor telepon hanya boleh berisi angka"),
 	body("role_id").notEmpty().withMessage("Role ID wajib ditentukan"),
 
-	// Validasi bersyarat untuk MAHASISWA (role_id === '5')
+	// Validasi untuk Mahasiswa (role_id === '5')
 	body("nim")
 		.if(body("role_id").equals("5"))
 		.notEmpty()
@@ -83,7 +77,7 @@ const validateRegister = [
 		.notEmpty()
 		.withMessage("Kelas wajib dipilih"),
 
-	// Validasi bersyarat untuk DOSEN / PEGAWAI (role_id !== '5')
+	// Validasi untuk Dosen atau Pegawai (role_id !== '5')
 	body("nip")
 		.if(body("role_id").not().equals("5"))
 		.notEmpty()
@@ -94,9 +88,7 @@ const validateRegister = [
 	checkValidation,
 ];
 
-// ==========================================
-// VALIDATOR: LUPA KATA SANDI
-// ==========================================
+// Validator lupa kata sandi
 const validateForgotPassword = [
 	body("email")
 		.trim()
@@ -106,9 +98,7 @@ const validateForgotPassword = [
 	checkValidation,
 ];
 
-// ==========================================
-// VALIDATOR: RESET KATA SANDI
-// ==========================================
+// Validator reset kata sandi
 const validateResetPassword = [
 	body("token")
 		.notEmpty()

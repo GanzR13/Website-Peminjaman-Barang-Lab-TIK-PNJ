@@ -1,6 +1,5 @@
 <template>
     <div class="p-4 md:p-8 h-full flex flex-col">
-        <!-- Header -->
         <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6 md:mb-8">
             <div>
                 <span
@@ -13,7 +12,7 @@
                 </h1>
 
                 <p class="text-sm text-slate-500 mt-1 font-medium max-w-2xl">
-                    Riwayat aktivitas admin dan super admin pada sistem manajemen barang laboratorium.
+                    Riwayat aktivitas admin dan super admin.
                 </p>
             </div>
 
@@ -28,7 +27,7 @@
             </button>
         </div>
 
-        <!-- Summary Cards -->
+        <!-- Summary Card -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-6">
             <div class="bg-white border border-slate-100 rounded-2xl p-4 md:p-5 shadow-sm">
                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -96,7 +95,7 @@
                             class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none text-sm font-bold text-slate-700 transition-all" />
                     </div>
 
-                    <!-- Module Filter -->
+                    <!-- Filter -->
                     <div class="relative custom-dropdown">
                         <button type="button" @click.stop="toggleDropdown('module')"
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-blue-300 text-sm font-black text-slate-700 flex items-center justify-between gap-2 transition-all cursor-pointer">
@@ -152,7 +151,6 @@
                 </div>
             </div>
 
-            <!-- Loading -->
             <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center p-10 text-center">
                 <div class="w-10 h-10 border-[3px] border-blue-600 border-t-transparent rounded-full animate-spin mb-4">
                 </div>

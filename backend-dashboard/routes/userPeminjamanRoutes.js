@@ -9,10 +9,7 @@ const { uploadLaporan } = require('../middlewares/uploadCloudinary');
 
 router.use(authenticateToken);
 
-// ==========================================
 // Route Peminjaman(User)
-// Base URL asumsi: /api/user/peminjaman
-// ==========================================
 
 // Checkout (Submit Keranjang Peminjaman)
 router.post('/checkout', peminjamanUserController.checkoutPeminjaman);
@@ -25,9 +22,7 @@ router.delete('/:id/batal', peminjamanUserController.batalkanPeminjaman);
 
 router.put('/:id/edit', peminjamanUserController.updatePeminjamanSaya);
 
-// ==========================================
-// Route Laporan Masalah (RUSAK / HILANG)
-// ==========================================
+// Route Laporan Masalah (Rusak / Hilang)
 
 router.post('/laporan', (req, res, next) => {
     const upload = uploadLaporan.single('foto_bukti');

@@ -429,7 +429,6 @@ exports.checkoutPeminjaman = async (req, res) => {
 	}
 };
 
-// FUNGSI GET Riwayat Saya
 exports.getRiwayatSaya = async (req, res) => {
 	try {
 		const user_id = req.user.id;
@@ -469,7 +468,7 @@ exports.getRiwayatSaya = async (req, res) => {
 	}
 };
 
-// FUNGSI Batalkan Peminjaman (Hanya jika masih status 'Menunggu')
+// Fungsi Batalkan Peminjaman (Hanya jika masih status 'Menunggu')
 exports.batalkanPeminjaman = async (req, res) => {
 	const t = await sequelize.transaction();
 
@@ -515,7 +514,7 @@ exports.batalkanPeminjaman = async (req, res) => {
 				});
 
 				if (barangLokal) {
-					// Menambahkan kembali stok yang sebelumnya dikurangi (Hold)
+					// Menambahkan kembali stok yang sebelumnya dikurangi
 					await barangLokal.increment("stok", {
 						by: item.jumlah_pinjam,
 						transaction: t,
@@ -524,7 +523,7 @@ exports.batalkanPeminjaman = async (req, res) => {
 			}
 		}
 
-		// Hapus Dadata Peminjam
+		// Hapus Data Peminjam
 
 		// Hapus detailnya dulu
 		await DetailPeminjaman.destroy({
@@ -544,9 +543,8 @@ exports.batalkanPeminjaman = async (req, res) => {
 				"Permohonan berhasil dibatalkan dan stok alat telah dikembalikan.",
 		});
 	} catch (error) {
-		// Jika ada error (misal: UUID tidak valid), rollback dan tangkap errornya
 		if (t) await t.rollback();
-		console.error("❌ Error Batalkan Peminjaman:", error);
+		console.error("Error Batalkan Peminjaman:", error);
 
 		return res.status(500).json({
 			status: "error",

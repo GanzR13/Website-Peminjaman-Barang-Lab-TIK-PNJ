@@ -6,24 +6,23 @@ module.exports = {
       id: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.STRING, // UBAH: Menjadi STRING/UUID
-        // HAPUS: autoIncrement: true
+        type: Sequelize.STRING,
       },
       nama_lengkap: {
         type: Sequelize.STRING,
-        allowNull: false // Tambahkan agar nama wajib diisi
+        allowNull: false
       },
       nip: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true // NIP harus unik
+        unique: true 
       },
       user_id: {
-        type: Sequelize.STRING, // UBAH: Harus STRING karena merujuk ke UUID User
+        type: Sequelize.STRING,
         allowNull: false,
-        unique: true, // Satu akun user = satu profil pegawai
+        unique: true,
         references: {
-          model: 'user', // Nama tabel referensi di database (biasanya huruf kecil)
+          model: 'user', 
           key: 'id'
         },
         onUpdate: 'CASCADE',

@@ -1,8 +1,5 @@
 const { ref_Prodi, ref_Kelas, Role } = require("../models");
 
-// ===============================
-// PRODI
-// ===============================
 exports.getAllProdi = async (req, res) => {
 	try {
 		const data = await ref_Prodi.findAll({
@@ -122,9 +119,6 @@ exports.deleteProdi = async (req, res) => {
 	}
 };
 
-// ===============================
-// KELAS
-// ===============================
 exports.getAllKelas = async (req, res) => {
 	try {
 		const data = await ref_Kelas.findAll({
@@ -244,9 +238,6 @@ exports.deleteKelas = async (req, res) => {
 	}
 };
 
-// ===============================
-// ROLES
-// ===============================
 exports.getAllRoles = async (req, res) => {
 	try {
 		const data = await Role.findAll({

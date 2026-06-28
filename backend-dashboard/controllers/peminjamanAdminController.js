@@ -138,9 +138,6 @@ const uploadSuratPeminjamanKeDrive = async ({ peminjamanId, kodePeminjaman }) =>
 	return uploaded;
 };
 
-// ==========================================
-// FUNGSI ADMIN: AMBIL SEMUA DATA + PAGINASI
-// ==========================================
 exports.getAllPeminjaman = async (req, res) => {
 	try {
 		const page = parseInt(req.query.page, 10) || 1;
@@ -246,9 +243,7 @@ exports.getTotalPeminjamanMenunggu = async (req, res) => {
 	}
 };
 
-// ==========================================
-// FUNGSI ADMIN: UPDATE STATUS
-// ==========================================
+
 exports.updateStatusPeminjaman = async (req, res) => {
 	const t = await sequelize.transaction();
 	let transactionCommitted = false;
@@ -321,9 +316,7 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			jumlah_pinjam: item.jumlah_pinjam,
 		}));
 
-		// ============================================================
-		// 1. VALIDASI LAPORAN KENDALA
-		// ============================================================
+		// Validasi: Jika status diubah menjadi Selesai, pastikan semua laporan terkait sudah diproses.
 		if (
 			status === "Selesai" &&
 			peminjaman.laporan_masalah &&
@@ -352,9 +345,7 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			}
 		}
 
-		// ============================================================
-		// 2. KEMBALIKAN STOK JIKA TRANSAKSI SELESAI / BATAL
-		// ============================================================
+		// Kembalikan stok barang jika status peminjaman berubah menjadi Ditolak, Dibatalkan, atau Selesai
 		let stokDikembalikan = false;
 		const detailStokDikembalikan = [];
 
@@ -399,9 +390,6 @@ exports.updateStatusPeminjaman = async (req, res) => {
 							jenisLaporan.includes("rusak") ||
 							jenisLaporan.includes("kerusakan");
 
-						// Sudah Diganti = barang pengganti harus kembali saat peminjaman selesai.
-						// Selesai Diperbaiki = barang rusak lama sudah layak masuk stok.
-						// Keduanya tidak ditahan.
 						if (
 							isBarangSudahDiganti ||
 							isSelesaiDiperbaiki ||
@@ -457,9 +445,7 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			}
 		}
 
-		// ============================================================
-		// 3. VALIDASI APPROVAL UNTUK PEMINJAMAN KHUSUS
-		// ============================================================
+		// Validasi khusus untuk peminjaman kategori "Khusus" yang memerlukan persetujuan Kepala Laboratorium dan Dosen Penanggung Jawab.
 		if (status === "Disetujui" && peminjaman.kategori_kebutuhan === "Khusus") {
 			if (peminjaman.status_approve_kalab !== "Disetujui") {
 				await t.rollback();

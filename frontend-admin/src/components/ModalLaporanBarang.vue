@@ -237,7 +237,6 @@ const selectStatus = (value) => {
     isDropdownOpen.value = false;
 };
 
-// Menutup dropdown jika diklik di luar area dropdown
 const closeDropdown = (e) => {
     if (isDropdownOpen.value) {
         isDropdownOpen.value = false;

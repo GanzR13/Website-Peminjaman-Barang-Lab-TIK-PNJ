@@ -2,14 +2,14 @@ const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
 
-// 1. Konfigurasi Cloudinary
+// Konfigurasi Cloudinary
 cloudinary.config({
 	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
 	api_key: process.env.CLOUDINARY_API_KEY,
 	api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// 2. Fungsi pembuat uploader dinamis
+// Fungsi pembuat uploader dinamis
 const createUploader = (folderName) => {
 	const storage = new CloudinaryStorage({
 		cloudinary,
@@ -44,7 +44,7 @@ const createUploader = (folderName) => {
 	});
 };
 
-// 3. Uploader berdasarkan kebutuhan folder
+// Uploader berdasarkan kebutuhan folder
 const uploadBarang = createUploader("barang");
 const uploadLaporan = createUploader("laporan_masalah");
 const uploadTtdDigital = createUploader("ttd_digital");

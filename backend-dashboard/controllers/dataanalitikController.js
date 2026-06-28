@@ -150,7 +150,7 @@ const dataanalitikController = {
                 data: hasilAnalitik,
             });
         } catch (error) {
-            console.error("❌ CRASH DI ANALITIK CONTROLLER:", error);
+            console.error("Crash di analitik controller:", error);
 
             return res.status(500).json({
                 status: "error",
@@ -215,7 +215,7 @@ const dataanalitikController = {
                 data: monthlyTotals,
             });
         } catch (error) {
-            console.error("❌ CRASH DI PEMINJAMAN BULANAN:", error);
+            console.error("Crash di peminjaman bulanan:", error);
 
             return res.status(500).json({
                 status: "error",

@@ -19,7 +19,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'barang', // Pastikan nama tabel fisik barang di DB adalah 'barang'
+          model: 'barang', 
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -29,7 +29,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: 'peminjaman', // Sesuaikan jika nama fisik tabel peminjaman berbeda
+          model: 'peminjaman', 
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -39,7 +39,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
         references: {
-          model: 'user', // Sesuaikan dengan nama fisik tabel user kamu (e.g., 'Users' atau 'users')
+          model: 'user', 
           key: 'id'
         },
         onUpdate: 'CASCADE',

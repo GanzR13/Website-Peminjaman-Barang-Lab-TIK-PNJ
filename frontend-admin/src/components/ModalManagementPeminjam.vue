@@ -234,7 +234,7 @@ import { defineProps, defineEmits } from 'vue';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale/id';
 import {
-    InformationCircleIcon, ExclamationTriangleIcon, XMarkIcon // Icon XMarkIcon diimport
+    InformationCircleIcon, ExclamationTriangleIcon, XMarkIcon
 } from '@heroicons/vue/24/outline';
 
 const props = defineProps({

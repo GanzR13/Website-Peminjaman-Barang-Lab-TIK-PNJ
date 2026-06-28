@@ -11,7 +11,6 @@
                 >
                     <div class="p-4 sm:p-5">
                         <div class="flex items-start gap-3">
-                            <!-- Success Icon -->
                             <div
                                 v-if="alertType === 'success'"
                                 class="shrink-0 p-2 bg-emerald-100 rounded-full text-emerald-600"
@@ -26,7 +25,6 @@
                                 </svg>
                             </div>
 
-                            <!-- Error Icon -->
                             <div
                                 v-else-if="alertType === 'error'"
                                 class="shrink-0 p-2 bg-red-100 rounded-full text-red-600"
@@ -41,7 +39,6 @@
                                 </svg>
                             </div>
 
-                            <!-- Warning Icon -->
                             <div
                                 v-else-if="alertType === 'warning'"
                                 class="shrink-0 p-2 bg-amber-100 rounded-full text-amber-600"
@@ -56,7 +53,6 @@
                                 </svg>
                             </div>
 
-                            <!-- Info Icon -->
                             <div
                                 v-else
                                 class="shrink-0 p-2 bg-blue-100 rounded-full text-blue-600"
@@ -71,7 +67,6 @@
                                 </svg>
                             </div>
 
-                            <!-- Text -->
                             <div class="flex-1 min-w-0">
                                 <h4 class="text-sm sm:text-base font-black leading-tight" :class="titleClass">
                                     {{ alertTitle }}
@@ -82,7 +77,6 @@
                                 </p>
                             </div>
 
-                            <!-- Close Button -->
                             <button
                                 type="button"
                                 @click.stop="closeAlert"
@@ -99,8 +93,6 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Accent Bar -->
                     <div class="h-1 w-full" :class="barClass"></div>
                 </div>
             </div>

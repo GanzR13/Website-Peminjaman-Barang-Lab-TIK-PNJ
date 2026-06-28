@@ -4,10 +4,9 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
     class Mahasiswa extends Model {
         static associate(models) {
-            // Relasi: Mahasiswa milik satu User
+    
             Mahasiswa.belongsTo(models.User, { foreignKey: "user_id", as: "user" });
             
-            // Relasi ke tabel Referensi
             Mahasiswa.belongsTo(models.ref_Prodi, {
                 foreignKey: "prodi_id",
                 as: "prodi",
@@ -21,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
 
     Mahasiswa.init(
         {
-            //UUID
             id: {
                 type: DataTypes.STRING,
                 primaryKey: true,

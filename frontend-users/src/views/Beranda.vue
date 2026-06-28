@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-7 md:space-y-12 animate-fade-in pb-10 md:pb-12 -mt-6 md:mt-0">
-    <!-- HERO SECTION -->
+
     <section class="flex flex-col gap-5 md:gap-8">
       <div
         class="relative -mx-4 sm:mx-0 min-h-80 sm:min-h-90 md:min-h-105 bg-slate-900 sm:rounded-4xl shadow-md sm:shadow-2xl overflow-hidden group">
@@ -8,7 +8,7 @@
           <div :key="slides[currentSlide].id"
             class="absolute inset-0 flex flex-col justify-center bg-linear-to-br px-5 sm:px-10 md:px-14 lg:px-16 py-8 sm:py-10 md:py-14"
             :class="slides[currentSlide].bg">
-            <!-- Ornamen Dekoratif -->
+
             <div
               class="absolute -top-20 -right-20 w-56 sm:w-64 md:w-72 h-56 sm:h-64 md:h-72 rounded-full bg-white/10 blur-3xl pointer-events-none">
             </div>
@@ -41,7 +41,7 @@
       </div>
     </section>
 
-    <!-- INFO CARDS -->
+    <!-- Info Card -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
       <div v-for="info in infoCards" :key="info.title"
         class="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex items-start gap-3 md:gap-4">
@@ -61,7 +61,7 @@
       </div>
     </section>
 
-    <!-- INFO TTD DIGITAL -->
+    <!-- Info Ttd Digital-->
     <section
       class="bg-blue-50 border border-blue-100 rounded-2xl md:rounded-3xl p-5 md:p-7 flex flex-col md:flex-row gap-4 md:gap-6 items-start">
       <div
@@ -87,7 +87,7 @@
       </div>
     </section>
 
-    <!-- TATA CARA PEMINJAMAN -->
+    <!-- Tata Cara Peminjaman -->
     <section>
       <div class="mb-5 md:mb-8 text-center md:text-left">
 
@@ -128,7 +128,7 @@
       </div>
     </section>
 
-    <!-- WARNING -->
+    <!-- Warning/Peringatan -->
     <section
       class="bg-slate-900 border border-slate-800 rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col md:flex-row gap-4 md:gap-8 items-start md:items-center">
       <div
