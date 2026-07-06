@@ -4,12 +4,14 @@
             <div>
                 <span
                     class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-lg mb-2 border border-blue-200">
-                    Sistem Penunjang Keputusan (SPK)
+                    Sistem Penunjang Keputusan (SPK) Berbasis Analitik
                 </span>
-                <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Data Analitik Pengadaan Tahunan
+                <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                    Dashboard Analitik & Rekomendasi Pengadaan
                 </h2>
-                <p class="text-slate-500 mt-1 text-sm font-medium">Rekomendasi pengadaan barang laboratorium berbasis
-                    Rule-Based Analytics</p>
+                <p class="text-slate-500 mt-1 text-sm font-medium">
+                    Sistem Analisis Terintegrasi: Descriptive, Diagnostic, Predictive, & Prescriptive (Rule-Based)
+                </p>
             </div>
 
             <div class="flex items-center gap-3">
@@ -41,7 +43,6 @@
             </div>
         </div>
 
-        <!-- Summary Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
             <div
                 class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3 md:gap-4 hover:border-indigo-300 transition-colors">
@@ -104,7 +105,6 @@
             </div>
         </div>
 
-        <!-- Tren Peminjaman Bulanan -->
         <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-200 mb-6 md:mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                 <div>
@@ -112,13 +112,12 @@
                         Tren Peminjaman per Bulan
                     </h3>
                     <p class="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-                        Total transaksi peminjaman sepanjang tahun {{ selectedYear }}
+                        Visualisasi aktivitas transaksi eksternal sepanjang tahun {{ selectedYear }}
                     </p>
                 </div>
-
                 <span
                     class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 w-fit">
-                    Line Chart
+                    Descriptive Analytics
                 </span>
             </div>
 
@@ -137,22 +136,21 @@
             </div>
         </div>
 
-        <!-- Chart + Rule Matrix -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
             <div class="lg:col-span-2 bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                     <div>
                         <h3 class="text-base md:text-lg font-black text-slate-800">
-                            Top 5 Prioritas Pengadaan
+                            Top 5 Prioritas Pengadaan (SPK Score)
                         </h3>
                         <p class="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-                            Berdasarkan skor SPK 0,00 - 1,00 tahun {{ selectedYear }}
+                            Skor Penilaian Berbobot 0,00 - 1,00 (Klik Batang Grafik untuk Drill-Down)
                         </p>
                     </div>
 
                     <span
-                        class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 w-fit">
-                        Rule-Based Score 0,00 - 1,00
+                        class="px-3 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-100 w-fit">
+                        Prescriptive Matrix
                     </span>
                 </div>
                 <div v-if="isLoading" class="h-52 md:h-64 flex flex-col items-center justify-center text-slate-400">
@@ -165,94 +163,116 @@
                     Tidak ada data peminjaman di tahun ini.
                 </div>
                 <div v-else class="h-52 md:h-64 relative w-full">
-                    <Bar :data="chartData" :options="chartOptions" />
+                    <Bar ref="barChartRef" :data="chartData" :options="chartOptions" @click="handleChartClick"
+                        class="cursor-pointer" />
                 </div>
                 <div v-if="!isLoading && top5Data.length > 0" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                        <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">
-                            Bobot Peminjaman
-                        </p>
-                        <p class="text-xs text-blue-700 font-bold mt-1">
-                            Dinormalisasi 0,00 - 1,00 dari data tahun terpilih.
-                        </p>
+                        <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Bobot Demand (40%)</p>
+                        <p class="text-xs text-blue-700 font-bold mt-1">Dinormalisasi dari volume peminjaman.</p>
                     </div>
-
                     <div class="bg-amber-50 border border-amber-100 rounded-xl p-3">
-                        <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                            Bobot Stok
-                        </p>
-                        <p class="text-xs text-amber-700 font-bold mt-1">
-                            Stok ≤ 5 mendapat tambahan prioritas.
-                        </p>
+                        <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest">Bobot Stok (20%)</p>
+                        <p class="text-xs text-amber-700 font-bold mt-1">Stok ≤ 5 mendapat tambahan prioritas.</p>
                     </div>
-
                     <div class="bg-red-50 border border-red-100 rounded-xl p-3">
-                        <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">
-                            Bobot Kendala
-                        </p>
-                        <p class="text-xs text-red-700 font-bold mt-1">
-                            Rusak, hilang, dan rusak total menaikkan skor.
-                        </p>
+                        <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">Bobot Kendala (25%)</p>
+                        <p class="text-xs text-red-700 font-bold mt-1">Rusak & hilang menaikkan urgensi.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-800 rounded-2xl p-5 md:p-6 text-white shadow-lg">
-                <button @click="showMatrix = !showMatrix"
-                    class="flex items-center justify-between w-full lg:cursor-default"
-                    :class="{ 'mb-4 border-b border-slate-600 pb-4': showMatrix || isDesktop }">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 md:p-3 bg-white/10 rounded-xl">
-                            <BeakerIcon class="w-5 h-5 md:w-6 md:h-6 text-blue-300" />
+            <div class="bg-slate-800 rounded-2xl p-5 md:p-6 text-white shadow-lg flex flex-col justify-between">
+                <div>
+                    <button @click="showMatrix = !showMatrix"
+                        class="flex items-center justify-between w-full lg:cursor-default"
+                        :class="{ 'mb-4 border-b border-slate-600 pb-4': showMatrix || isDesktop }">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 md:p-3 bg-white/10 rounded-xl">
+                                <BeakerIcon class="w-5 h-5 md:w-6 md:h-6 text-blue-300" />
+                            </div>
+                            <h3 class="text-base md:text-lg font-bold text-white">Rule-Based Matrix Logic</h3>
                         </div>
-                        <h3 class="text-base md:text-lg font-bold text-white">Rule-Based Matrix</h3>
-                    </div>
-                    <ChevronDownIcon class="w-5 h-5 text-slate-400 lg:hidden transition-transform"
-                        :class="showMatrix ? 'rotate-180' : ''" />
-                </button>
+                        <ChevronDownIcon class="w-5 h-5 text-slate-400 lg:hidden transition-transform"
+                            :class="showMatrix ? 'rotate-180' : ''" />
+                    </button>
 
-                <ul v-if="showMatrix || isDesktop" class="space-y-3 text-sm font-medium text-slate-300 mt-4 lg:mt-0">
-                    <li class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Kritis:</strong> Dipinjam ≥ 50x & Kendala ≥ 2x (Ganti & Tambah
-                            Stok).</p>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Prioritas Tinggi:</strong> Dipinjam ≥ 50x & Stok ≤ 5 (Wajib Tambah
-                                Stok).</p>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-orange-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Perlu Penggantian:</strong> Ada barang rusak/hilang (Wajib Restock).</p>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Prioritas Menengah:</strong> Dipinjam ≥ 50x (Stok Aman) atau Stok Tipis.
-                        </p>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span>
-                        <p><strong class="text-white">Aman:</strong> Kondisi 100% normal.</p>
-                    </li>
-                </ul>
+                    <ul v-if="showMatrix || isDesktop"
+                        class="space-y-3 text-sm font-medium text-slate-300 mt-4 lg:mt-0">
+                        <li class="flex items-start gap-2">
+                            <span class="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0"></span>
+                            <p><strong class="text-white">Kritis:</strong> Peminjaman tinggi & Kendala berulang (Wajib
+                                ganti & ekspansi).</p>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></span>
+                            <p><strong class="text-white">Prioritas Tinggi:</strong> Peminjaman tinggi & Stok menipis (≤
+                                5 Unit).</p>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-2 h-2 rounded-full bg-orange-400 mt-1.5 shrink-0"></span>
+                            <p><strong class="text-white">Perlu Penggantian:</strong> Terdapat insiden barang
+                                rusak/hilang aktual.</p>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0"></span>
+                            <p><strong class="text-white">Tinjau Ulang:</strong> Stok menipis namun tingkat utilisasi
+                                rendah.</p>
+                        </li>
+                    </ul>
+                </div>
+                <div v-if="showMatrix || isDesktop"
+                    class="mt-4 pt-3 border-t border-slate-700 text-[11px] text-slate-400 font-medium italic">
+                    *Kombinasi skor: Demand (40%), Diagnostic Problem (25%), Stock Level (20%), Rule Score (15%).
+                </div>
             </div>
         </div>
 
-        <!-- Tabel Rekomendasi -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
             <div
-                class="p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-slate-50/50">
-                <h2 class="text-base md:text-lg font-black text-slate-800">Tabel Rekomendasi Pengadaan {{ selectedYear +
-                    1 }}</h2>
-                <div class="relative w-full md:w-72">
-                    <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input v-model="searchQuery" type="text" placeholder="Cari nama barang..."
-                        class="w-full pl-10 pr-4 py-2 border border-slate-200 bg-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm font-medium" />
+                class="p-4 md:p-6 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-50/50">
+                <div>
+                    <h2 class="text-base md:text-lg font-black text-slate-800">Tabel Evaluasi & Proyeksi Pengadaan {{
+                        selectedYear + 1 }}</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">Daftar diurutkan secara otomatis berdasarkan
+                        metodologi sistem penunjang keputusan.</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                    <div class="relative shrink-0" ref="sortDropdownRef">
+                        <button type="button" @click="showSortDropdown = !showSortDropdown"
+                            class="flex items-center justify-between gap-2 w-60 bg-white px-4 py-2 border border-slate-200 hover:border-blue-400 rounded-xl shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            :class="showSortDropdown ? 'border-blue-400 ring-2 ring-blue-500/20' : ''">
+                            <span class="text-xs font-black text-blue-600 truncate">{{ activeSortLabel }}</span>
+                            <ChevronDownIcon
+                                class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0"
+                                :class="showSortDropdown ? 'rotate-180 text-blue-600' : ''" />
+                        </button>
+
+                        <transition name="fade">
+                            <div v-if="showSortDropdown"
+                                class="absolute right-0 mt-2 w-60 bg-white border border-slate-200 rounded-xl shadow-2xl shadow-slate-900/10 py-1.5 z-50 overflow-hidden origin-top-right">
+                                <button v-for="option in sortOptions" :key="option.value" type="button"
+                                    @click="pilihSort(option.value)"
+                                    class="w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs transition-colors cursor-pointer"
+                                    :class="sortBy === option.value ? 'bg-blue-50 text-blue-700 font-black' : 'text-slate-600 hover:bg-slate-50 font-semibold'">
+                                    <span>{{ option.label }}</span>
+                                    <span v-if="sortBy === option.value"
+                                        class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                                </button>
+                            </div>
+                        </transition>
+                    </div>
+
+                    <div class="relative w-full sm:w-64">
+                        <MagnifyingGlassIcon
+                            class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input v-model="searchQuery" type="text" placeholder="Cari nama barang atau kode..."
+                            class="w-full pl-9 pr-4 py-2 border border-slate-200 bg-white rounded-xl text-xs font-medium text-slate-700 placeholder:text-slate-400 shadow-sm hover:border-slate-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-200" />
+                    </div>
                 </div>
             </div>
 
-            <!-- Mobile Card View -->
             <div class="md:hidden divide-y divide-slate-100">
                 <div v-if="isLoading" class="py-12 text-center">
                     <div class="animate-pulse flex flex-col items-center">
@@ -265,65 +285,82 @@
                     class="py-12 text-center text-slate-500 font-medium text-sm px-4">
                     Data barang tidak ditemukan atau belum ada aktivitas pada tahun {{ selectedYear }}.
                 </div>
-                <div v-else v-for="item in filteredAnalitik" :key="item.kode" class="p-4 space-y-3">
+                <div v-else v-for="(item, index) in filteredAnalitik" :key="item.kode" class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-2">
-                        <div>
-                            <p class="font-bold text-slate-900 text-sm">{{ item.nama }}</p>
-                            <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }}</p>
+                        <div class="flex items-start gap-2.5">
+                            <span
+                                class="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-black shrink-0 mt-0.5"
+                                :class="index === 0 ? 'bg-amber-400 text-slate-900' :
+                                    index === 1 ? 'bg-slate-300 text-slate-800' :
+                                        index === 2 ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600'">
+                                #{{ index + 1 }}
+                            </span>
+                            <div>
+                                <p class="font-bold text-slate-900 text-sm">{{ item.nama }}</p>
+                                <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{
+                                    item.stok_saat_ini }} Unit</p>
+                            </div>
                         </div>
-                        <span
-                            class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1 shrink-0"
-                            :class="getBadgeClass(item.rekomendasi.type)">
-                            {{ item.rekomendasi.label }}
-                        </span>
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ring-1"
+                                :class="getBadgeClass(item.rekomendasi.type)">
+                                {{ item.rekomendasi.label }}
+                            </span>
+                            <span
+                                class="text-[10px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                Skor: {{ item.priority_score }}
+                            </span>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-4 gap-2 text-center">
+
+                    <div class="grid grid-cols-3 gap-2 text-center">
                         <div class="bg-blue-50/50 rounded-xl p-2">
-                            <p class="text-[9px] font-black text-blue-400 uppercase mb-1">Dipinjam</p>
-                            <p class="font-black text-slate-700 text-sm">{{ item.total_dipinjam }}x</p>
+                            <p class="text-[9px] font-black text-blue-500 uppercase mb-0.5">Dipinjam</p>
+                            <p class="font-black text-slate-700 text-xs">{{ item.total_dipinjam }}x</p>
                         </div>
-                        <div class="bg-red-50/50 rounded-xl p-2">
-                            <p class="text-[9px] font-black text-red-400 uppercase mb-1">Rusak</p>
-                            <p class="font-black text-sm" :class="item.rusak > 0 ? 'text-red-600' : 'text-slate-400'">{{
-                                item.rusak }}x</p>
-                        </div>
-                        <div class="bg-orange-50/50 rounded-xl p-2">
-                            <p class="text-[9px] font-black text-orange-400 uppercase mb-1">Hilang</p>
-                            <p class="font-black text-sm"
-                                :class="item.hilang > 0 ? 'text-orange-600' : 'text-slate-400'">{{ item.hilang }}x</p>
+                        <div class="bg-amber-50/50 rounded-xl p-2">
+                            <p class="text-[9px] font-black text-amber-600 uppercase mb-0.5">Utilisasi</p>
+                            <p class="font-black text-xs"
+                                :class="item.analitik_utilisasi?.rasio_persen > 85 ? 'text-red-600' : 'text-slate-700'">
+                                {{ item.analitik_utilisasi?.rasio_persen || 0 }}%
+                            </p>
                         </div>
                         <div class="bg-emerald-50/50 rounded-xl p-2">
-                            <p class="text-[9px] font-black text-emerald-400 uppercase mb-1">Stok</p>
-                            <p class="font-black text-sm"
-                                :class="item.stok_saat_ini < 5 ? 'text-amber-600' : 'text-slate-700'">{{
-                                    item.stok_saat_ini }}</p>
+                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-0.5">Proyeksi Pinjam</p>
+                            <p class="font-black text-xs text-slate-700">{{
+                                item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</p>
                         </div>
                     </div>
-                    <p
-                        class="text-xs font-bold text-slate-600 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
-                        {{ item.rekomendasi.action }}
-                    </p>
+
+                    <div
+                        class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100 gap-2">
+                        <p class="text-xs font-bold text-slate-600 flex-1">{{ item.rekomendasi.action }}</p>
+                        <button @click="bukaDrillDown(item.id)"
+                            class="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-blue-700 transition shrink-0 cursor-pointer">
+                            Drill-Down
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Desktop Table View -->
             <div class="hidden md:block overflow-x-auto flex-1">
-                <table class="w-full text-left">
+                <table class="w-full text-left table-auto">
                     <thead>
                         <tr
-                            class="bg-white text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                            class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
                             <th class="py-4 px-6 min-w-50">Nama Alat / Barang</th>
-                            <th class="py-4 px-6 text-center bg-blue-50/30">Total Dipinjam</th>
-                            <th class="py-4 px-6 text-center bg-red-50/30">Kerusakan</th>
-                            <th class="py-4 px-6 text-center bg-orange-50/30">Kehilangan</th>
-                            <th class="py-4 px-6 text-center bg-slate-100/50">Rusak Total</th>
-                            <th class="py-4 px-6 text-center bg-emerald-50/30">Sisa Stok</th>
-                            <th class="py-4 px-6 min-w-62.5 border-l border-slate-100">Rekomendasi</th>
+                            <th class="py-4 px-4 text-center">Aktivitas (Descriptive)</th>
+                            <th class="py-4 px-4 text-center bg-amber-50/40 text-amber-800">Rasio Utilisasi (Diagnostic)
+                            </th>
+                            <th class="py-4 px-4 text-center bg-blue-50/40 text-blue-800">Prediksi Kebutuhan
+                                (Predictive)</th>
+                            <th class="py-4 px-6 min-w-60 border-l border-slate-100">Rekomendasi (Prescriptive)</th>
+                            <th class="py-4 px-6 text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-slate-100">
                         <tr v-if="isLoading">
-                            <td colspan="7" class="py-12 text-center">
+                            <td colspan="6" class="py-12 text-center">
                                 <div class="animate-pulse flex flex-col items-center">
                                     <div
                                         class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3">
@@ -333,37 +370,73 @@
                             </td>
                         </tr>
                         <tr v-else-if="filteredAnalitik.length === 0">
-                            <td colspan="7" class="py-12 text-center text-slate-500 font-medium">
+                            <td colspan="6" class="py-12 text-center text-slate-500 font-medium">
                                 Data tidak ditemukan atau belum ada aktivitas pada tahun {{ selectedYear }}.
                             </td>
                         </tr>
-                        <tr v-else v-for="item in filteredAnalitik" :key="item.kode"
-                            class="hover:bg-slate-50 transition-colors">
+                        <tr v-else v-for="(item, index) in filteredAnalitik" :key="item.kode"
+                            class="hover:bg-slate-50/80 transition-colors">
                             <td class="py-4 px-6">
-                                <p class="font-bold text-slate-900">{{ item.nama }}</p>
-                                <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }}</p>
-                            </td>
-                            <td class="py-4 px-6 text-center font-black text-slate-700 bg-blue-50/10">{{
-                                item.total_dipinjam }}x</td>
-                            <td class="py-4 px-6 text-center font-black bg-red-50/10"
-                                :class="item.rusak > 0 ? 'text-red-600' : 'text-slate-400'">{{ item.rusak }}x</td>
-                            <td class="py-4 px-6 text-center font-black bg-orange-50/10"
-                                :class="item.hilang > 0 ? 'text-orange-600' : 'text-slate-400'">{{ item.hilang }}x</td>
-                            <td class="py-4 px-6 text-center font-black bg-slate-50"
-                                :class="item.rusak_total > 0 ? 'text-slate-800' : 'text-slate-400'">{{ item.rusak_total
-                                }}x</td>
-                            <td class="py-4 px-6 text-center font-black bg-emerald-50/10"
-                                :class="item.stok_saat_ini < 5 ? 'text-amber-600' : 'text-slate-700'">{{
-                                    item.stok_saat_ini }} Unit</td>
-                            <td class="py-4 px-6 border-l border-slate-100">
-                                <div class="flex flex-col items-start gap-1">
+                                <div class="flex items-start gap-3">
                                     <span
-                                        class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1"
-                                        :class="getBadgeClass(item.rekomendasi.type)">
-                                        {{ item.rekomendasi.label }}
+                                        class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-sm"
+                                        :class="index === 0 ? 'bg-amber-400 text-slate-900 ring-2 ring-amber-300' :
+                                            index === 1 ? 'bg-slate-300 text-slate-800' :
+                                                index === 2 ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600'">
+                                        #{{ index + 1 }}
                                     </span>
-                                    <p class="text-xs font-bold text-slate-600 mt-1">{{ item.rekomendasi.action }}</p>
+                                    <div>
+                                        <p class="font-bold text-slate-900">{{ item.nama }}</p>
+                                        <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{
+                                            item.stok_saat_ini }} Unit</p>
+                                    </div>
                                 </div>
+                            </td>
+                            <td class="py-4 px-4 text-center font-medium text-slate-600">
+                                <div>Dipinjam: <strong>{{ item.total_dipinjam }}x</strong></div>
+                                <div class="text-[11px] font-bold text-red-500 mt-0.5"
+                                    v-if="item.rusak + item.hilang + item.rusak_total > 0">
+                                    Kendala: {{ item.rusak + item.hilang + item.rusak_total }} Kasus
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-center bg-amber-50/10">
+                                <div class="font-bold text-slate-800">{{ item.analitik_utilisasi?.rasio_persen || 0 }}%
+                                </div>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded-md font-semibold mt-1 inline-block"
+                                    :class="(item.analitik_utilisasi?.rasio_persen || 0) > 85 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600'">
+                                    {{ item.analitik_utilisasi?.status || 'Normal' }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-4 text-center bg-blue-50/10 font-medium">
+                                <div class="text-slate-800">Proyeksi Pinjam: <strong>{{
+                                    item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</strong></div>
+                                <div class="text-xs font-bold text-blue-700 mt-0.5"
+                                    v-if="(item.analitik_prediktif?.estimasi_kebutuhan_stok || 0) > 0">
+                                    Saran Restock: +{{ item.analitik_prediktif.estimasi_kebutuhan_stok }} Unit
+                                </div>
+                                <div class="text-xs text-emerald-600 font-bold mt-0.5" v-else>Stok Memadai</div>
+                            </td>
+                            <td class="py-4 px-6 border-l border-slate-100">
+                                <div class="flex flex-col items-start gap-1.5">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span
+                                            class="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1"
+                                            :class="getBadgeClass(item.rekomendasi.type)">
+                                            {{ item.rekomendasi.label }}
+                                        </span>
+                                        <span
+                                            class="text-[11px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                            Skor: {{ item.priority_score }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-600 mt-0.5">{{ item.rekomendasi.action }}</p>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-center whitespace-nowrap align-middle">
+                                <button @click="bukaDrillDown(item.id)"
+                                    class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer">
+                                    <span>Drill-Down</span>
+                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -376,6 +449,112 @@
                 </p>
             </div>
         </div>
+
+        <transition name="fade">
+            <div v-if="showModalDiagnosa"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                <div
+                    class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-black tracking-tight">Eksplorasi Diagnostik & Akar Masalah</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Analisis Komprehensif: {{
+                                detailDiagnosa?.info_barang?.nama }}</p>
+                        </div>
+                        <button @click="showModalDiagnosa = false"
+                            class="p-1.5 hover:bg-white/10 rounded-xl transition text-slate-400 hover:text-white cursor-pointer">
+                            <XMarkIcon class="w-6 h-6" />
+                        </button>
+                    </div>
+
+                    <div v-if="isLoadingDiagnosa" class="p-12 text-center flex flex-col items-center justify-center">
+                        <div
+                            class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-3">
+                        </div>
+                        <p class="text-sm font-bold text-slate-500">Melakukan komparasi data dan mendeteksi anomali
+                            insiden...</p>
+                    </div>
+                    <div v-else-if="detailDiagnosa" class="p-6 overflow-y-auto space-y-6 custom-scrollbar">
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex gap-3">
+                            <InformationCircleIcon class="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+                            <div>
+                                <h4 class="text-xs font-black text-indigo-800 uppercase tracking-wider">Kesimpulan
+                                    Otomatis Analitik Sistem</h4>
+                                <p class="text-sm text-indigo-950 font-medium mt-1 leading-relaxed">{{
+                                    detailDiagnosa.metrik_diagnostik.kesimpulan_sistem }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total
+                                    Pemakaian</span>
+                                <strong class="text-xl font-black text-slate-800 block mt-1">{{
+                                    detailDiagnosa.metrik_diagnostik.total_transaksi_tahun_ini }}x</strong>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bulan
+                                    Terpadat</span>
+                                <strong class="text-xl font-black text-blue-600 block mt-1">Bulan {{
+                                    detailDiagnosa.metrik_diagnostik.puncak_aktivitas_bulan }}</strong>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total
+                                    Kasus Masalah</span>
+                                <strong class="text-xl font-black block mt-1"
+                                    :class="detailDiagnosa.metrik_diagnostik.total_laporan_kendala > 0 ? 'text-red-600' : 'text-emerald-600'">
+                                    {{ detailDiagnosa.metrik_diagnostik.total_laporan_kendala }} Kasus
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-black text-slate-800 mb-3">Log Riwayat & Kronologi Kendala Aktual
+                            </h4>
+                            <div v-if="detailDiagnosa.riwayat_kendala.length === 0"
+                                class="text-xs font-medium text-slate-400 bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200 text-center">
+                                Aman. Tidak ditemukan data insiden kerusakan atau kehilangan untuk komponen barang ini.
+                            </div>
+                            <div v-else
+                                class="border border-slate-200 rounded-xl overflow-hidden bg-white max-h-48 overflow-y-auto custom-scrollbar">
+                                <table class="w-full text-left text-xs">
+                                    <thead
+                                        class="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 tracking-wider border-b border-slate-200 sticky top-0">
+                                        <tr>
+                                            <th class="py-2.5 px-4">Tanggal</th>
+                                            <th class="py-2.5 px-4">Jenis Laporan</th>
+                                            <th class="py-2.5 px-4">Status Kondisi</th>
+                                            <th class="py-2.5 px-4 text-center">Volume</th>
+                                            <th class="py-2.5 px-4">Keterangan / Kronologi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+                                        <tr v-for="log in detailDiagnosa.riwayat_kendala" :key="log.id">
+                                            <td class="py-2.5 px-4 whitespace-nowrap">{{ new
+                                                Date(log.tanggal_kejadian).toLocaleDateString('id-ID') }}</td>
+                                            <td class="py-2.5 px-4 uppercase text-[10px] font-bold text-red-600">{{
+                                                log.jenis_laporan }}</td>
+                                            <td class="py-2.5 px-4"><span
+                                                    class="px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 font-bold border border-orange-100">{{
+                                                        log.status }}</span></td>
+                                            <td class="py-2.5 px-4 text-center font-bold">{{ log.jumlah }} u</td>
+                                            <td class="py-2.5 px-4 text-slate-600 italic">{{ log.deskripsi || 'Tidak ada catatan' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+                        <button @click="showModalDiagnosa = false"
+                            class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-xl transition cursor-pointer">
+                            Selesai Evaluasi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
 
@@ -383,7 +562,8 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
     MagnifyingGlassIcon, ChartBarIcon, ArchiveBoxArrowDownIcon,
-    WrenchScrewdriverIcon, DocumentArrowDownIcon, BeakerIcon, ChevronDownIcon, UsersIcon
+    WrenchScrewdriverIcon, DocumentArrowDownIcon, BeakerIcon, ChevronDownIcon, UsersIcon,
+    XMarkIcon, InformationCircleIcon
 } from '@heroicons/vue/24/outline';
 import { useAlert } from '../composables/useAlert';
 import { useConfirm } from '../composables/useConfirm';
@@ -391,34 +571,17 @@ import api from '../plugins/axios';
 
 import { Bar, Line } from 'vue-chartjs';
 import {
-    Chart as ChartJS,
-    Title,
-    Tooltip,
-    Legend,
-    BarElement,
-    LineElement,
-    PointElement,
-    CategoryScale,
-    LinearScale,
-    Filler
+    Chart as ChartJS, Title, Tooltip, Legend, BarElement, LineElement, PointElement, CategoryScale, LinearScale, Filler
 } from 'chart.js';
 
-ChartJS.register(
-    Title,
-    Tooltip,
-    Legend,
-    BarElement,
-    LineElement,
-    PointElement,
-    CategoryScale,
-    LinearScale,
-    Filler
-);
+ChartJS.register(Title, Tooltip, Legend, BarElement, LineElement, PointElement, CategoryScale, LinearScale, Filler);
 
 const { showAlert } = useAlert();
 const { showConfirm } = useConfirm();
 
+// -- STATE UTAMA (Sudah Lengkap & Tidak Ada yang Tertinggal) --
 const searchQuery = ref('');
+const sortBy = ref('spk_desc');
 const isLoading = ref(true);
 const isLoadingUser = ref(true);
 const currentYear = new Date().getFullYear();
@@ -432,8 +595,35 @@ const monthlyTrend = ref([]);
 const showMatrix = ref(false);
 const isDesktop = ref(window.innerWidth >= 1024);
 
+// State untuk Modal Drill-Down
+const showModalDiagnosa = ref(false);
+const isLoadingDiagnosa = ref(false);
+const detailDiagnosa = ref(null);
+const barChartRef = ref(null);
+
 const showYearDropdown = ref(false);
 const dropdownRef = ref(null);
+
+const showSortDropdown = ref(false);
+const sortDropdownRef = ref(null);
+
+const sortOptions = [
+    { value: 'spk_desc', label: 'Ranking SPK Tertinggi' },
+    { value: 'demand_desc', label: 'Volume Dipinjam Terbanyak' },
+    { value: 'problem_desc', label: 'Kendala / Rusak Terbanyak' },
+    { value: 'stock_asc', label: 'Sisa Stok Paling Menipis' }
+];
+
+// Menghitung label teks yang sedang aktif untuk ditampilkan di tombol
+const activeSortLabel = computed(() => {
+    const selected = sortOptions.find(o => o.value === sortBy.value);
+    return selected ? selected.label : 'Ranking SPK Tertinggi';
+});
+
+const pilihSort = (value) => {
+    sortBy.value = value;
+    showSortDropdown.value = false; // Otomatis tutup menu setelah memilih
+};
 
 const pilihTahun = (year) => {
     selectedYear.value = year;
@@ -443,6 +633,10 @@ const pilihTahun = (year) => {
 const handleClickOutside = (e) => {
     if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
         showYearDropdown.value = false;
+    }
+
+    if (sortDropdownRef.value && !sortDropdownRef.value.contains(e.target)) {
+        showSortDropdown.value = false;
     }
 };
 
@@ -459,13 +653,16 @@ const fetchAnalitikData = async () => {
 
         if (response.data.status === 'success') {
             rawDataAnalitik.value = response.data.data.map(item => ({
+                id: item.id,
                 kode: item.kode || '-',
                 nama: item.nama || 'Tanpa Nama',
                 stok_saat_ini: Number(item.stok_saat_ini || 0),
                 total_dipinjam: Number(item.total_dipinjam || 0),
                 rusak: Number(item.rusak || 0),
                 hilang: Number(item.hilang || 0),
-                rusak_total: Number(item.rusak_total || 0)
+                rusak_total: Number(item.rusak_total || 0),
+                analitik_utilisasi: item.analitik_utilisasi || { rasio_persen: 0, status: 'Normal' },
+                analitik_prediktif: item.analitik_prediktif || { proyeksi_peminjaman_depan: 0, estimasi_kebutuhan_stok: 0 }
             }));
         }
     } catch (error) {
@@ -480,9 +677,7 @@ const fetchAnalitikData = async () => {
 const fetchMonthlyTrendData = async () => {
     try {
         const response = await api.get('/dataanalitik/peminjaman-bulanan', {
-            params: {
-                tahun: selectedYear.value
-            }
+            params: { tahun: selectedYear.value }
         });
 
         if (response.data.status === 'success') {
@@ -507,6 +702,40 @@ const fetchTotalUser = async () => {
     }
 };
 
+const bukaDrillDown = async (barangId) => {
+    if (!barangId) return;
+    showModalDiagnosa.value = true;
+    isLoadingDiagnosa.value = true;
+    try {
+        const res = await api.get(`/dataanalitik/barang/${barangId}/diagnosa`, {
+            params: { tahun: selectedYear.value }
+        });
+        if (res.data.status === 'success') {
+            detailDiagnosa.value = res.data.data;
+        }
+    } catch (error) {
+        console.error("Gagal mengeksplor detail barang:", error);
+        showAlert("Gagal melakukan drill-down data.", "error");
+        showModalDiagnosa.value = false;
+    } finally {
+        isLoadingDiagnosa.value = false;
+    }
+};
+
+const handleChartClick = (event) => {
+    const chartInstance = barChartRef.value?.chart;
+    if (!chartInstance) return;
+
+    const elements = chartInstance.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+    if (elements.length > 0) {
+        const dataIndex = elements[0].index;
+        const targetBarangId = top5Data.value[dataIndex]?.id;
+        if (targetBarangId) {
+            bukaDrillDown(targetBarangId);
+        }
+    }
+};
+
 onMounted(() => {
     fetchAnalitikData();
     fetchMonthlyTrendData();
@@ -526,7 +755,7 @@ watch(selectedYear, () => {
     fetchMonthlyTrendData();
 });
 
-// --- Logika Rule Base Data Analitik ---
+// --- RUMUS REKOMENDASI ---
 const generateRecommendation = (item) => {
     const isHighDemand = item.total_dipinjam >= 50;
     const isLowStock = item.stok_saat_ini <= 5;
@@ -566,33 +795,7 @@ const generateRecommendation = (item) => {
     return { type: 'aman', label: 'Status Aman', action: 'Kondisi 100% normal. Tidak perlu pengadaan.' };
 };
 
-const analitikWithRekomendasi = computed(() => {
-    return rawDataAnalitik.value
-        .filter(item => item.total_dipinjam > 0 || item.rusak > 0 || item.hilang > 0 || item.rusak_total > 0)
-        .map(item => ({
-            ...item,
-            rekomendasi: generateRecommendation(item)
-        })).sort((a, b) => b.total_dipinjam - a.total_dipinjam);
-});
-
-const filteredAnalitik = computed(() => {
-    if (!searchQuery.value) return analitikWithRekomendasi.value;
-    const query = searchQuery.value.toLowerCase();
-    return analitikWithRekomendasi.value.filter(a => a.nama.toLowerCase().includes(query));
-});
-
-const totalPeminjamanTahunIni = computed(() => rawDataAnalitik.value.reduce((sum, item) => sum + item.total_dipinjam, 0));
-
-const totalMasalahTahunIni = computed(() => {
-    return rawDataAnalitik.value.reduce((sum, item) => sum + item.rusak + item.hilang + item.rusak_total, 0);
-});
-
-const prioritasTinggiCount = computed(() => analitikWithRekomendasi.value.filter(a =>
-    a.rekomendasi.type === 'prioritas_tinggi' ||
-    a.rekomendasi.type === 'kritis' ||
-    a.rekomendasi.type === 'ganti_unit'
-).length);
-
+// --- RUMUS BOBOT SPK ---
 const normalizeScore = (value, maxValue) => {
     if (!maxValue || maxValue <= 0) return 0;
     return Math.min(Number(value || 0) / maxValue, 1);
@@ -600,10 +803,8 @@ const normalizeScore = (value, maxValue) => {
 
 const getStockScore = (stok) => {
     const currentStock = Number(stok || 0);
-
     if (currentStock <= 0) return 1;
     if (currentStock <= 5) return (6 - currentStock) / 5;
-
     return 0;
 };
 
@@ -615,43 +816,84 @@ const getRuleScore = (type) => {
         prioritas_menengah: 0.5,
         aman: 0
     };
-
     return ruleScoreMap[type] || 0;
 };
 
 const calculatePriorityScore = (item, maxValues) => {
     const totalKendala = item.rusak + item.hilang + item.rusak_total;
-
     const demandScore = normalizeScore(item.total_dipinjam, maxValues.maxDipinjam);
     const problemScore = normalizeScore(totalKendala, maxValues.maxKendala);
     const stockScore = getStockScore(item.stok_saat_ini);
     const ruleScore = getRuleScore(item.rekomendasi.type);
 
-    const finalScore =
-        (demandScore * 0.40) +
-        (problemScore * 0.25) +
-        (stockScore * 0.20) +
-        (ruleScore * 0.15);
-
+    const finalScore = (demandScore * 0.40) + (problemScore * 0.25) + (stockScore * 0.20) + (ruleScore * 0.15);
     return Number(Math.min(finalScore, 1).toFixed(2));
 };
 
-const top5Data = computed(() => {
-    const data = [...analitikWithRekomendasi.value];
+// --- COMPUTED: TABEL & PERANGKINGAN ---
+const analitikWithRekomendasi = computed(() => {
+    const data = rawDataAnalitik.value
+        .filter(item => item.total_dipinjam > 0)
+        .map(item => ({
+            ...item,
+            rekomendasi: generateRecommendation(item)
+        }));
+
+    if (data.length === 0) return [];
 
     const maxValues = {
         maxDipinjam: Math.max(...data.map(item => item.total_dipinjam), 0),
         maxKendala: Math.max(...data.map(item => item.rusak + item.hilang + item.rusak_total), 0)
     };
 
-    return data
-        .map(item => ({
-            ...item,
-            priority_score: calculatePriorityScore(item, maxValues)
-        }))
-        .filter(item => item.priority_score > 0)
-        .sort((a, b) => b.priority_score - a.priority_score)
-        .slice(0, 5);
+    const scoredData = data.map(item => ({
+        ...item,
+        priority_score: calculatePriorityScore(item, maxValues)
+    }));
+
+    return scoredData.sort((a, b) => {
+        if (sortBy.value === 'spk_desc') {
+            if (b.priority_score !== a.priority_score) return b.priority_score - a.priority_score;
+            return b.total_dipinjam - a.total_dipinjam;
+        }
+        if (sortBy.value === 'demand_desc') {
+            return b.total_dipinjam - a.total_dipinjam;
+        }
+        if (sortBy.value === 'problem_desc') {
+            const kendalaB = b.rusak + b.hilang + b.rusak_total;
+            const kendalaA = a.rusak + a.hilang + a.rusak_total;
+            return kendalaB - kendalaA;
+        }
+        if (sortBy.value === 'stock_asc') {
+            return a.stok_saat_ini - b.stok_saat_ini;
+        }
+        return 0;
+    });
+});
+
+const filteredAnalitik = computed(() => {
+    if (!searchQuery.value) return analitikWithRekomendasi.value;
+    const query = searchQuery.value.toLowerCase();
+    return analitikWithRekomendasi.value.filter(a => a.nama.toLowerCase().includes(query) || a.kode.toLowerCase().includes(query));
+});
+
+// -- COMPUTED SUMMARY CARDS (YANG SEBELUMNYA HILANG KINI SUDAH KEMBALI) --
+const totalPeminjamanTahunIni = computed(() => {
+    return rawDataAnalitik.value.reduce((sum, item) => sum + item.total_dipinjam, 0);
+});
+
+const totalMasalahTahunIni = computed(() => {
+    return rawDataAnalitik.value.reduce((sum, item) => sum + item.rusak + item.hilang + item.rusak_total, 0);
+});
+
+const prioritasTinggiCount = computed(() => {
+    return analitikWithRekomendasi.value.filter(a => ['prioritas_tinggi', 'kritis', 'ganti_unit'].includes(a.rekomendasi.type)).length;
+});
+
+// --- TOP 5 GRAFIK ---
+const top5Data = computed(() => {
+    const spkSorted = [...analitikWithRekomendasi.value].sort((a, b) => b.priority_score - a.priority_score);
+    return spkSorted.filter(item => item.priority_score > 0).slice(0, 5);
 });
 
 const chartData = computed(() => ({
@@ -677,9 +919,7 @@ const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-        legend: {
-            display: false
-        },
+        legend: { display: false },
         tooltip: {
             backgroundColor: '#0f172a',
             titleColor: '#ffffff',
@@ -690,7 +930,6 @@ const chartOptions = {
             callbacks: {
                 label: (context) => {
                     const item = top5Data.value[context.dataIndex];
-
                     return [
                         `Skor Prioritas: ${item.priority_score.toFixed(2)}`,
                         `Dipinjam: ${item.total_dipinjam}x`,
@@ -705,28 +944,18 @@ const chartOptions = {
         x: {
             beginAtZero: true,
             suggestedMax: 1,
-            grid: {
-                color: '#f1f5f9'
-            },
+            grid: { color: '#f1f5f9' },
             ticks: {
                 color: '#64748b',
                 callback: (value) => Number(value).toFixed(2),
-                font: {
-                    size: 11,
-                    weight: 'bold'
-                }
+                font: { size: 11, weight: 'bold' }
             }
         },
         y: {
-            grid: {
-                display: false
-            },
+            grid: { display: false },
             ticks: {
                 color: '#475569',
-                font: {
-                    size: 11,
-                    weight: 'bold'
-                }
+                font: { size: 11, weight: 'bold' }
             }
         }
     }
@@ -736,7 +965,7 @@ const getBadgeClass = (type) => {
     switch (type) {
         case 'kritis': return 'bg-red-100 text-red-700 ring-red-300';
         case 'prioritas_tinggi': return 'bg-blue-100 text-blue-700 ring-blue-300';
-        case 'ganti_unit': return 'bg-orange-100 text-orange-700 ring-orange-300'; // Styling baru untuk penggantian
+        case 'ganti_unit': return 'bg-orange-100 text-orange-700 ring-orange-300';
         case 'prioritas_menengah': return 'bg-amber-100 text-amber-700 ring-amber-300';
         case 'aman': return 'bg-emerald-100 text-emerald-700 ring-emerald-300';
         default: return 'bg-slate-100 text-slate-700 ring-slate-300';
@@ -750,10 +979,8 @@ const monthLabels = [
 
 const monthlyTrendChartData = computed(() => {
     const monthlyTotals = Array(12).fill(0);
-
     monthlyTrend.value.forEach(item => {
         const monthIndex = Number(item.bulan) - 1;
-
         if (monthIndex >= 0 && monthIndex <= 11) {
             monthlyTotals[monthIndex] = Number(item.total || 0);
         }
@@ -784,9 +1011,7 @@ const monthlyTrendChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-        legend: {
-            display: false
-        },
+        legend: { display: false },
         tooltip: {
             backgroundColor: '#0f172a',
             titleColor: '#ffffff',
@@ -795,37 +1020,25 @@ const monthlyTrendChartOptions = {
             cornerRadius: 10,
             displayColors: false,
             callbacks: {
-                label: (context) => {
-                    return `Total Peminjaman: ${context.raw} transaksi`;
-                }
+                label: (context) => `Total Peminjaman: ${context.raw} transaksi`
             }
         }
     },
     scales: {
         y: {
             beginAtZero: true,
-            grid: {
-                color: '#f1f5f9'
-            },
+            grid: { color: '#f1f5f9' },
             ticks: {
                 precision: 0,
                 color: '#64748b',
-                font: {
-                    size: 11,
-                    weight: 'bold'
-                }
+                font: { size: 11, weight: 'bold' }
             }
         },
         x: {
-            grid: {
-                display: false
-            },
+            grid: { display: false },
             ticks: {
                 color: '#64748b',
-                font: {
-                    size: 11,
-                    weight: 'bold'
-                }
+                font: { size: 11, weight: 'bold' }
             }
         }
     }
@@ -840,7 +1053,6 @@ const exportReport = () => {
                     showAlert("Tidak ada data untuk dicetak.", "error");
                     return;
                 }
-
                 printReportToPdf();
             } catch (error) {
                 console.error("Gagal mencetak laporan:", error);
@@ -862,13 +1074,11 @@ const getPriorityLabel = (type) => {
         prioritas_menengah: "Prioritas Menengah",
         aman: "Status Aman"
     };
-
     return map[type] || "Tidak Diketahui";
 };
 
 const escapeHtml = (value) => {
     if (value === null || value === undefined) return "-";
-
     return String(value)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -879,16 +1089,13 @@ const escapeHtml = (value) => {
 
 const printReportToPdf = () => {
     const reportWindow = window.open("", "_blank", "width=1200,height=900");
-
     if (!reportWindow) {
         showAlert("Pop-up diblokir browser. Izinkan pop-up untuk mencetak laporan.", "error");
         return;
     }
 
     const tanggalCetak = new Date().toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
+        day: "2-digit", month: "long", year: "numeric"
     });
 
     const rows = filteredAnalitik.value
@@ -901,12 +1108,17 @@ const printReportToPdf = () => {
                         <span class="kode">${escapeHtml(item.kode)}</span>
                     </td>
                     <td class="text-center">${item.total_dipinjam}x</td>
-                    <td class="text-center">${item.rusak}x</td>
-                    <td class="text-center">${item.hilang}x</td>
-                    <td class="text-center">${item.rusak_total}x</td>
+                    <td class="text-center font-bold" style="background-color:#fef3c7">
+                        ${item.analitik_utilisasi?.rasio_persen || 0}%<br>
+                        <small style="font-size:9px; color:#92400e">${item.analitik_utilisasi?.status || 'Normal'}</small>
+                    </td>
+                    <td class="text-center font-bold" style="background-color:#eff6ff">
+                        Pinjam: ${item.analitik_prediktif?.proyeksi_peminjaman_depan || 0}x<br>
+                        <small style="font-size:9px; color:#1e40af">Restock: +${item.analitik_prediktif?.estimasi_kebutuhan_stok || 0}</small>
+                    </td>
                     <td class="text-center">${item.stok_saat_ini} Unit</td>
                     <td>
-                        <strong>${escapeHtml(getPriorityLabel(item.rekomendasi.type))}</strong><br>
+                        <strong>${escapeHtml(getPriorityLabel(item.rekomendasi.type))} (Skor: ${item.priority_score})</strong><br>
                         <span>${escapeHtml(item.rekomendasi.action)}</span>
                     </td>
                 </tr>
@@ -920,270 +1132,70 @@ const printReportToPdf = () => {
         <head>
             <meta charset="UTF-8">
             <title>Laporan Pengadaan ${selectedYear.value}</title>
-
             <style>
-                @page {
-                    size: A4 landscape;
-                    margin: 12mm;
-                }
-
-                * {
-                    box-sizing: border-box;
-                }
-
-                body {
-                    margin: 0;
-                    padding: 0;
-                    background: #e5e7eb;
-                    color: #0f172a;
-                    font-family: Arial, sans-serif;
-                }
-
-                .toolbar {
-                    position: sticky;
-                    top: 0;
-                    z-index: 999;
-                    background: white;
-                    border-bottom: 1px solid #e2e8f0;
-                    padding: 12px 18px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 12px;
-                    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
-                }
-
-                .toolbar-title {
-                    font-weight: 800;
-                    color: #0f172a;
-                    font-size: 14px;
-                }
-
-                .toolbar-subtitle {
-                    display: block;
-                    margin-top: 2px;
-                    font-weight: 500;
-                    color: #64748b;
-                    font-size: 12px;
-                }
-
-                .toolbar-actions {
-                    display: flex;
-                    gap: 8px;
-                }
-
-                .toolbar button {
-                    border: none;
-                    border-radius: 10px;
-                    padding: 10px 14px;
-                    font-weight: 800;
-                    cursor: pointer;
-                }
-
-                .btn-print {
-                    background: #2563eb;
-                    color: white;
-                }
-
-                .btn-close {
-                    background: #f1f5f9;
-                    color: #475569;
-                }
-
-                .page-wrapper {
-                    padding: 24px;
-                }
-
-                .page {
-                    width: 297mm;
-                    min-height: 210mm;
-                    margin: 0 auto;
-                    background: white;
-                    padding: 14mm;
-                    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18);
-                }
-
-                .header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    gap: 24px;
-                    border-bottom: 3px solid #0f172a;
-                    padding-bottom: 14px;
-                    margin-bottom: 18px;
-                }
-
-                .header h1 {
-                    margin: 0;
-                    font-size: 22px;
-                    color: #0f172a;
-                    line-height: 1.2;
-                }
-
-                .header p {
-                    margin: 6px 0 0;
-                    font-size: 12px;
-                    color: #475569;
-                    line-height: 1.5;
-                }
-
-                .badge {
-                    display: inline-block;
-                    background: #eff6ff;
-                    color: #1d4ed8;
-                    border: 1px solid #bfdbfe;
-                    padding: 6px 10px;
-                    border-radius: 999px;
-                    font-size: 11px;
-                    font-weight: 800;
-                    white-space: nowrap;
-                }
-
-                .summary {
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 10px;
-                    margin-bottom: 18px;
-                }
-
-                .summary-card {
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                    padding: 12px;
-                    background: #f8fafc;
-                }
-
-                .summary-card span {
-                    display: block;
-                    font-size: 10px;
-                    font-weight: 800;
-                    color: #64748b;
-                    text-transform: uppercase;
-                    letter-spacing: 0.06em;
-                }
-
-                .summary-card strong {
-                    display: block;
-                    margin-top: 4px;
-                    font-size: 20px;
-                    color: #0f172a;
-                }
-
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 11px;
-                }
-
-                th {
-                    background: #0f172a;
-                    color: white;
-                    padding: 9px;
-                    border: 1px solid #0f172a;
-                    text-transform: uppercase;
-                    font-size: 9px;
-                    letter-spacing: 0.04em;
-                }
-
-                td {
-                    padding: 8px;
-                    border: 1px solid #cbd5e1;
-                    vertical-align: top;
-                    line-height: 1.4;
-                }
-
-                tr:nth-child(even) td {
-                    background: #f8fafc;
-                }
-
-                .text-center {
-                    text-align: center;
-                }
-
-                .kode {
-                    color: #64748b;
-                    font-size: 10px;
-                    font-family: monospace;
-                }
-
-                .footer {
-                    margin-top: 16px;
-                    font-size: 10px;
-                    color: #64748b;
-                    text-align: center;
-                }
-
+                @page { size: A4 landscape; margin: 12mm; }
+                * { box-sizing: border-box; }
+                body { margin: 0; padding: 0; background: #e5e7eb; color: #0f172a; font-family: Arial, sans-serif; }
+                .toolbar { position: sticky; top: 0; z-index: 999; background: white; border-bottom: 1px solid #e2e8f0; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08); }
+                .toolbar-title { font-weight: 800; color: #0f172a; font-size: 14px; }
+                .toolbar-subtitle { display: block; margin-top: 2px; font-weight: 500; color: #64748b; font-size: 12px; }
+                .toolbar-actions { display: flex; gap: 8px; }
+                .toolbar button { border: none; border-radius: 10px; padding: 10px 14px; font-weight: 800; cursor: pointer; }
+                .btn-print { background: #2563eb; color: white; }
+                .btn-close { background: #f1f5f9; color: #475569; }
+                .page-wrapper { padding: 24px; }
+                .page { width: 297mm; min-height: 210mm; margin: 0 auto; background: white; padding: 14mm; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18); }
+                .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; border-bottom: 3px solid #0f172a; padding-bottom: 14px; margin-bottom: 18px; }
+                .header h1 { margin: 0; font-size: 22px; color: #0f172a; line-height: 1.2; }
+                .header p { margin: 6px 0 0; font-size: 12px; color: #475569; line-height: 1.5; }
+                .badge { display: inline-block; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+                .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+                .summary-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; background: #f8fafc; }
+                .summary-card span { display: block; font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+                .summary-card strong { display: block; margin-top: 4px; font-size: 20px; color: #0f172a; }
+                table { width: 100%; border-collapse: collapse; font-size: 11px; }
+                th { background: #0f172a; color: white; padding: 9px; border: 1px solid #0f172a; text-transform: uppercase; font-size: 9px; letter-spacing: 0.04em; }
+                td { padding: 8px; border: 1px solid #cbd5e1; vertical-align: top; line-height: 1.4; }
+                tr:nth-child(even) td { background: #f8fafc; }
+                .text-center { text-align: center; }
+                .kode { color: #64748b; font-size: 10px; font-family: monospace; }
+                .footer { margin-top: 16px; font-size: 10px; color: #64748b; text-align: center; }
                 @media print {
-                    body {
-                        background: white;
-                    }
-
-                    .toolbar {
-                        display: none;
-                    }
-
-                    .page-wrapper {
-                        padding: 0;
-                    }
-
-                    .page {
-                        width: auto;
-                        min-height: auto;
-                        padding: 0;
-                        box-shadow: none;
-                    }
-
-                    .summary-card {
-                        background: #f8fafc !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-
-                    th {
-                        background: #0f172a !important;
-                        color: white !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
-
-                    tr:nth-child(even) td {
-                        background: #f8fafc !important;
-                        -webkit-print-color-adjust: exact;
-                        print-color-adjust: exact;
-                    }
+                    body { background: white; }
+                    .toolbar { display: none; }
+                    .page-wrapper { padding: 0; }
+                    .page { width: auto; min-height: auto; padding: 0; box-shadow: none; }
+                    .summary-card { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    th { background: #0f172a !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    tr:nth-child(even) td { background: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 }
             </style>
         </head>
-
         <body>
             <div class="toolbar">
                 <div>
                     <span class="toolbar-title">Preview Laporan Pengadaan</span>
                     <span class="toolbar-subtitle">Klik Cetak / Simpan PDF untuk membuka Chrome Print Preview.</span>
                 </div>
-
                 <div class="toolbar-actions">
                     <button class="btn-close" onclick="window.close()">Tutup</button>
                     <button class="btn-print" onclick="window.print()">Cetak / Simpan PDF</button>
                 </div>
             </div>
-
             <div class="page-wrapper">
                 <div class="page">
                     <div class="header">
                         <div>
                             <h1>Laporan Rekomendasi Pengadaan Alat Laboratorium</h1>
                             <p>
-                                Sistem Penunjang Keputusan Pengadaan Tahunan<br>
+                                Sistem Penunjang Keputusan Pengadaan Tahunan (Full-Cycle Analytics)<br>
                                 Laboratorium PLP TIK Politeknik Negeri Jakarta
                             </p>
                         </div>
-
                         <div class="badge">
                             Data Analitik ${selectedYear.value}
                         </div>
                     </div>
-
                     <div class="summary">
                         <div class="summary-card">
                             <span>Total Peminjam</span>
@@ -1202,25 +1214,22 @@ const printReportToPdf = () => {
                             <strong>${totalMasalahTahunIni.value}</strong>
                         </div>
                     </div>
-
                     <table>
                         <thead>
                             <tr>
                                 <th style="width: 4%;">No</th>
-                                <th style="width: 22%;">Nama Alat</th>
-                                <th style="width: 10%;">Dipinjam</th>
-                                <th style="width: 9%;">Rusak</th>
-                                <th style="width: 9%;">Hilang</th>
-                                <th style="width: 10%;">Rusak Total</th>
-                                <th style="width: 10%;">Stok</th>
-                                <th>Rekomendasi</th>
+                                <th style="width: 20%;">Nama Alat</th>
+                                <th style="width: 8%;">Dipinjam</th>
+                                <th style="width: 15%;">Evaluasi Kapasitas (Diagnostic)</th>
+                                <th style="width: 15%;">Proyeksi ${selectedYear.value + 1} (Predictive)</th>
+                                <th style="width: 8%;">Stok</th>
+                                <th>Rekomendasi Mutlak (Prescriptive)</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${rows}
                         </tbody>
                     </table>
-
                     <div class="footer">
                         Dicetak pada ${tanggalCetak}. Data berdasarkan aktivitas laboratorium tahun ${selectedYear.value}.
                     </div>
@@ -1233,7 +1242,6 @@ const printReportToPdf = () => {
     reportWindow.document.open();
     reportWindow.document.write(html);
     reportWindow.document.close();
-
     reportWindow.onload = () => {
         reportWindow.focus();
     };

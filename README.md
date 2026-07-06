@@ -1,10 +1,10 @@
 # SI-LAB TIK
 
-## Sistem Manajemen Barang Lab PLP TIK PNJ
+## Sistem Manajemen Barang Lab TIK PNJ
 
-SI-LAB TIK merupakan sistem manajemen barang laboratorium berbasis web yang dikembangkan untuk mendukung proses peminjaman barang pada Lab PLP TIK Politeknik Negeri Jakarta. Proyek ini merupakan bagian dari penelitian skripsi berjudul:
+SI-LAB TIK merupakan sistem manajemen barang laboratorium berbasis web yang dikembangkan untuk mendukung proses peminjaman barang pada Lab TIK Politeknik Negeri Jakarta. Proyek ini merupakan bagian dari penelitian skripsi berjudul:
 
-**"Rancang Bangun Dashboard Analitik pada Sistem Manajemen Barang Lab PLP TIK PNJ Berbasis Express.js dan Vue.js sebagai Pendukung Keputusan Pengadaan"**
+**"Rancang Bangun Dashboard Analitik pada Sistem Manajemen Barang Lab TIK PNJ Berbasis Express.js dan Vue.js sebagai Pendukung Keputusan Pengadaan"**
 
 Sistem ini menyediakan portal peminjaman barang bagi mahasiswa dan dosen, serta dashboard pengelolaan barang bagi admin atau pengelola laboratorium. Selain itu, sistem dilengkapi dengan dashboard analitik untuk membantu pengelola dalam memantau data peminjaman, stok barang, barang bermasalah, dan rekomendasi pengadaan barang.
 
@@ -199,7 +199,7 @@ Cara ini direkomendasikan karena seluruh service dapat dijalankan melalui satu p
 ### 1. Masuk ke root project
 
 ```bash
-cd Website-Peminjaman-Barang-Lab-PLP-PNJ
+cd Website-Peminjaman-Barang-Lab-TIK-PNJ
 ```
 
 ### 2. Jalankan Docker Compose

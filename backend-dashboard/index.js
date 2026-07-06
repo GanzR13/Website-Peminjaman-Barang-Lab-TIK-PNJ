@@ -65,7 +65,7 @@ app.use("/api/dosen", dosenApprovalRoutes);
 app.get("/", (req, res) => {
     res.json({
         status: "success",
-        message: "API SI-LAB PLP TIK berjalan normal",
+        message: "API SI-LAB TIK berjalan normal",
         docs: "https://documenter.getpostman.com/view/40256156/2sBXiqFpKy"
     });
 });
