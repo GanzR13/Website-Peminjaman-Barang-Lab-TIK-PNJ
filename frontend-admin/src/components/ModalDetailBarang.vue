@@ -23,7 +23,7 @@
                     <div class="flex flex-col lg:grid lg:grid-cols-12 w-full flex-1 overflow-hidden">
 
                         <div
-                            class="lg:col-span-5 bg-slate-50 lg:border-r border-slate-100 flex flex-col items-center justify-start lg:overflow-y-auto custom-scrollbar">
+                            class="lg:col-span-5 bg-slate-50 lg:border-r border-slate-100 flex flex-col items-center justify-center lg:overflow-y-auto custom-scrollbar">
 
                             <div class="w-full lg:hidden px-5 pt-3 pb-4">
                                 <div

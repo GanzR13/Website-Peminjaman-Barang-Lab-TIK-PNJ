@@ -35,53 +35,59 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
-            <div
-                class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 md:gap-5">
-                <div class="p-3 md:p-3.5 rounded-xl bg-blue-50 text-blue-600 ring-1 ring-blue-100/50 shrink-0">
-                    <CubeIcon class="w-6 h-6 md:w-7 md:h-7" />
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6 md:mb-8">
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                <div class="p-2 md:p-3 rounded-xl bg-blue-50 text-blue-600 shrink-0">
+                    <CubeIcon class="w-5 h-5 md:w-6 md:h-6" />
                 </div>
                 <div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">
-                        Total Jenis
-                    </p>
-                    <p class="text-xl md:text-2xl font-black text-slate-800">{{ globalTotal }}<span
-                            class="text-xs font-semibold text-slate-400 normal-case tracking-normal"> Keseluruhan</span>
-                    </p>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</p>
+                    <p class="text-lg md:text-xl font-black text-slate-800">{{ globalTotal }}</p>
                 </div>
             </div>
-            <div
-                class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 md:gap-5">
-                <div class="p-3 md:p-3.5 rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100/50 shrink-0">
-                    <CheckCircleIcon class="w-6 h-6 md:w-7 md:h-7" />
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                <div class="p-2 md:p-3 rounded-xl bg-emerald-50 text-emerald-600 shrink-0">
+                    <CheckCircleIcon class="w-5 h-5 md:w-6 md:h-6" />
                 </div>
                 <div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">
-                        Tersedia
-                    </p>
-                    <p class="text-xl md:text-2xl font-black text-slate-800">
-                        {{ globalTersedia }}<span
-                            class="text-xs font-semibold text-slate-400 normal-case tracking-normal"> Jenis</span>
-                    </p>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tersedia</p>
+                    <p class="text-lg md:text-xl font-black text-slate-800">{{ globalTersedia }}</p>
                 </div>
             </div>
-            <div
-                class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 md:gap-5">
-                <div class="p-3 md:p-3.5 rounded-xl bg-red-50 text-red-600 ring-1 ring-red-100/50 shrink-0">
-                    <ExclamationCircleIcon class="w-6 h-6 md:w-7 md:h-7" />
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                <div class="p-2 md:p-3 rounded-xl bg-red-50 text-red-600 shrink-0">
+                    <ExclamationCircleIcon class="w-5 h-5 md:w-6 md:h-6" />
                 </div>
                 <div>
-                    <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5 md:mb-1">
-                        Stok Habis
-                    </p>
-                    <p class="text-xl md:text-2xl font-black text-slate-800">{{ globalHabis }}<span
-                            class="text-xs font-semibold text-slate-400 normal-case tracking-normal"> Jenis</span></p>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Habis</p>
+                    <p class="text-lg md:text-xl font-black text-slate-800">{{ globalHabis }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                <div class="p-2 md:p-3 rounded-xl bg-purple-50 text-purple-600 shrink-0">
+                    <WrenchScrewdriverIcon class="w-5 h-5 md:w-6 md:h-6" />
+                </div>
+                <div>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alat</p>
+                    <p class="text-lg md:text-xl font-black text-slate-800">{{ globalAlat }}</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                <div class="p-2 md:p-3 rounded-xl bg-orange-50 text-orange-600 shrink-0">
+                    <BeakerIcon class="w-5 h-5 md:w-6 md:h-6" />
+                </div>
+                <div>
+                    <p class="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider">BHP</p>
+                    <p class="text-lg md:text-xl font-black text-slate-800">{{ globalBHP }}</p>
                 </div>
             </div>
         </div>
 
-        <div
-            class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 md:mb-8 flex flex-col md:flex-row gap-3">
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 md:mb-8 flex flex-col md:flex-row gap-3">
             <div class="relative flex-1 group">
                 <MagnifyingGlassIcon
                     class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
@@ -151,56 +157,60 @@
             </div>
 
             <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 pb-8">
-                <div v-for="barang in filteredBarang" :key="barang.id" @click="openDetailModal(barang)"
-                    class="bg-white rounded-2xl md:rounded-3xl border border-slate-100 p-3 md:p-4 flex flex-col group hover:shadow-2xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer relative overflow-hidden">
+    <div v-for="barang in filteredBarang" :key="barang.id" @click="openDetailModal(barang)"
+        class="bg-white rounded-2xl md:rounded-3xl border border-slate-100 p-3 md:p-4 flex flex-col group hover:shadow-2xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer relative overflow-hidden">
 
-                    <div
-                        class="relative w-full h-28 sm:h-36 md:h-44 rounded-xl md:rounded-2xl overflow-hidden bg-slate-50 mb-3 md:mb-4 border border-slate-100/80 shrink-0">
-                        <img :src="getImageUrl(barang.gambar)" :alt="barang.nama_barang"
-                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" />
+        <div class="relative w-full h-28 sm:h-36 md:h-44 rounded-xl md:rounded-2xl overflow-hidden bg-slate-50 mb-3 md:mb-4 border border-slate-100/80 shrink-0">
+            <img :src="getImageUrl(barang.gambar)" :alt="barang.nama_barang"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" />
 
-                        <div
-                            class="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        </div>
+            <div class="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            </div>
+        </div>
 
-                        <div class="absolute top-2 right-2">
-                            <span v-if="barang.stok > 0"
-                                class="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[11px] font-bold bg-emerald-100/90 text-emerald-700 ring-1 ring-emerald-200/50 backdrop-blur-sm shadow-sm">
-                                <CheckIcon class="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span class="hidden sm:inline">Tersedia
-                                    ({{ barang.stok }})</span><span class="sm:hidden">{{ barang.stok }}</span>
-                            </span>
-                            <span v-else
-                                class="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[11px] font-bold bg-red-100/90 text-red-700 ring-1 ring-red-200/50 backdrop-blur-sm shadow-sm">
-                                <XMarkIcon class="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Habis
-                            </span>
-                        </div>
-                    </div>
+        <div class="flex-1 flex flex-col mb-3 md:mb-4 px-1">
+            <h3 class="text-sm md:text-base font-bold text-slate-800 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
+                {{ barang.nama_barang }}
+            </h3>
 
-                    <div class="flex-1 flex flex-col mb-3 md:mb-4 px-1">
-                        <h3
-                            class="text-sm md:text-base font-bold text-slate-800 leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
-                            {{ barang.nama_barang }}
-                        </h3>
-                        <p class="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed line-clamp-2">
-                            {{ barang.deskripsi || "Tidak ada deskripsi." }}
-                        </p>
-                    </div>
+            <div class="flex items-center flex-wrap gap-1.5 mt-1.5">
+                <span v-if="barang.kategori"
+                    class="inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md"
+                    :class="barang.id_kategori === 1 ? 'bg-orange-500/90 text-white' : 'bg-purple-600/90 text-white'">
+                    {{ barang.kategori?.nama_kategori }}
+                </span>
 
-                    <div class="flex items-center gap-1.5 sm:gap-2 border-t border-slate-100 pt-3 sm:pt-4 mt-auto">
-                        <button @click.stop="openEditModal(barang)"
-                            class="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-slate-50 text-slate-600 font-bold rounded-lg sm:rounded-xl hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-200 transition-all duration-200 active:scale-95 text-[10px] sm:text-xs">
-                            <PencilSquareIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span
-                                class="hidden sm:inline">Edit</span>
-                        </button>
-                        <button @click.stop="confirmDelete(barang)"
-                            class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-white text-red-500 font-bold rounded-lg sm:rounded-xl hover:bg-red-50 ring-1 ring-slate-200 hover:ring-red-200 transition-all duration-200 active:scale-95">
-                            <TrashIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </button>
-                    </div>
-                </div>
+                <span v-if="barang.stok > 0"
+                    class="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[11px] font-bold bg-emerald-100/90 text-emerald-700 ring-1 ring-emerald-200/50 backdrop-blur-sm shadow-sm">
+                    <CheckIcon class="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <span class="hidden sm:inline">Tersedia ({{ barang.stok }})</span>
+                    <span class="sm:hidden">{{ barang.stok }}</span>
+                </span>
+                <span v-else
+                    class="inline-flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[11px] font-bold bg-red-100/90 text-red-700 ring-1 ring-red-200/50 backdrop-blur-sm shadow-sm">
+                    <XMarkIcon class="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Habis
+                </span>
             </div>
 
-            <!-- Paginasi -->
+            <p class="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed line-clamp-2 whitespace-pre-line">
+                {{ barang.deskripsi || "Tidak ada deskripsi." }}
+            </p>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2 border-t border-slate-100 pt-3 sm:pt-4 mt-auto">
+            <button @click.stop="openEditModal(barang)"
+                class="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 sm:py-2.5 bg-slate-50 text-slate-600 font-bold rounded-lg sm:rounded-xl hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-200 transition-all duration-200 active:scale-95 text-[10px] sm:text-xs">
+                <PencilSquareIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span class="hidden sm:inline">Edit</span>
+            </button>
+            <button @click.stop="confirmDelete(barang)"
+                class="px-2.5 sm:px-3.5 py-2 sm:py-2.5 bg-white text-red-500 font-bold rounded-lg sm:rounded-xl hover:bg-red-50 ring-1 ring-slate-200 hover:ring-red-200 transition-all duration-200 active:scale-95">
+                <TrashIcon class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+        </div>
+    </div>
+</div>
+
             <div v-if="!isLoading && totalItems > 0"
                 class="flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 pt-5 md:pt-6 mt-auto pb-4 gap-4">
                 <p class="text-sm text-slate-500 font-medium text-center sm:text-left w-full sm:w-auto">
@@ -240,7 +250,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import api from "../plugins/axios";
-import { PlusIcon, CubeIcon, CheckCircleIcon, ExclamationCircleIcon, MagnifyingGlassIcon, PencilSquareIcon, TrashIcon, CheckIcon, XMarkIcon, CubeTransparentIcon, ChevronDownIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from "@heroicons/vue/24/outline";
+import {
+    PlusIcon, CubeIcon, CheckCircleIcon, ExclamationCircleIcon,
+    MagnifyingGlassIcon, PencilSquareIcon, TrashIcon, CheckIcon,
+    XMarkIcon, CubeTransparentIcon, ChevronDownIcon, ArrowDownTrayIcon,
+    ArrowUpTrayIcon, WrenchScrewdriverIcon, BeakerIcon
+} from "@heroicons/vue/24/outline";
 import { useAlert } from "../composables/useAlert";
 import { useConfirm } from "../composables/useConfirm";
 import ModalDetailBarang from "../components/ModalDetailBarang.vue";
@@ -264,6 +279,8 @@ const limit = ref(10);
 const globalTotal = ref(0);
 const globalTersedia = ref(0);
 const globalHabis = ref(0);
+const globalAlat = ref(0);
+const globalBHP = ref(0);
 
 const showLimitDropdown = ref(false);
 const showStockDropdown = ref(false);
@@ -334,6 +351,8 @@ const fetchBarang = async () => {
                 globalTotal.value = response.data.summary.total;
                 globalTersedia.value = response.data.summary.tersedia;
                 globalHabis.value = response.data.summary.habis;
+                globalAlat.value = response.data.summary.totalAlat || 0;
+                globalBHP.value = response.data.summary.totalBHP || 0;
             }
         }
     } catch (error) {
@@ -410,9 +429,17 @@ const exportCSV = async () => {
         if (response.data.status === "success") {
             const allBarang = response.data.data;
             if (allBarang.length === 0) { showAlert("Tidak ada data untuk diekspor.", "error"); return; }
+            
+            // PERBAIKAN: b.kategori diubah ke object yang benar
             const dataToExport = allBarang.map((b) => ({
-                id: b.id, kode_barang: b.kode_barang || "-", nama_barang: b.nama_barang, stok: b.stok, deskripsi: b.deskripsi || "-", gambar: b.gambar ? getImageUrl(b.gambar) : "-", kategori: b.kategori || "-", createdAt: b.createdAt ? new Date(b.createdAt).toLocaleString("id-ID") : "-",
+                id: b.id, 
+                nama_barang: b.nama_barang, 
+                stok: b.stok, 
+                deskripsi: b.deskripsi || "-", 
+                gambar: b.gambar ? getImageUrl(b.gambar) : "-", 
+                kategori: b.Kategori?.nama_kategori || b.kategori?.nama_kategori || "-",
             }));
+            
             const ws = XLSX.utils.json_to_sheet(dataToExport); const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Katalog_Barang");
             XLSX.writeFile(wb, `Katalog_Barang_${new Date().toISOString().split("T")[0]}.csv`, { bookType: "csv" });

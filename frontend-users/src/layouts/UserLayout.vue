@@ -14,7 +14,7 @@
             <div>
               <img src="../assets/logo_pnj.png" alt="Logo PNJ" class="mx-auto h-8 sm:h-10 w-auto drop-shadow-md" />
             </div>
-            <h1 class="font-black text-slate-800 text-lg tracking-tight">SI-LAB PLP TIK</h1>
+            <h1 class="font-black text-slate-800 text-lg tracking-tight">SI-LAB TIK</h1>
           </div>
 
           <nav class="hidden md:flex space-x-6 lg:space-x-8 h-full">
@@ -112,7 +112,7 @@
       <div
         class="w-full px-4 sm:px-6 md:px-8 lg:px-10 py-5 flex flex-col md:flex-row items-center justify-center md:justify-between gap-3 text-center md:text-left">
         <p class="text-xs md:text-sm text-slate-500 font-medium">
-          © 2026 Laboratorium PLP TIK Politeknik Negeri Jakarta.
+          © 2026 Laboratorium TIK Politeknik Negeri Jakarta.
         </p>
       </div>
     </footer>

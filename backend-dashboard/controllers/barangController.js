@@ -1,4 +1,5 @@
-const { Barang } = require("../models");
+// Pastikan Anda memanggil model Kategori di sini
+const { Barang, Kategori } = require("../models"); 
 const { cloudinary } = require("../middlewares/uploadCloudinary");
 const { Op } = require("sequelize");
 const createAdminLog = require("../utils/adminActionLogger");
@@ -28,6 +29,7 @@ const barangController = {
 
 			const search = req.query.search || "";
 			const filterStok = req.query.stok;
+            const filterKategori = req.query.id_kategori; // Opsi tambahan jika ingin filter by kategori
 
 			const whereCondition = {};
 
@@ -46,12 +48,25 @@ const barangController = {
 					[Op.or]: [0, null],
 				};
 			}
+            
+            // Tambahan filter kategori jika dikirim via query URL
+            if (filterKategori) {
+                whereCondition.id_kategori = filterKategori;
+            }
 
 			const { count: filteredCount, rows } = await Barang.findAndCountAll({
 				where: whereCondition,
 				limit,
 				offset,
 				order: [["id", "DESC"]],
+                // Melampirkan data dari tabel Kategori
+                include: [
+                    {
+                        model: Kategori,
+						as: "kategori",
+                        attributes: ['id', 'nama_kategori'] // Hanya mengambil field yang dibutuhkan
+                    }
+                ]
 			});
 
 			const globalTotal = await Barang.count();
@@ -67,6 +82,9 @@ const barangController = {
 			const globalTersedia = Math.max(0, globalTotal - globalHabis);
 			const totalPages = Math.ceil(filteredCount / limit);
 
+			const totalBHP = await Barang.count({ where: { id_kategori: 1 } });
+            const totalAlat = await Barang.count({ where: { id_kategori: 2 } });
+
 			return res.status(200).json({
 				status: "success",
 				data: rows,
@@ -74,6 +92,8 @@ const barangController = {
 					total: globalTotal,
 					tersedia: globalTersedia,
 					habis: globalHabis,
+					totalBHP: totalBHP,
+                    totalAlat: totalAlat
 				},
 				pagination: {
 					totalItems: filteredCount,
@@ -95,7 +115,16 @@ const barangController = {
 	getBarangById: async (req, res) => {
 		try {
 			const { id } = req.params;
-			const barang = await Barang.findByPk(id);
+			const barang = await Barang.findByPk(id, {
+                // Melampirkan detail kategori pada pencarian spesifik
+                include: [
+                    {
+                        model: Kategori,
+						as: "kategori",
+                        attributes: ['id', 'nama_kategori']
+                    }
+                ]
+            });
 
 			if (!barang) {
 				return res.status(404).json({
@@ -118,7 +147,8 @@ const barangController = {
 
 	createBarang: async (req, res) => {
 		try {
-			const { nama_barang, stok, deskripsi } = req.body;
+            // Tambahkan id_kategori dari request body
+			const { nama_barang, stok, deskripsi, id_kategori } = req.body;
 
 			const gambarUrl = req.file ? req.file.path : null;
 			const stokAwal = stok !== undefined && stok !== "" ? Number(stok) : 0;
@@ -128,6 +158,7 @@ const barangController = {
 				stok: stokAwal,
 				deskripsi,
 				gambar: gambarUrl,
+                id_kategori: id_kategori || null // Menyimpan relasi kategori (1: BHP, 2: Alat)
 			});
 
 			await createAdminLog({
@@ -142,6 +173,7 @@ const barangController = {
 					stok: newBarang.stok,
 					deskripsi: newBarang.deskripsi,
 					gambar: newBarang.gambar,
+                    id_kategori: newBarang.id_kategori
 				},
 			});
 
@@ -163,7 +195,8 @@ const barangController = {
 	updateBarang: async (req, res) => {
 		try {
 			const { id } = req.params;
-			const { nama_barang, stok, deskripsi } = req.body;
+            // Tambahkan id_kategori dari request body
+			const { nama_barang, stok, deskripsi, id_kategori } = req.body;
 
 			const barang = await Barang.findByPk(id);
 
@@ -180,6 +213,7 @@ const barangController = {
 				stok: barang.stok,
 				deskripsi: barang.deskripsi,
 				gambar: barang.gambar,
+                id_kategori: barang.id_kategori
 			};
 
 			let gambarUrl = barang.gambar;
@@ -215,6 +249,7 @@ const barangController = {
 				stok: stokBaru,
 				deskripsi: deskripsi !== undefined ? deskripsi : barang.deskripsi,
 				gambar: gambarUrl,
+                id_kategori: id_kategori !== undefined ? id_kategori : barang.id_kategori
 			});
 
 			await createAdminLog({
@@ -232,6 +267,7 @@ const barangController = {
 						stok: barang.stok,
 						deskripsi: barang.deskripsi,
 						gambar: barang.gambar,
+                        id_kategori: barang.id_kategori
 					},
 				},
 			});
@@ -269,6 +305,7 @@ const barangController = {
 				stok: barang.stok,
 				deskripsi: barang.deskripsi,
 				gambar: barang.gambar,
+                id_kategori: barang.id_kategori
 			};
 
 			if (barang.gambar && barang.gambar.includes("cloudinary")) {

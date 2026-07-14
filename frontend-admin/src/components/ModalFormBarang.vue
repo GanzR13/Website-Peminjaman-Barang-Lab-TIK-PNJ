@@ -4,12 +4,9 @@
             <div v-if="isOpen"
                 class="fixed inset-0 z-999 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4"
                 @click.self="closeModal">
-
                 <div
                     class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-xl p-0 overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[85vh]">
-
                     <form @submit.prevent="submitData" class="flex flex-col w-full h-full overflow-hidden">
-
                         <div
                             class="p-5 md:p-8 pb-4 border-b border-slate-100 bg-white shrink-0 flex items-center justify-between">
                             <div>
@@ -26,9 +23,7 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="p-5 md:p-8 overflow-y-auto custom-scrollbar space-y-5 bg-white flex-1">
-
                             <div
                                 class="bg-slate-50/50 p-4 rounded-2xl border border-slate-200 border-dashed hover:border-blue-300 transition-colors">
                                 <label
@@ -51,7 +46,7 @@
                                     </div>
                                 </div>
                             </div>
-
+                            
                             <div v-if="isEditMode"
                                 class="grid grid-cols-1 gap-3 p-4 bg-slate-100/50 border border-slate-200 rounded-xl">
                                 <div>
@@ -73,6 +68,35 @@
                             </div>
 
                             <div>
+                                <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                                    Kategori <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative w-full" ref="categoryDropdownRef">
+                                    <button type="button" @click="showCategoryDropdown = !showCategoryDropdown"
+                                        class="w-full flex items-center justify-between px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium transition-all"
+                                        :class="form.id_kategori ? 'bg-slate-50 text-slate-800 hover:bg-white' : 'bg-slate-50 text-slate-400 hover:bg-white'">
+                                        <span>{{ selectedCategoryLabel }}</span>
+                                        <svg class="w-4 h-4 text-slate-500 transition-transform duration-200" 
+                                            :class="showCategoryDropdown ? 'rotate-180' : ''" 
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                    <transition name="dropdown">
+                                        <div v-if="showCategoryDropdown"
+                                            class="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden py-1 z-50">
+                                            <button v-for="opt in categoryOptions" :key="opt.value" type="button"
+                                                @click="pilihKategori(opt.value)"
+                                                class="w-full px-4 py-2.5 text-sm text-left font-medium transition-colors"
+                                                :class="form.id_kategori === opt.value ? 'bg-blue-50 text-blue-700 font-black' : 'text-slate-700 hover:bg-slate-50'">
+                                                {{ opt.label }}
+                                            </button>
+                                        </div>
+                                    </transition>
+                                </div>
+                                <p v-if="submitAttempted && !form.id_kategori" class="text-[10px] text-red-500 mt-1 ml-1 font-medium">Kategori wajib dipilih.</p>
+                            </div>
+                            <div>
                                 <label
                                     class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
                                     Nama Barang <span class="text-red-500">*</span>
@@ -81,7 +105,6 @@
                                     placeholder="Contoh: Oscilloscope Rigol"
                                     class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white transition-colors" />
                             </div>
-
                             <div>
                                 <label
                                     class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
@@ -90,7 +113,6 @@
                                 <input v-model.number="form.stok" type="number" min="0" required placeholder="0"
                                     class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white transition-colors" />
                             </div>
-
                             <div>
                                 <label
                                     class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
@@ -100,15 +122,12 @@
                                     placeholder="Tulis spesifikasi lengkap barang di sini..."
                                     class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none text-sm font-medium text-slate-800 bg-slate-50 hover:bg-white focus:bg-white leading-relaxed transition-colors resize-none"></textarea>
                             </div>
-
                         </div>
-
                         <div class="p-4 md:p-6 bg-slate-50/80 border-t border-slate-100 shrink-0 flex gap-3">
                             <button type="button" @click="closeModal" :disabled="isLoading"
                                 class="flex-1 sm:flex-none px-5 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                 Batal
                             </button>
-
                             <button type="submit" :disabled="isLoading"
                                 class="flex-1 px-6 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-600/20 transition-all active:scale-95 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2">
                                 <span v-if="isLoading" class="flex items-center justify-center gap-2">
@@ -127,7 +146,6 @@
                                 </span>
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>
@@ -136,18 +154,61 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import api from '../plugins/axios';
 import { useAlert } from '../composables/useAlert';
 
 const props = defineProps({ isOpen: Boolean, isEditMode: Boolean, dataEdit: Object });
 const emit = defineEmits(['close', 'refresh-data']);
 const { showAlert } = useAlert();
-
 const isLoading = ref(false);
+const submitAttempted = ref(false);
 
-const defaultForm = { id: null, nama_barang: '', stok: 0, deskripsi: '', gambar: '', gambarPreview: null, fileUpload: null };
+// Konfigurasi Dropdown Custom
+const showCategoryDropdown = ref(false);
+const categoryDropdownRef = ref(null);
+const categoryOptions = [
+    { value: 1, label: 'BHP (Bahan Habis Pakai)' },
+    { value: 2, label: 'Alat' }
+];
+
+const defaultForm = { 
+    id: null, 
+    id_kategori: '', 
+    nama_barang: '', 
+    stok: 0, 
+    deskripsi: '', 
+    gambar: '', 
+    gambarPreview: null, 
+    fileUpload: null 
+};
+
 const form = ref({ ...defaultForm });
+
+const selectedCategoryLabel = computed(() => {
+    const selected = categoryOptions.find(opt => opt.value === form.value.id_kategori);
+    return selected ? selected.label : '-- Pilih Kategori --';
+});
+
+const pilihKategori = (val) => {
+    form.value.id_kategori = val;
+    showCategoryDropdown.value = false;
+};
+
+// Menutup dropdown jika klik di luar area dropdown
+const handleClickOutside = (e) => {
+    if (categoryDropdownRef.value && !categoryDropdownRef.value.contains(e.target)) {
+        showCategoryDropdown.value = false;
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('click', handleClickOutside);
+});
 
 const getImageUrl = (imagePath) => {
     if (!imagePath) return 'https://placehold.co/400x300/f8fafc/94a3b8?text=No+Image';
@@ -156,9 +217,12 @@ const getImageUrl = (imagePath) => {
 
 watch(() => props.isOpen, (newVal) => {
     if (newVal) {
+        submitAttempted.value = false;
+        showCategoryDropdown.value = false;
         if (props.isEditMode && props.dataEdit) {
             form.value = {
                 id: props.dataEdit.id,
+                id_kategori: props.dataEdit.id_kategori || '',
                 nama_barang: props.dataEdit.nama_barang,
                 stok: props.dataEdit.stok,
                 deskripsi: props.dataEdit.deskripsi,
@@ -183,17 +247,24 @@ const onFileChange = (e) => {
 const closeModal = () => emit('close');
 
 const submitData = async () => {
+    submitAttempted.value = true;
+    
+    // Validasi Kategori Kosong
+    if (!form.value.id_kategori) {
+        return; 
+    }
 
     if (isLoading.value) return;
-
     isLoading.value = true;
-
+    
     const formData = new FormData();
+    formData.append('id_kategori', form.value.id_kategori);
     formData.append('nama_barang', form.value.nama_barang);
     formData.append('stok', form.value.stok);
     formData.append('deskripsi', form.value.deskripsi || '');
+    
     if (form.value.fileUpload) formData.append('gambar', form.value.fileUpload);
-
+    
     try {
         if (props.isEditMode) {
             await api.put(`/barang/${form.value.id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -217,27 +288,33 @@ const submitData = async () => {
 .fade-leave-active {
     transition: opacity 0.25s, transform 0.25s;
 }
-
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
     transform: translateY(20px);
 }
-
 @media (min-width: 640px) {
-
     .fade-enter-from,
     .fade-leave-to {
         transform: translateY(-10px) scale(0.95);
     }
 }
-
 .custom-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
-
 .custom-scrollbar::-webkit-scrollbar {
     display: none;
+}
+
+/* Animasi untuk dropdown custom */
+.dropdown-enter-active,
+.dropdown-leave-active {
+    transition: opacity 0.15s, transform 0.15s;
+}
+.dropdown-enter-from,
+.dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
 }
 </style>

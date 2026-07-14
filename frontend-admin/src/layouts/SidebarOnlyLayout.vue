@@ -32,7 +32,7 @@
                             class="mx-auto h-8 sm:h-10 w-auto drop-shadow-md" />
                     </div>
                     <h1 class="font-black text-slate-800 text-[10px] sm:text-sm md:text-lg tracking-tight leading-tight">
-                        SI-LAB PLP TIK Admin
+                        SI-LAB TIK Admin
                     </h1>
                 </div>
 
@@ -54,7 +54,7 @@
                     <footer class="bg-white border-t border-slate-200 shrink-0 w-full mt-auto">
                         <div class="px-4 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-2 text-center md:text-left">
                             <p class="text-xs md:text-sm text-slate-500 font-medium">
-                                © 2026 Laboratorium PLP TIK Politeknik Negeri Jakarta.
+                                © 2026 Laboratorium TIK Politeknik Negeri Jakarta.
                             </p>
                         </div>
                     </footer>

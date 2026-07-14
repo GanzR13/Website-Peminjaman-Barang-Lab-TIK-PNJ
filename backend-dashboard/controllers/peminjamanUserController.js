@@ -297,7 +297,9 @@ exports.checkoutPeminjaman = async (req, res) => {
 				throw new Error("Data barang pada keranjang tidak valid.");
 			}
 
+            // PERBAIKAN: Membawa id_kategori agar sistem mengenali jenis barang
 			const barangLokal = await Barang.findByPk(item.barang_id, {
+                attributes: ['id', 'nama_barang', 'stok', 'id_kategori'],
 				transaction: t,
 			});
 
@@ -311,6 +313,7 @@ exports.checkoutPeminjaman = async (req, res) => {
 				);
 			}
 
+            // Saat booking, stok dikurangi sementara untuk Alat & BHP agar tidak double booking
 			await barangLokal.decrement("stok", {
 				by: jumlah,
 				transaction: t,
@@ -444,7 +447,7 @@ exports.getRiwayatSaya = async (req, res) => {
 						{
 							model: Barang,
 							as: "barang",
-							attributes: ["id", "nama_barang", "gambar"],
+							attributes: ["id", "nama_barang", "gambar", "id_kategori"],
 						},
 					],
 				},
@@ -509,12 +512,14 @@ exports.batalkanPeminjaman = async (req, res) => {
 
 		if (detailBarang && detailBarang.length > 0) {
 			for (const item of detailBarang) {
+                // PERBAIKAN: Membawa id_kategori
 				const barangLokal = await Barang.findByPk(item.barang_id, {
+                    attributes: ['id', 'nama_barang', 'stok', 'id_kategori'],
 					transaction: t,
 				});
 
 				if (barangLokal) {
-					// Menambahkan kembali stok yang sebelumnya dikurangi
+					// Karena ini "Batal Pinjam" (barang belum dipakai), maka Alat maupun BHP stoknya dikembalikan ke lab.
 					await barangLokal.increment("stok", {
 						by: item.jumlah_pinjam,
 						transaction: t,
@@ -522,8 +527,6 @@ exports.batalkanPeminjaman = async (req, res) => {
 				}
 			}
 		}
-
-		// Hapus Data Peminjam
 
 		// Hapus detailnya dulu
 		await DetailPeminjaman.destroy({
@@ -534,7 +537,6 @@ exports.batalkanPeminjaman = async (req, res) => {
 		// Hapus data peminjaman utama
 		await peminjaman.destroy({ transaction: t });
 
-		// Simpan semua perubahan
 		await t.commit();
 
 		return res.status(200).json({
@@ -611,6 +613,7 @@ exports.updatePeminjamanSaya = async (req, res) => {
 
 		for (const item of detailLama) {
 			const barangLokal = await Barang.findByPk(item.barang_id, {
+                attributes: ['id', 'nama_barang', 'stok', 'id_kategori'],
 				transaction: t,
 			});
 			if (barangLokal) {
@@ -628,6 +631,7 @@ exports.updatePeminjamanSaya = async (req, res) => {
 
 		for (const item of keranjang_barang) {
 			const barangLokal = await Barang.findByPk(item.barang_id, {
+                attributes: ['id', 'nama_barang', 'stok', 'id_kategori'],
 				transaction: t,
 			});
 

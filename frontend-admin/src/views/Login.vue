@@ -79,7 +79,7 @@ const handleLogin = async () => {
                 </div>
 
                 <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">SI-LAB ADMIN</h2>
-                <p class="text-xs sm:text-sm text-slate-500 mt-1">Dashboard Admin Lab PLP TIK</p>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Dashboard Admin Lab TIK</p>
             </div>
 
             <form @submit.prevent="handleLogin" class="space-y-4 sm:space-y-5">
@@ -157,7 +157,7 @@ const handleLogin = async () => {
 
             <p
                 class="text-center text-[9px] sm:text-[10px] text-slate-400 mt-6 sm:mt-8 uppercase tracking-widest font-bold">
-                © 2026 LAB PLP TIK Politeknik Negeri Jakarta
+                © 2026 LAB TIK Politeknik Negeri Jakarta
             </p>
         </div>
     </div>

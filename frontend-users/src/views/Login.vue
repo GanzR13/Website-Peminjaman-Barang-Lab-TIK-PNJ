@@ -180,10 +180,10 @@ const goToRegister = () => {
 					</router-link>
 				</p>
 				<p class="text-xs text-slate-400 font-medium">
-					Ada masalah login? Hubungi Teknisi LAB PLP TIK
+					Ada masalah login? Hubungi Teknisi LAB TIK
 				</p>
 				<p class="text-[9px] sm:text-[10px] text-slate-400 mt-6 uppercase tracking-widest font-bold">
-					© 2026 LAB PLP TIK Politeknik Negeri Jakarta
+					© 2026 LAB TIK Politeknik Negeri Jakarta
 				</p>
 			</div>
 		</div>

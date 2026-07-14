@@ -279,7 +279,8 @@ exports.updateStatusPeminjaman = async (req, res) => {
 						{
 							model: Barang,
 							as: "barang",
-							attributes: ["id", "nama_barang", "stok"],
+                            // PERBAIKAN: Menambahkan id_kategori agar di-load
+							attributes: ["id", "nama_barang", "stok", "id_kategori"],
 						},
 					],
 				},
@@ -316,7 +317,6 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			jumlah_pinjam: item.jumlah_pinjam,
 		}));
 
-		// Validasi: Jika status diubah menjadi Selesai, pastikan semua laporan terkait sudah diproses.
 		if (
 			status === "Selesai" &&
 			peminjaman.laporan_masalah &&
@@ -345,7 +345,6 @@ exports.updateStatusPeminjaman = async (req, res) => {
 			}
 		}
 
-		// Kembalikan stok barang jika status peminjaman berubah menjadi Ditolak, Dibatalkan, atau Selesai
 		let stokDikembalikan = false;
 		const detailStokDikembalikan = [];
 
@@ -424,28 +423,51 @@ exports.updateStatusPeminjaman = async (req, res) => {
 
 					const jumlahKembali = Math.max(jumlahPinjam - jumlahTertahan, 0);
 
+                    // PERBAIKAN LOGIKA ALAT VS BHP
+                    // 1. Jika Batal/Ditolak: Semua barang (Alat & BHP) harus kembali (karena belum dipinjam)
+                    // 2. Jika Selesai: Hanya Alat (id_kategori == 2) yang dikembalikan ke stok
 					if (jumlahKembali > 0) {
-						await Barang.increment("stok", {
-							by: jumlahKembali,
-							where: { id: barangId },
-							transaction: t,
-						});
-					}
+                        const isBarangAlat = item.barang?.id_kategori === 2;
+                        const isBarangBHP = item.barang?.id_kategori === 1;
 
-					detailStokDikembalikan.push({
-						barang_id: barangId,
-						nama_barang: item.barang?.nama_barang || "Barang tidak ditemukan",
-						jumlah_pinjam: jumlahPinjam,
-						jumlah_tertahan: jumlahTertahan,
-						jumlah_stok_dikembalikan: jumlahKembali,
-					});
+                        const isBatalReject = status === "Dibatalkan" || status === "Ditolak";
+                        const isSelesaiNormal = status === "Selesai";
+
+                        if (isBatalReject || (isSelesaiNormal && isBarangAlat)) {
+                            await Barang.increment("stok", {
+                                by: jumlahKembali,
+                                where: { id: barangId },
+                                transaction: t,
+                            });
+
+                            detailStokDikembalikan.push({
+                                barang_id: barangId,
+                                nama_barang: item.barang?.nama_barang || "Barang tidak ditemukan",
+                                jumlah_pinjam: jumlahPinjam,
+                                jumlah_tertahan: jumlahTertahan,
+                                jumlah_stok_dikembalikan: jumlahKembali,
+                                kategori: isBarangAlat ? "Alat" : "BHP",
+                                alasan: isBatalReject ? "Transaksi Dibatalkan/Ditolak" : "Barang Selesai Dipinjam"
+                            });
+                        } else if (isSelesaiNormal && isBarangBHP) {
+                             // Jika Selesai dan barangnya BHP, stok tidak ditambah (hangus).
+                             detailStokDikembalikan.push({
+                                barang_id: barangId,
+                                nama_barang: item.barang?.nama_barang || "Barang tidak ditemukan",
+                                jumlah_pinjam: jumlahPinjam,
+                                jumlah_tertahan: jumlahTertahan,
+                                jumlah_stok_dikembalikan: 0,
+                                kategori: "BHP",
+                                alasan: "BHP habis terpakai"
+                            });
+                        }
+					}
 				}
 
 				stokDikembalikan = true;
 			}
 		}
 
-		// Validasi khusus untuk peminjaman kategori "Khusus" yang memerlukan persetujuan Kepala Laboratorium dan Dosen Penanggung Jawab.
 		if (status === "Disetujui" && peminjaman.kategori_kebutuhan === "Khusus") {
 			if (peminjaman.status_approve_kalab !== "Disetujui") {
 				await t.rollback();

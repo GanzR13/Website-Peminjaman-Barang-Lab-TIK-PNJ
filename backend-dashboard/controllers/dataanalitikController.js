@@ -29,7 +29,7 @@ const dataanalitikController = {
             const limit = parseInt(req.query.limit, 10) || null;
 
             const semuaBarang = await Barang.findAll({
-                attributes: ["id", "nama_barang", "stok"],
+                attributes: ["id", "nama_barang", "stok", "id_kategori"],
                 order: [["nama_barang", "ASC"]],
             });
 
@@ -43,6 +43,7 @@ const dataanalitikController = {
             const peminjamanTahunIni = await Peminjaman.findAll({
                 where: {
                     tanggal_pinjam: { [Op.between]: [startOfYear, endOfYear] },
+                    // PERBAIKAN: Menghapus "Dibatalkan" agar tidak error ENUM PostgreSQL
                     status: { [Op.notIn]: ["Ditolak"] },
                 },
                 attributes: ["id"],
@@ -98,63 +99,76 @@ const dataanalitikController = {
                 });
 
                 const stok_saat_ini = getNumber(barang.stok, 0);
+                const isBHP = barang.id_kategori === 1;
 
-                // --- 1. UPGRADE DIAGNOSTIC: UTILISASI VS TARGET ---
-                // Asumsi Target: 1 unit barang idealnya dipinjam minimal 1x per bulan (12x setahun)
-                const target_pemakaian_tahunan = Math.max(stok_saat_ini * 12, 12);
-                const rasio_utilisasi = Math.round((total_dipinjam / target_pemakaian_tahunan) * 100);
-                
-                let status_utilisasi = "Normal (Optimal)";
-                if (rasio_utilisasi > 85) {
-                    status_utilisasi = "Overload (Melebihi Target Kapasitas)";
-                } else if (rasio_utilisasi < 20 && stok_saat_ini > 0) {
-                    status_utilisasi = "Underutilized (Jarang Dipakai)";
-                }
-
-                // --- 2. UPGRADE PREDICTIVE: PROYEKSI KEBUTUHAN TAHUN DEPAN ---
-                // Menghitung tingkat keausan/kerusakan (Wear & Tear Rate)
-                const total_kendala = jumlah_rusak + jumlah_hilang + jumlah_rusak_total;
-                const wear_and_tear_rate = total_dipinjam > 0 ? (total_kendala / total_dipinjam) : 0;
-                
-                // Proyeksi kenaikan aktivitas laboratorium 10% di tahun depan
+                let rasio_utilisasi = 0;
+                let status_utilisasi = "";
+                let estimasi_kebutuhan_depan = 0;
                 const proyeksi_peminjaman_depan = Math.round(total_dipinjam * 1.1);
-                const prediksi_kendala_depan = Math.ceil(proyeksi_peminjaman_depan * wear_and_tear_rate);
-                
-                // Estimasi berapa stok baru yang harus dibeli agar lab tidak defisit
-                const defisit_stok = (stok_saat_ini - total_kendala);
-                const estimasi_kebutuhan_depan = defisit_stok < 5 ? (5 - defisit_stok) + prediksi_kendala_depan : 0;
+
+                if (isBHP) {
+                    const rata_rata_bulanan = Math.ceil(total_dipinjam / 12);
+                    const minimum_stok_aman = rata_rata_bulanan * 3;
+                    
+                    const total_historis = stok_saat_ini + total_dipinjam;
+                    rasio_utilisasi = total_historis > 0 ? Math.round((total_dipinjam / total_historis) * 100) : 0;
+
+                    if (stok_saat_ini === 0) {
+                        status_utilisasi = "Habis Total (Kritis)";
+                    } else if (stok_saat_ini <= minimum_stok_aman) {
+                        status_utilisasi = "Kritis (Butuh Restock)";
+                    } else {
+                        status_utilisasi = "Aman (Stok Mencukupi)";
+                    }
+
+                    const proyeksi_total_kebutuhan = proyeksi_peminjaman_depan + minimum_stok_aman;
+                    estimasi_kebutuhan_depan = Math.max(proyeksi_total_kebutuhan - stok_saat_ini, 0);
+
+                } else {
+                    const target_pemakaian_tahunan = Math.max(stok_saat_ini * 12, 12);
+                    rasio_utilisasi = Math.round((total_dipinjam / target_pemakaian_tahunan) * 100);
+                    
+                    if (rasio_utilisasi > 85) {
+                        status_utilisasi = "Overload (Melebihi Target Kapasitas)";
+                    } else if (rasio_utilisasi < 20 && stok_saat_ini > 0) {
+                        status_utilisasi = "Underutilized (Jarang Dipakai)";
+                    } else {
+                        status_utilisasi = "Normal (Optimal)";
+                    }
+
+                    const total_kendala = jumlah_rusak + jumlah_hilang + jumlah_rusak_total;
+                    const wear_and_tear_rate = total_dipinjam > 0 ? (total_kendala / total_dipinjam) : 0;
+                    
+                    const prediksi_kendala_depan = Math.ceil(proyeksi_peminjaman_depan * wear_and_tear_rate);
+                    
+                    const defisit_stok = (stok_saat_ini - total_kendala);
+                    estimasi_kebutuhan_depan = defisit_stok < 5 ? Math.max(5 - defisit_stok, 0) + prediksi_kendala_depan : prediksi_kendala_depan;
+                }
 
                 return {
                     id: barang.id,
                     kode: `BRG-${barang.id}`,
                     nama: barang.nama_barang || "Tanpa Nama",
+                    kategori: isBHP ? "BHP" : "Alat",
                     stok_saat_ini,
                     total_dipinjam,
                     rusak: jumlah_rusak,
                     hilang: jumlah_hilang,
                     rusak_total: jumlah_rusak_total,
-                    // Field analitik baru untuk UI:
+                    
                     analitik_utilisasi: {
                         rasio_persen: rasio_utilisasi,
-                        target_tahunan: target_pemakaian_tahunan,
                         status: status_utilisasi
                     },
                     analitik_prediktif: {
                         proyeksi_peminjaman_depan,
-                        prediksi_kendala_depan,
                         estimasi_kebutuhan_stok: estimasi_kebutuhan_depan
                     }
                 };
             });
 
-            // Sorting dari yang paling banyak dipinjam
             hasilAnalitik.sort((a, b) => {
-                if (b.total_dipinjam !== a.total_dipinjam) {
-                    return b.total_dipinjam - a.total_dipinjam;
-                }
-                const kendalaB = b.rusak + b.hilang + b.rusak_total;
-                const kendalaA = a.rusak + a.hilang + a.rusak_total;
-                return kendalaB - kendalaA;
+                return b.analitik_prediktif.estimasi_kebutuhan_stok - a.analitik_prediktif.estimasi_kebutuhan_stok;
             });
 
             if (limit && limit > 0) {
@@ -183,6 +197,7 @@ const dataanalitikController = {
             const peminjamanTahunIni = await Peminjaman.findAll({
                 where: {
                     tanggal_pinjam: { [Op.between]: [startOfYear, endOfYear] },
+                    // PERBAIKAN: Menghapus "Dibatalkan"
                     status: { [Op.notIn]: ["Ditolak"] },
                 },
                 attributes: ["id", "tanggal_pinjam"],
@@ -224,8 +239,6 @@ const dataanalitikController = {
         }
     },
 
-    // --- 3. FITUR BARU: DIAGNOSTIC & DRILL-DOWN ENDPOINT ---
-    // Dipanggil saat dosen / user meng-klik salah satu barang untuk membedah akar masalahnya
     getDiagnosaBarang: async (req, res) => {
         try {
             const barangId = parseInt(req.params.id, 10);
@@ -236,14 +249,15 @@ const dataanalitikController = {
             }
 
             const barang = await Barang.findByPk(barangId, {
-                attributes: ["id", "nama_barang", "stok"]
+                attributes: ["id", "nama_barang", "stok", "id_kategori"]
             });
 
             if (!barang) {
                 return res.status(404).json({ status: "error", message: "Barang tidak ditemukan." });
             }
 
-            // Cari semua transaksi peminjaman untuk barang ini di tahun terpilih
+            const isBHP = barang.id_kategori === 1;
+
             const detailPeminjaman = await DetailPeminjaman.findAll({
                 where: { barang_id: barangId },
                 attributes: ["peminjaman_id", "jumlah_pinjam"]
@@ -258,20 +272,18 @@ const dataanalitikController = {
                     where: {
                         id: { [Op.in]: peminjamanIds },
                         tanggal_pinjam: { [Op.between]: [startOfYear, endOfYear] },
+                        // PERBAIKAN: Menghapus "Dibatalkan"
                         status: { [Op.notIn]: ["Ditolak"] }
                     },
                     attributes: ["id", "tanggal_pinjam", "status"]
                 });
 
-                // Hitung tren peminjaman bulanan khusus untuk barang ini
                 riwayatPeminjaman.forEach(p => {
                     const bulan = new Date(p.tanggal_pinjam).getMonth();
                     distribusiBulanan[bulan] += 1;
                 });
             }
 
-            // PERBAIKAN DI SINI:
-            // Kolom "keterangan" sudah dihapus agar tidak memicu error 42703 di database!
             const daftarKendala = await LaporanMasalah.findAll({
                 where: {
                     barang_id: barangId,
@@ -281,13 +293,22 @@ const dataanalitikController = {
                 order: [["tanggal_kejadian", "DESC"]]
             });
 
-            // Kesimpulan Diagnostik Otomatis (Akar Masalah)
             const puncakBulanIdx = distribusiBulanan.indexOf(Math.max(...distribusiBulanan));
-            const namaBulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+            const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             
-            let kesimpulan_diagnosa = "Barang dalam kondisi baik dan pola peminjaman stabil.";
-            if (daftarKendala.length > 0) {
-                kesimpulan_diagnosa = `Terdapat ${daftarKendala.length} laporan insiden pada tahun ${tahun}. Puncak pemakaian terjadi pada bulan ${namaBulan[puncakBulanIdx]}, yang berkolerasi dengan peningkatan risiko kerusakan alat.`;
+            let kesimpulan_diagnosa = "Aktivitas barang relatif stabil.";
+            
+            if (isBHP) {
+                kesimpulan_diagnosa = `Tingkat konsumsi BHP ini memuncak pada bulan ${namaBulan[puncakBulanIdx]}. Pastikan stok di bulan-bulan tersebut selalu diamankan lebih awal.`;
+                if (getNumber(barang.stok, 0) < 10) {
+                    kesimpulan_diagnosa += " Peringatan: Stok saat ini sudah sangat menipis.";
+                }
+            } else {
+                if (daftarKendala.length > 0) {
+                    kesimpulan_diagnosa = `Terdapat ${daftarKendala.length} laporan insiden kerusakan/kehilangan pada tahun ${tahun}. Puncak pemakaian terjadi pada bulan ${namaBulan[puncakBulanIdx]}, yang berkorelasi dengan peningkatan risiko penyusutan alat.`;
+                } else {
+                    kesimpulan_diagnosa = `Kondisi alat baik tanpa riwayat kerusakan berat. Pemakaian tertinggi tercatat di bulan ${namaBulan[puncakBulanIdx]}.`;
+                }
             }
 
             return res.status(200).json({
@@ -297,6 +318,7 @@ const dataanalitikController = {
                     info_barang: {
                         id: barang.id,
                         nama: barang.nama_barang,
+                        kategori: isBHP ? "BHP" : "Alat",
                         stok: getNumber(barang.stok, 0)
                     },
                     metrik_diagnostik: {

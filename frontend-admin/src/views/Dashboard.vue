@@ -105,34 +105,53 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-200 mb-6 md:mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                <div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+            <div class="lg:col-span-2 bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-200 flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="text-base md:text-lg font-black text-slate-800">
+                            Tren Peminjaman per Bulan
+                        </h3>
+                        <p class="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
+                            Visualisasi aktivitas transaksi eksternal sepanjang tahun {{ selectedYear }}
+                        </p>
+                    </div>
+                    <span class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 w-fit shrink-0">
+                        Descriptive Analytics
+                    </span>
+                </div>
+
+                <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center text-slate-400 min-h-56">
+                    <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-3"></div>
+                    <p class="font-medium text-sm">Menyiapkan tren peminjaman...</p>
+                </div>
+                <div v-else-if="monthlyTrend.length === 0" class="flex-1 flex items-center justify-center text-slate-400 font-medium text-sm min-h-56">
+                    Tidak ada data tren peminjaman pada tahun {{ selectedYear }}
+                </div>
+                <div v-else class="relative w-full flex-1 min-h-56">
+                    <Line :data="monthlyTrendChartData" :options="monthlyTrendChartOptions" />
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-200 flex flex-col">
+                <div class="mb-4">
                     <h3 class="text-base md:text-lg font-black text-slate-800">
-                        Tren Peminjaman per Bulan
+                        Distribusi Status Pengadaan
                     </h3>
-                    <p class="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-                        Visualisasi aktivitas transaksi eksternal sepanjang tahun {{ selectedYear }}
+                    <p class="text-xs text-slate-500 font-medium mt-0.5">
+                        Komposisi kesehatan stok seluruh inventaris.
                     </p>
                 </div>
-                <span
-                    class="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 w-fit">
-                    Descriptive Analytics
-                </span>
-            </div>
-
-            <div v-if="isLoading" class="h-56 md:h-72 flex flex-col items-center justify-center text-slate-400">
-                <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-3"></div>
-                <p class="font-medium text-sm">Menyiapkan tren peminjaman...</p>
-            </div>
-
-            <div v-else-if="monthlyTrend.length === 0"
-                class="h-56 md:h-72 flex items-center justify-center text-slate-400 font-medium text-sm">
-                Tidak ada data tren peminjaman pada tahun {{ selectedYear }}
-            </div>
-
-            <div v-else class="h-56 md:h-72 relative w-full">
-                <Line :data="monthlyTrendChartData" :options="monthlyTrendChartOptions" />
+                
+                <div v-if="isLoading" class="flex-1 flex flex-col items-center justify-center text-slate-400 min-h-48">
+                    <div class="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-3"></div>
+                </div>
+                <div v-else-if="filteredAnalitik.length === 0" class="flex-1 flex items-center justify-center text-slate-400 font-medium text-sm min-h-48">
+                    Tidak ada data inventaris.
+                </div>
+                <div v-else class="relative w-full flex-1 min-h-48 flex items-center justify-center">
+                    <Doughnut :data="distributionChartData" :options="distributionChartOptions" />
+                </div>
             </div>
         </div>
 
@@ -147,7 +166,6 @@
                             Skor Penilaian Berbobot 0,00 - 1,00 (Klik Batang Grafik untuk Drill-Down)
                         </p>
                     </div>
-
                     <span
                         class="px-3 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-100 w-fit">
                         Prescriptive Matrix
@@ -216,103 +234,120 @@
                         </li>
                         <li class="flex items-start gap-2">
                             <span class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 shrink-0"></span>
-                            <p><strong class="text-white">Tinjau Ulang:</strong> Stok menipis namun tingkat utilisasi
+                            <p><strong class="text-white">Prioritas Menengah:</strong> Stok menipis namun tingkat utilisasi
                                 rendah.</p>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-400 mt-1.5 shrink-0"></span>
+                            <p><strong class="text-white">Aman:</strong> Kondisi 100% normal. Tidak perlu pengadaan.</p>
                         </li>
                     </ul>
                 </div>
                 <div v-if="showMatrix || isDesktop"
                     class="mt-4 pt-3 border-t border-slate-700 text-[11px] text-slate-400 font-medium italic">
-                    *Kombinasi skor: Demand (40%), Diagnostic Problem (25%), Stock Level (20%), Rule Score (15%).
+                    *Kombinasi skor: Demand (40%), Diagnostic Problem (25%), Stock Level (20%), Rule Based Score (15%).
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-            <div
-                class="p-4 md:p-6 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-50/50">
-                <div>
-                    <h2 class="text-base md:text-lg font-black text-slate-800">Tabel Evaluasi & Proyeksi Pengadaan {{
-                        selectedYear + 1 }}</h2>
-                    <p class="text-xs text-slate-500 font-medium mt-0.5">Daftar diurutkan secara otomatis berdasarkan
-                        metodologi sistem penunjang keputusan.</p>
+        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-base md:text-lg font-black text-slate-800">Evaluasi & Proyeksi Pengadaan {{ selectedYear + 1 }}</h2>
+                <p class="text-xs text-slate-500 font-medium mt-0.5">Filter dan urutkan data analitik secara untuk Alat & BHP.</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                <div class="relative shrink-0" ref="sortDropdownRef">
+                    <button type="button" @click="showSortDropdown = !showSortDropdown"
+                        class="flex items-center justify-between gap-2 w-full sm:w-56 bg-white px-4 py-2.5 border border-slate-200 hover:border-blue-400 rounded-xl shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        :class="showSortDropdown ? 'border-blue-400 ring-2 ring-blue-500/20' : ''">
+                        <span class="text-xs font-black text-blue-600 truncate">{{ activeSortLabel }}</span>
+                        <ChevronDownIcon
+                            class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0"
+                            :class="showSortDropdown ? 'rotate-180 text-blue-600' : ''" />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="showSortDropdown"
+                            class="absolute right-0 mt-2 w-full sm:w-56 bg-white border border-slate-200 rounded-xl shadow-2xl shadow-slate-900/10 py-1.5 z-50 overflow-hidden origin-top-right">
+                            <button v-for="option in sortOptions" :key="option.value" type="button"
+                                @click="pilihSort(option.value)"
+                                class="w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs transition-colors cursor-pointer"
+                                :class="sortBy === option.value ? 'bg-blue-50 text-blue-700 font-black' : 'text-slate-600 hover:bg-slate-50 font-semibold'">
+                                <span>{{ option.label }}</span>
+                                <span v-if="sortBy === option.value" class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                            </button>
+                        </div>
+                    </transition>
                 </div>
 
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-                    <div class="relative shrink-0" ref="sortDropdownRef">
-                        <button type="button" @click="showSortDropdown = !showSortDropdown"
-                            class="flex items-center justify-between gap-2 w-60 bg-white px-4 py-2 border border-slate-200 hover:border-blue-400 rounded-xl shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                            :class="showSortDropdown ? 'border-blue-400 ring-2 ring-blue-500/20' : ''">
-                            <span class="text-xs font-black text-blue-600 truncate">{{ activeSortLabel }}</span>
-                            <ChevronDownIcon
-                                class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0"
-                                :class="showSortDropdown ? 'rotate-180 text-blue-600' : ''" />
-                        </button>
+                <div class="relative shrink-0" ref="limitDropdownRef">
+                    <button type="button" @click="showLimitDropdown = !showLimitDropdown"
+                        class="flex items-center justify-between gap-2 w-full sm:w-28 bg-white px-4 py-2.5 border border-slate-200 hover:border-blue-400 rounded-xl shadow-sm transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        :class="showLimitDropdown ? 'border-blue-400 ring-2 ring-blue-500/20' : ''">
+                        <span class="text-xs font-black text-slate-600 truncate">{{ limit }} Baris</span>
+                        <ChevronDownIcon
+                            class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0"
+                            :class="showLimitDropdown ? 'rotate-180 text-blue-600' : ''" />
+                    </button>
+                    <transition name="fade">
+                        <div v-if="showLimitDropdown"
+                            class="absolute right-0 mt-2 w-full sm:w-28 bg-white border border-slate-200 rounded-xl shadow-2xl shadow-slate-900/10 py-1.5 z-50 overflow-hidden origin-top-right">
+                            <button v-for="opt in [10, 20, 50, 100]" :key="opt" type="button"
+                                @click="pilihLimit(opt)"
+                                class="w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs transition-colors cursor-pointer"
+                                :class="limit === opt ? 'bg-blue-50 text-blue-700 font-black' : 'text-slate-600 hover:bg-slate-50 font-semibold'">
+                                <span>{{ opt }}</span>
+                            </button>
+                        </div>
+                    </transition>
+                </div>
 
-                        <transition name="fade">
-                            <div v-if="showSortDropdown"
-                                class="absolute right-0 mt-2 w-60 bg-white border border-slate-200 rounded-xl shadow-2xl shadow-slate-900/10 py-1.5 z-50 overflow-hidden origin-top-right">
-                                <button v-for="option in sortOptions" :key="option.value" type="button"
-                                    @click="pilihSort(option.value)"
-                                    class="w-full px-3.5 py-2.5 text-left flex items-center justify-between text-xs transition-colors cursor-pointer"
-                                    :class="sortBy === option.value ? 'bg-blue-50 text-blue-700 font-black' : 'text-slate-600 hover:bg-slate-50 font-semibold'">
-                                    <span>{{ option.label }}</span>
-                                    <span v-if="sortBy === option.value"
-                                        class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
-                                </button>
-                            </div>
-                        </transition>
-                    </div>
-
-                    <div class="relative w-full sm:w-64">
-                        <MagnifyingGlassIcon
-                            class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input v-model="searchQuery" type="text" placeholder="Cari nama barang atau kode..."
-                            class="w-full pl-9 pr-4 py-2 border border-slate-200 bg-white rounded-xl text-xs font-medium text-slate-700 placeholder:text-slate-400 shadow-sm hover:border-slate-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-200" />
-                    </div>
+                <div class="relative w-full sm:w-56">
+                    <MagnifyingGlassIcon class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input v-model="searchQuery" type="text" placeholder="Cari nama atau kode..."
+                        class="w-full pl-9 pr-4 py-2.5 border border-slate-200 bg-white rounded-xl text-xs font-medium text-slate-700 placeholder:text-slate-400 shadow-sm hover:border-slate-300 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-200" />
                 </div>
             </div>
+        </div>
 
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden mb-6 md:mb-8">
+            <div class="bg-blue-50/50 p-4 border-b border-slate-200">
+                <h3 class="text-sm md:text-base font-black text-slate-800 flex items-center gap-2">
+                    <WrenchScrewdriverIcon class="w-5 h-5 text-blue-600" /> Kategori Alat
+                </h3>
+            </div>
+            
             <div class="md:hidden divide-y divide-slate-100">
                 <div v-if="isLoading" class="py-12 text-center">
                     <div class="animate-pulse flex flex-col items-center">
-                        <div class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3">
-                        </div>
-                        <p class="text-slate-500 font-medium text-sm">Sinkronisasi data analitik...</p>
+                        <div class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                        <p class="text-slate-500 font-medium text-sm">Sinkronisasi data...</p>
                     </div>
                 </div>
-                <div v-else-if="filteredAnalitik.length === 0"
-                    class="py-12 text-center text-slate-500 font-medium text-sm px-4">
-                    Data barang tidak ditemukan atau belum ada aktivitas pada tahun {{ selectedYear }}.
+                <div v-else-if="paginatedAlat.length === 0" class="py-12 text-center text-slate-500 font-medium text-sm px-4">
+                    Data Alat tidak ditemukan.
                 </div>
-                <div v-else v-for="(item, index) in filteredAnalitik" :key="item.kode" class="p-4 space-y-3">
+                <div v-else v-for="(item, index) in paginatedAlat" :key="item.kode" class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex items-start gap-2.5">
-                            <span
-                                class="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-black shrink-0 mt-0.5"
-                                :class="index === 0 ? 'bg-amber-400 text-slate-900' :
-                                    index === 1 ? 'bg-slate-300 text-slate-800' :
-                                        index === 2 ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600'">
-                                #{{ index + 1 }}
+                            <span class="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-black shrink-0 mt-0.5"
+                                :class="getRankClass(getAbsoluteIndexAlat(index))">
+                                #{{ getAbsoluteIndexAlat(index) }}
                             </span>
                             <div>
                                 <p class="font-bold text-slate-900 text-sm">{{ item.nama }}</p>
-                                <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{
-                                    item.stok_saat_ini }} Unit</p>
+                                <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{ item.stok_saat_ini }} Unit</p>
                             </div>
                         </div>
                         <div class="flex flex-col items-end gap-1 shrink-0">
-                            <span class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ring-1"
-                                :class="getBadgeClass(item.rekomendasi.type)">
+                            <span class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ring-1" :class="getBadgeClass(item.rekomendasi.type)">
                                 {{ item.rekomendasi.label }}
                             </span>
-                            <span
-                                class="text-[10px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                            <span class="text-[10px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                                 Skor: {{ item.priority_score }}
                             </span>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-3 gap-2 text-center">
                         <div class="bg-blue-50/50 rounded-xl p-2">
                             <p class="text-[9px] font-black text-blue-500 uppercase mb-0.5">Dipinjam</p>
@@ -320,23 +355,18 @@
                         </div>
                         <div class="bg-amber-50/50 rounded-xl p-2">
                             <p class="text-[9px] font-black text-amber-600 uppercase mb-0.5">Utilisasi</p>
-                            <p class="font-black text-xs"
-                                :class="item.analitik_utilisasi?.rasio_persen > 85 ? 'text-red-600' : 'text-slate-700'">
+                            <p class="font-black text-xs" :class="item.analitik_utilisasi?.rasio_persen > 85 ? 'text-red-600' : 'text-slate-700'">
                                 {{ item.analitik_utilisasi?.rasio_persen || 0 }}%
                             </p>
                         </div>
                         <div class="bg-emerald-50/50 rounded-xl p-2">
                             <p class="text-[9px] font-black text-emerald-600 uppercase mb-0.5">Proyeksi Pinjam</p>
-                            <p class="font-black text-xs text-slate-700">{{
-                                item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</p>
+                            <p class="font-black text-xs text-slate-700">{{ item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</p>
                         </div>
                     </div>
-
-                    <div
-                        class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100 gap-2">
+                    <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100 gap-2">
                         <p class="text-xs font-bold text-slate-600 flex-1">{{ item.rekomendasi.action }}</p>
-                        <button @click="bukaDrillDown(item.id)"
-                            class="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-blue-700 transition shrink-0 cursor-pointer">
+                        <button @click="bukaDrillDown(item.id)" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-blue-700 transition shrink-0 cursor-pointer">
                             Drill-Down
                         </button>
                     </div>
@@ -346,14 +376,11 @@
             <div class="hidden md:block overflow-x-auto flex-1">
                 <table class="w-full text-left table-auto">
                     <thead>
-                        <tr
-                            class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
-                            <th class="py-4 px-6 min-w-50">Nama Alat / Barang</th>
+                        <tr class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                            <th class="py-4 px-6 min-w-50">Nama Alat</th>
                             <th class="py-4 px-4 text-center">Aktivitas (Descriptive)</th>
-                            <th class="py-4 px-4 text-center bg-amber-50/40 text-amber-800">Rasio Utilisasi (Diagnostic)
-                            </th>
-                            <th class="py-4 px-4 text-center bg-blue-50/40 text-blue-800">Prediksi Kebutuhan
-                                (Predictive)</th>
+                            <th class="py-4 px-4 text-center bg-amber-50/40 text-amber-800">Rasio Utilisasi (Diagnostic)</th>
+                            <th class="py-4 px-4 text-center bg-blue-50/40 text-blue-800">Prediksi Kebutuhan (Predictive)</th>
                             <th class="py-4 px-6 min-w-60 border-l border-slate-100">Rekomendasi (Prescriptive)</th>
                             <th class="py-4 px-6 text-center">Aksi</th>
                         </tr>
@@ -362,56 +389,45 @@
                         <tr v-if="isLoading">
                             <td colspan="6" class="py-12 text-center">
                                 <div class="animate-pulse flex flex-col items-center">
-                                    <div
-                                        class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3">
-                                    </div>
+                                    <div class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3"></div>
                                     <p class="text-slate-500 font-medium">Sinkronisasi data analitik...</p>
                                 </div>
                             </td>
                         </tr>
-                        <tr v-else-if="filteredAnalitik.length === 0">
+                        <tr v-else-if="paginatedAlat.length === 0">
                             <td colspan="6" class="py-12 text-center text-slate-500 font-medium">
-                                Data tidak ditemukan atau belum ada aktivitas pada tahun {{ selectedYear }}.
+                                Data Alat tidak ditemukan pada tahun {{ selectedYear }}.
                             </td>
                         </tr>
-                        <tr v-else v-for="(item, index) in filteredAnalitik" :key="item.kode"
-                            class="hover:bg-slate-50/80 transition-colors">
+                        <tr v-else v-for="(item, index) in paginatedAlat" :key="item.kode" class="hover:bg-slate-50/80 transition-colors">
                             <td class="py-4 px-6">
                                 <div class="flex items-start gap-3">
-                                    <span
-                                        class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-sm"
-                                        :class="index === 0 ? 'bg-amber-400 text-slate-900 ring-2 ring-amber-300' :
-                                            index === 1 ? 'bg-slate-300 text-slate-800' :
-                                                index === 2 ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600'">
-                                        #{{ index + 1 }}
+                                    <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-sm"
+                                        :class="getRankClass(getAbsoluteIndexAlat(index))">
+                                        #{{ getAbsoluteIndexAlat(index) }}
                                     </span>
                                     <div>
                                         <p class="font-bold text-slate-900">{{ item.nama }}</p>
-                                        <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{
-                                            item.stok_saat_ini }} Unit</p>
+                                        <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{ item.stok_saat_ini }} Unit</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="py-4 px-4 text-center font-medium text-slate-600">
                                 <div>Dipinjam: <strong>{{ item.total_dipinjam }}x</strong></div>
-                                <div class="text-[11px] font-bold text-red-500 mt-0.5"
-                                    v-if="item.rusak + item.hilang + item.rusak_total > 0">
+                                <div class="text-[11px] font-bold text-red-500 mt-0.5" v-if="item.rusak + item.hilang + item.rusak_total > 0">
                                     Kendala: {{ item.rusak + item.hilang + item.rusak_total }} Kasus
                                 </div>
                             </td>
                             <td class="py-4 px-4 text-center bg-amber-50/10">
-                                <div class="font-bold text-slate-800">{{ item.analitik_utilisasi?.rasio_persen || 0 }}%
-                                </div>
+                                <div class="font-bold text-slate-800">{{ item.analitik_utilisasi?.rasio_persen || 0 }}%</div>
                                 <span class="text-[10px] px-1.5 py-0.5 rounded-md font-semibold mt-1 inline-block"
                                     :class="(item.analitik_utilisasi?.rasio_persen || 0) > 85 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600'">
                                     {{ item.analitik_utilisasi?.status || 'Normal' }}
                                 </span>
                             </td>
                             <td class="py-4 px-4 text-center bg-blue-50/10 font-medium">
-                                <div class="text-slate-800">Proyeksi Pinjam: <strong>{{
-                                    item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</strong></div>
-                                <div class="text-xs font-bold text-blue-700 mt-0.5"
-                                    v-if="(item.analitik_prediktif?.estimasi_kebutuhan_stok || 0) > 0">
+                                <div class="text-slate-800">Proyeksi Pinjam: <strong>{{ item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</strong></div>
+                                <div class="text-xs font-bold text-blue-700 mt-0.5" v-if="(item.analitik_prediktif?.estimasi_kebutuhan_stok || 0) > 0">
                                     Saran Restock: +{{ item.analitik_prediktif.estimasi_kebutuhan_stok }} Unit
                                 </div>
                                 <div class="text-xs text-emerald-600 font-bold mt-0.5" v-else>Stok Memadai</div>
@@ -419,13 +435,11 @@
                             <td class="py-4 px-6 border-l border-slate-100">
                                 <div class="flex flex-col items-start gap-1.5">
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <span
-                                            class="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1"
+                                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1"
                                             :class="getBadgeClass(item.rekomendasi.type)">
                                             {{ item.rekomendasi.label }}
                                         </span>
-                                        <span
-                                            class="text-[11px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                        <span class="text-[11px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                                             Skor: {{ item.priority_score }}
                                         </span>
                                     </div>
@@ -433,8 +447,7 @@
                                 </div>
                             </td>
                             <td class="py-4 px-6 text-center whitespace-nowrap align-middle">
-                                <button @click="bukaDrillDown(item.id)"
-                                    class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer">
+                                <button @click="bukaDrillDown(item.id)" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer">
                                     <span>Drill-Down</span>
                                 </button>
                             </td>
@@ -442,11 +455,176 @@
                     </tbody>
                 </table>
             </div>
-
-            <div class="bg-slate-50 px-4 md:px-6 py-4 border-t border-slate-200">
-                <p class="text-xs font-medium text-slate-500 text-center">
-                    Data difilter berdasarkan aktivitas laboratorium pada tahun {{ selectedYear }}.
+            
+            <div v-if="!isLoading && analitikAlat.length > 0" class="bg-white border-t border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-slate-500 font-medium">
+                    Menampilkan {{ getStartIndexAlat }} - {{ getEndIndexAlat }} dari {{ analitikAlat.length }} Alat.
                 </p>
+                <div class="flex items-center gap-1.5">
+                    <button @click="changePageAlat(currentPageAlat - 1)" :disabled="currentPageAlat === 1"
+                        class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold disabled:opacity-50">Prev</button>
+                    <div class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-black rounded-lg border border-blue-100/50">Hal {{ currentPageAlat }} / {{ totalPagesAlat || 1 }}</div>
+                    <button @click="changePageAlat(currentPageAlat + 1)" :disabled="currentPageAlat === totalPagesAlat || totalPagesAlat === 0"
+                        class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold disabled:opacity-50">Next</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden mb-6 md:mb-8">
+            <div class="bg-orange-50/50 p-4 border-b border-slate-200">
+                <h3 class="text-sm md:text-base font-black text-slate-800 flex items-center gap-2">
+                    <BeakerIcon class="w-5 h-5 text-orange-600" /> Kategori BHP (Bahan Habis Pakai)
+                </h3>
+            </div>
+            
+            <div class="md:hidden divide-y divide-slate-100">
+                <div v-if="isLoading" class="py-12 text-center">
+                    <div class="animate-pulse flex flex-col items-center">
+                        <div class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                        <p class="text-slate-500 font-medium text-sm">Sinkronisasi data...</p>
+                    </div>
+                </div>
+                <div v-else-if="paginatedBHP.length === 0" class="py-12 text-center text-slate-500 font-medium text-sm px-4">
+                    Data BHP tidak ditemukan.
+                </div>
+                <div v-else v-for="(item, index) in paginatedBHP" :key="item.kode" class="p-4 space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-black shrink-0 mt-0.5"
+                                :class="getRankClass(getAbsoluteIndexBHP(index))">
+                                #{{ getAbsoluteIndexBHP(index) }}
+                            </span>
+                            <div>
+                                <p class="font-bold text-slate-900 text-sm">{{ item.nama }}</p>
+                                <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{ item.stok_saat_ini }} Unit</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ring-1" :class="getBadgeClass(item.rekomendasi.type)">
+                                {{ item.rekomendasi.label }}
+                            </span>
+                            <span class="text-[10px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                Skor: {{ item.priority_score }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-blue-50/50 rounded-xl p-2">
+                            <p class="text-[9px] font-black text-blue-500 uppercase mb-0.5">Dipakai</p>
+                            <p class="font-black text-slate-700 text-xs">{{ item.total_dipinjam }}x</p>
+                        </div>
+                        <div class="bg-amber-50/50 rounded-xl p-2">
+                            <p class="text-[9px] font-black text-amber-600 uppercase mb-0.5">Burn Rate</p>
+                            <p class="font-black text-xs" :class="item.analitik_utilisasi?.rasio_persen > 85 ? 'text-red-600' : 'text-slate-700'">
+                                {{ item.analitik_utilisasi?.rasio_persen || 0 }}%
+                            </p>
+                        </div>
+                        <div class="bg-emerald-50/50 rounded-xl p-2">
+                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-0.5">Proyeksi Habis</p>
+                            <p class="font-black text-xs text-slate-700">{{ item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100 gap-2">
+                        <p class="text-xs font-bold text-slate-600 flex-1">{{ item.rekomendasi.action }}</p>
+                        <button @click="bukaDrillDown(item.id)" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-blue-700 transition shrink-0 cursor-pointer">
+                            Drill-Down
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden md:block overflow-x-auto flex-1">
+                <table class="w-full text-left table-auto">
+                    <thead>
+                        <tr class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                            <th class="py-4 px-6 min-w-50">Nama Bahan Habis Pakai</th>
+                            <th class="py-4 px-4 text-center">Konsumsi (Descriptive)</th>
+                            <th class="py-4 px-4 text-center bg-amber-50/40 text-amber-800">Tingkat Utilisasi (Diagnostic)</th>
+                            <th class="py-4 px-4 text-center bg-blue-50/40 text-blue-800">Prediksi Kebutuhan (Predictive)</th>
+                            <th class="py-4 px-6 min-w-60 border-l border-slate-100">Rekomendasi (Prescriptive)</th>
+                            <th class="py-4 px-6 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm divide-y divide-slate-100">
+                        <tr v-if="isLoading">
+                            <td colspan="6" class="py-12 text-center">
+                                <div class="animate-pulse flex flex-col items-center">
+                                    <div class="h-6 w-6 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+                                    <p class="text-slate-500 font-medium">Sinkronisasi data analitik...</p>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr v-else-if="paginatedBHP.length === 0">
+                            <td colspan="6" class="py-12 text-center text-slate-500 font-medium">
+                                Data BHP tidak ditemukan pada tahun {{ selectedYear }}.
+                            </td>
+                        </tr>
+                        <tr v-else v-for="(item, index) in paginatedBHP" :key="item.kode" class="hover:bg-slate-50/80 transition-colors">
+                            <td class="py-4 px-6">
+                                <div class="flex items-start gap-3">
+                                    <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shrink-0 mt-0.5 shadow-sm"
+                                        :class="getRankClass(getAbsoluteIndexBHP(index))">
+                                        #{{ getAbsoluteIndexBHP(index) }}
+                                    </span>
+                                    <div>
+                                        <p class="font-bold text-slate-900">{{ item.nama }}</p>
+                                        <p class="text-xs font-mono text-slate-400 mt-0.5">{{ item.kode }} | Stok: {{ item.stok_saat_ini }} Unit</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-center font-medium text-slate-600">
+                                <div>Dipakai: <strong>{{ item.total_dipinjam }}x</strong></div>
+                            </td>
+                            <td class="py-4 px-4 text-center bg-amber-50/10">
+                                <div class="font-bold text-slate-800">{{ item.analitik_utilisasi?.rasio_persen || 0 }}%</div>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded-md font-semibold mt-1 inline-block"
+                                    :class="(item.analitik_utilisasi?.rasio_persen || 0) > 85 ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600'">
+                                    {{ item.analitik_utilisasi?.status || 'Normal' }}
+                                </span>
+                            </td>
+                            <td class="py-4 px-4 text-center bg-blue-50/10 font-medium">
+                                <div class="text-slate-800">Proyeksi Habis: <strong>{{ item.analitik_prediktif?.proyeksi_peminjaman_depan || 0 }}x</strong></div>
+                                <div class="text-xs font-bold text-blue-700 mt-0.5" v-if="(item.analitik_prediktif?.estimasi_kebutuhan_stok || 0) > 0">
+                                    Saran Restock: +{{ item.analitik_prediktif.estimasi_kebutuhan_stok }} Unit
+                                </div>
+                                <div class="text-xs text-emerald-600 font-bold mt-0.5" v-else>Stok Memadai</div>
+                            </td>
+                            <td class="py-4 px-6 border-l border-slate-100">
+                                <div class="flex flex-col items-start gap-1.5">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ring-1"
+                                            :class="getBadgeClass(item.rekomendasi.type)">
+                                            {{ item.rekomendasi.label }}
+                                        </span>
+                                        <span class="text-[11px] font-mono font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                                            Skor: {{ item.priority_score }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-600 mt-0.5">{{ item.rekomendasi.action }}</p>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-center whitespace-nowrap align-middle">
+                                <button @click="bukaDrillDown(item.id)" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer">
+                                    <span>Drill-Down</span>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div v-if="!isLoading && analitikBHP.length > 0" class="bg-white border-t border-slate-200 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p class="text-xs text-slate-500 font-medium">
+                    Menampilkan {{ getStartIndexBHP }} - {{ getEndIndexBHP }} dari {{ analitikBHP.length }} BHP.
+                </p>
+                <div class="flex items-center gap-1.5">
+                    <button @click="changePageBHP(currentPageBHP - 1)" :disabled="currentPageBHP === 1"
+                        class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold disabled:opacity-50">Prev</button>
+                    <div class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-black rounded-lg border border-blue-100/50">Hal {{ currentPageBHP }} / {{ totalPagesBHP || 1 }}</div>
+                    <button @click="changePageBHP(currentPageBHP + 1)" :disabled="currentPageBHP === totalPagesBHP || totalPagesBHP === 0"
+                        class="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg text-xs font-bold disabled:opacity-50">Next</button>
+                </div>
             </div>
         </div>
 
@@ -524,8 +702,6 @@
                                             <th class="py-2.5 px-4">Tanggal</th>
                                             <th class="py-2.5 px-4">Jenis Laporan</th>
                                             <th class="py-2.5 px-4">Status Kondisi</th>
-                                            <th class="py-2.5 px-4 text-center">Volume</th>
-                                            <th class="py-2.5 px-4">Keterangan / Kronologi</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
@@ -537,8 +713,6 @@
                                             <td class="py-2.5 px-4"><span
                                                     class="px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 font-bold border border-orange-100">{{
                                                         log.status }}</span></td>
-                                            <td class="py-2.5 px-4 text-center font-bold">{{ log.jumlah }} u</td>
-                                            <td class="py-2.5 px-4 text-slate-600 italic">{{ log.deskripsi || 'Tidak ada catatan' }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -569,17 +743,16 @@ import { useAlert } from '../composables/useAlert';
 import { useConfirm } from '../composables/useConfirm';
 import api from '../plugins/axios';
 
-import { Bar, Line } from 'vue-chartjs';
+import { Bar, Line, Doughnut } from 'vue-chartjs';
 import {
-    Chart as ChartJS, Title, Tooltip, Legend, BarElement, LineElement, PointElement, CategoryScale, LinearScale, Filler
+    Chart as ChartJS, Title, Tooltip, Legend, BarElement, LineElement, PointElement, CategoryScale, LinearScale, Filler, ArcElement
 } from 'chart.js';
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, LineElement, PointElement, CategoryScale, LinearScale, Filler);
+ChartJS.register(Title, Tooltip, Legend, BarElement, LineElement, PointElement, CategoryScale, LinearScale, Filler, ArcElement);
 
 const { showAlert } = useAlert();
 const { showConfirm } = useConfirm();
 
-// -- STATE UTAMA (Sudah Lengkap & Tidak Ada yang Tertinggal) --
 const searchQuery = ref('');
 const sortBy = ref('spk_desc');
 const isLoading = ref(true);
@@ -588,6 +761,14 @@ const currentYear = new Date().getFullYear();
 const availableYears = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3];
 const selectedYear = ref(currentYear);
 
+// STATE PAGINASI ALAT & BHP
+const limit = ref(10);
+const currentPageAlat = ref(1);
+const currentPageBHP = ref(1);
+
+const showLimitDropdown = ref(false);
+const limitDropdownRef = ref(null);
+
 const rawDataAnalitik = ref([]);
 const totalUser = ref(0);
 const monthlyTrend = ref([]);
@@ -595,7 +776,6 @@ const monthlyTrend = ref([]);
 const showMatrix = ref(false);
 const isDesktop = ref(window.innerWidth >= 1024);
 
-// State untuk Modal Drill-Down
 const showModalDiagnosa = ref(false);
 const isLoadingDiagnosa = ref(false);
 const detailDiagnosa = ref(null);
@@ -614,7 +794,6 @@ const sortOptions = [
     { value: 'stock_asc', label: 'Sisa Stok Paling Menipis' }
 ];
 
-// Menghitung label teks yang sedang aktif untuk ditampilkan di tombol
 const activeSortLabel = computed(() => {
     const selected = sortOptions.find(o => o.value === sortBy.value);
     return selected ? selected.label : 'Ranking SPK Tertinggi';
@@ -622,7 +801,7 @@ const activeSortLabel = computed(() => {
 
 const pilihSort = (value) => {
     sortBy.value = value;
-    showSortDropdown.value = false; // Otomatis tutup menu setelah memilih
+    showSortDropdown.value = false; 
 };
 
 const pilihTahun = (year) => {
@@ -630,14 +809,17 @@ const pilihTahun = (year) => {
     showYearDropdown.value = false;
 };
 
-const handleClickOutside = (e) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(e.target)) {
-        showYearDropdown.value = false;
-    }
+const pilihLimit = (val) => {
+    limit.value = val;
+    currentPageAlat.value = 1;
+    currentPageBHP.value = 1;
+    showLimitDropdown.value = false;
+};
 
-    if (sortDropdownRef.value && !sortDropdownRef.value.contains(e.target)) {
-        showSortDropdown.value = false;
-    }
+const handleClickOutside = (e) => {
+    if (dropdownRef.value && !dropdownRef.value.contains(e.target)) showYearDropdown.value = false;
+    if (sortDropdownRef.value && !sortDropdownRef.value.contains(e.target)) showSortDropdown.value = false;
+    if (limitDropdownRef.value && !limitDropdownRef.value.contains(e.target)) showLimitDropdown.value = false;
 };
 
 const handleResize = () => {
@@ -656,6 +838,7 @@ const fetchAnalitikData = async () => {
                 id: item.id,
                 kode: item.kode || '-',
                 nama: item.nama || 'Tanpa Nama',
+                kategori: item.kategori || null, // Kategori BHP atau Alat
                 stok_saat_ini: Number(item.stok_saat_ini || 0),
                 total_dipinjam: Number(item.total_dipinjam || 0),
                 rusak: Number(item.rusak || 0),
@@ -664,6 +847,8 @@ const fetchAnalitikData = async () => {
                 analitik_utilisasi: item.analitik_utilisasi || { rasio_persen: 0, status: 'Normal' },
                 analitik_prediktif: item.analitik_prediktif || { proyeksi_peminjaman_depan: 0, estimasi_kebutuhan_stok: 0 }
             }));
+            currentPageAlat.value = 1; 
+            currentPageBHP.value = 1;
         }
     } catch (error) {
         console.error("Gagal memuat data analitik:", error);
@@ -750,17 +935,27 @@ onUnmounted(() => {
     window.removeEventListener('resize', handleResize);
 });
 
-watch(selectedYear, () => {
-    fetchAnalitikData();
-    fetchMonthlyTrendData();
+// Reset Halaman jika Filter berubah
+watch([searchQuery, sortBy, selectedYear], () => {
+    currentPageAlat.value = 1;
+    currentPageBHP.value = 1;
 });
 
-// --- RUMUS REKOMENDASI ---
+// --- Rumus Rekomendasi ---
 const generateRecommendation = (item) => {
     const isHighDemand = item.total_dipinjam >= 50;
     const isLowStock = item.stok_saat_ini <= 5;
     const totalKendala = item.rusak + item.hilang + item.rusak_total;
     const hasProblem = totalKendala > 0;
+    const sisaKebutuhanRestock = item.analitik_prediktif?.estimasi_kebutuhan_stok || 0;
+
+    if (sisaKebutuhanRestock <= 0) {
+        return { 
+            type: 'aman', 
+            label: 'Stok Terpenuhi', 
+            action: 'Kapasitas dan stok saat ini sudah mencukupi target proyeksi tahun depan.' 
+        };
+    }
 
     if (isHighDemand && totalKendala >= 2) {
         return {
@@ -789,13 +984,13 @@ const generateRecommendation = (item) => {
     }
 
     if (!isHighDemand && isLowStock) {
-        return { type: 'prioritas_menengah', label: 'Tinjau Ulang', action: 'Stok menipis tapi jarang dipakai. Tinjau urgensi.' };
+        return { type: 'prioritas_menengah', label: 'Prioritas Menengah', action: 'Stok menipis tapi jarang dipakai. Tinjau urgensi.' };
     }
 
-    return { type: 'aman', label: 'Status Aman', action: 'Kondisi 100% normal. Tidak perlu pengadaan.' };
+    return { type: 'aman', label: 'Aman', action: 'Kondisi 100% normal. Tidak perlu pengadaan.' };
 };
 
-// --- RUMUS BOBOT SPK ---
+// --- Rumus Bobot SPK ---
 const normalizeScore = (value, maxValue) => {
     if (!maxValue || maxValue <= 0) return 0;
     return Math.min(Number(value || 0) / maxValue, 1);
@@ -820,6 +1015,11 @@ const getRuleScore = (type) => {
 };
 
 const calculatePriorityScore = (item, maxValues) => {
+    
+    if ((item.analitik_prediktif?.estimasi_kebutuhan_stok || 0) <= 0) {
+        return 0;
+    }
+    
     const totalKendala = item.rusak + item.hilang + item.rusak_total;
     const demandScore = normalizeScore(item.total_dipinjam, maxValues.maxDipinjam);
     const problemScore = normalizeScore(totalKendala, maxValues.maxKendala);
@@ -830,7 +1030,6 @@ const calculatePriorityScore = (item, maxValues) => {
     return Number(Math.min(finalScore, 1).toFixed(2));
 };
 
-// --- COMPUTED: TABEL & PERANGKINGAN ---
 const analitikWithRekomendasi = computed(() => {
     const data = rawDataAnalitik.value
         .filter(item => item.total_dipinjam > 0)
@@ -871,13 +1070,57 @@ const analitikWithRekomendasi = computed(() => {
     });
 });
 
+// Hasil Data Global yang Telah Difilter Search
 const filteredAnalitik = computed(() => {
     if (!searchQuery.value) return analitikWithRekomendasi.value;
     const query = searchQuery.value.toLowerCase();
     return analitikWithRekomendasi.value.filter(a => a.nama.toLowerCase().includes(query) || a.kode.toLowerCase().includes(query));
 });
 
-// -- COMPUTED SUMMARY CARDS (YANG SEBELUMNYA HILANG KINI SUDAH KEMBALI) --
+// ==========================================
+// PEMISAHAN DATA ALAT DAN BHP
+// ==========================================
+const analitikAlat = computed(() => filteredAnalitik.value.filter(a => a.kategori === 'Alat'));
+const analitikBHP = computed(() => filteredAnalitik.value.filter(a => a.kategori === 'BHP'));
+
+// Paginasi Alat
+const totalPagesAlat = computed(() => Math.ceil(analitikAlat.value.length / limit.value));
+const paginatedAlat = computed(() => {
+    const start = (currentPageAlat.value - 1) * limit.value;
+    return analitikAlat.value.slice(start, start + limit.value);
+});
+const getStartIndexAlat = computed(() => analitikAlat.value.length === 0 ? 0 : (currentPageAlat.value - 1) * limit.value + 1);
+const getEndIndexAlat = computed(() => Math.min(currentPageAlat.value * limit.value, analitikAlat.value.length));
+const changePageAlat = (page) => {
+    if (page >= 1 && page <= totalPagesAlat.value) currentPageAlat.value = page;
+};
+const getAbsoluteIndexAlat = (indexOnPage) => {
+    return (currentPageAlat.value - 1) * limit.value + indexOnPage + 1;
+};
+
+// Paginasi BHP
+const totalPagesBHP = computed(() => Math.ceil(analitikBHP.value.length / limit.value));
+const paginatedBHP = computed(() => {
+    const start = (currentPageBHP.value - 1) * limit.value;
+    return analitikBHP.value.slice(start, start + limit.value);
+});
+const getStartIndexBHP = computed(() => analitikBHP.value.length === 0 ? 0 : (currentPageBHP.value - 1) * limit.value + 1);
+const getEndIndexBHP = computed(() => Math.min(currentPageBHP.value * limit.value, analitikBHP.value.length));
+const changePageBHP = (page) => {
+    if (page >= 1 && page <= totalPagesBHP.value) currentPageBHP.value = page;
+};
+const getAbsoluteIndexBHP = (indexOnPage) => {
+    return (currentPageBHP.value - 1) * limit.value + indexOnPage + 1;
+};
+
+const getRankClass = (absoluteIndex) => {
+    if (absoluteIndex === 1) return 'bg-amber-400 text-slate-900 ring-2 ring-amber-300';
+    if (absoluteIndex === 2) return 'bg-slate-300 text-slate-800';
+    if (absoluteIndex === 3) return 'bg-amber-700 text-white';
+    return 'bg-slate-100 text-slate-600';
+};
+
+// --- DATA STATISTIK ATAS ---
 const totalPeminjamanTahunIni = computed(() => {
     return rawDataAnalitik.value.reduce((sum, item) => sum + item.total_dipinjam, 0);
 });
@@ -890,7 +1133,7 @@ const prioritasTinggiCount = computed(() => {
     return analitikWithRekomendasi.value.filter(a => ['prioritas_tinggi', 'kritis', 'ganti_unit'].includes(a.rekomendasi.type)).length;
 });
 
-// --- TOP 5 GRAFIK ---
+// --- Grafik Top 5 ---
 const top5Data = computed(() => {
     const spkSorted = [...analitikWithRekomendasi.value].sort((a, b) => b.priority_score - a.priority_score);
     return spkSorted.filter(item => item.priority_score > 0).slice(0, 5);
@@ -1044,12 +1287,73 @@ const monthlyTrendChartOptions = {
     }
 };
 
+// --- GRAFIK DISTRIBUSI STATUS PENGADAAN (DOUGHNUT) ---
+const distributionChartData = computed(() => {
+    const counts = { kritis: 0, prioritas_tinggi: 0, ganti_unit: 0, prioritas_menengah: 0, aman: 0 };
+    
+    filteredAnalitik.value.forEach(item => {
+        if (counts[item.rekomendasi.type] !== undefined) {
+            counts[item.rekomendasi.type]++;
+        }
+    });
+
+    return {
+        labels: ['Kritis', 'Prioritas Tinggi', 'Perlu Penggantian', 'Prioritas Menengah', 'Aman / Terpenuhi'],
+        datasets: [{
+            data: [
+                counts.kritis, 
+                counts.prioritas_tinggi, 
+                counts.ganti_unit, 
+                counts.prioritas_menengah, 
+                counts.aman
+            ],
+            backgroundColor: [
+                '#ef4444', 
+                '#3b82f6', 
+                '#f97316', 
+                '#f59e0b', 
+                '#10b981'  
+            ],
+            borderWidth: 0,
+            hoverOffset: 6
+        }]
+    };
+});
+
+const distributionChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: {
+        legend: {
+            position: 'bottom',
+            labels: {
+                usePointStyle: true,
+                padding: 15,
+                font: { size: 10, weight: 'bold' },
+                color: '#475569'
+            }
+        },
+        tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#ffffff',
+            bodyColor: '#e2e8f0',
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+                label: (context) => ` ${context.label}: ${context.raw} Barang`
+            }
+        }
+    }
+};
+
+// --- LOGIKA CETAK LAPORAN ---
 const exportReport = () => {
     showConfirm(
         `Cetak laporan rekomendasi pengadaan untuk tahun ${selectedYear.value}?`,
         async () => {
             try {
-                if (filteredAnalitik.value.length === 0) {
+                if (analitikAlat.value.length === 0 && analitikBHP.value.length === 0) {
                     showAlert("Tidak ada data untuk dicetak.", "error");
                     return;
                 }
@@ -1087,6 +1391,39 @@ const escapeHtml = (value) => {
         .replaceAll("'", "&#039;");
 };
 
+// Helper HTML Table rows
+const generateHtmlRows = (dataArray) => {
+    if (dataArray.length === 0) {
+        return `<tr><td colspan="7" class="text-center" style="padding: 20px;">Tidak ada data pada kategori ini.</td></tr>`;
+    }
+    return dataArray.map((item, index) => {
+        const estimasi = item.analitik_prediktif?.estimasi_kebutuhan_stok || 0;
+        const restockText = estimasi > 0 ? `Restock: +${estimasi}` : 'Stok Memadai';
+        return `
+        <tr>
+            <td class="text-center">${index + 1}</td>
+            <td>
+                <strong>${escapeHtml(item.nama)}</strong><br>
+                <span class="kode">${escapeHtml(item.kode)}</span>
+            </td>
+            <td class="text-center">${item.total_dipinjam}x</td>
+            <td class="text-center font-bold" style="background-color:#fef3c7">
+                ${item.analitik_utilisasi?.rasio_persen || 0}%<br>
+                <small style="font-size:9px; color:#92400e">${item.analitik_utilisasi?.status || 'Normal'}</small>
+            </td>
+            <td class="text-center font-bold" style="background-color:#eff6ff">
+                Pinjam: ${item.analitik_prediktif?.proyeksi_peminjaman_depan || 0}x<br>
+                <small style="font-size:9px; color:#1e40af">${restockText}</small>
+            </td>
+            <td class="text-center">${item.stok_saat_ini} Unit</td>
+            <td>
+                <strong>${escapeHtml(getPriorityLabel(item.rekomendasi.type))}</strong><br>
+                <span>${escapeHtml(item.rekomendasi.action)}</span>
+            </td>
+        </tr>
+    `}).join("");
+};
+
 const printReportToPdf = () => {
     const reportWindow = window.open("", "_blank", "width=1200,height=900");
     if (!reportWindow) {
@@ -1098,33 +1435,8 @@ const printReportToPdf = () => {
         day: "2-digit", month: "long", year: "numeric"
     });
 
-    const rows = filteredAnalitik.value
-        .map((item, index) => {
-            return `
-                <tr>
-                    <td class="text-center">${index + 1}</td>
-                    <td>
-                        <strong>${escapeHtml(item.nama)}</strong><br>
-                        <span class="kode">${escapeHtml(item.kode)}</span>
-                    </td>
-                    <td class="text-center">${item.total_dipinjam}x</td>
-                    <td class="text-center font-bold" style="background-color:#fef3c7">
-                        ${item.analitik_utilisasi?.rasio_persen || 0}%<br>
-                        <small style="font-size:9px; color:#92400e">${item.analitik_utilisasi?.status || 'Normal'}</small>
-                    </td>
-                    <td class="text-center font-bold" style="background-color:#eff6ff">
-                        Pinjam: ${item.analitik_prediktif?.proyeksi_peminjaman_depan || 0}x<br>
-                        <small style="font-size:9px; color:#1e40af">Restock: +${item.analitik_prediktif?.estimasi_kebutuhan_stok || 0}</small>
-                    </td>
-                    <td class="text-center">${item.stok_saat_ini} Unit</td>
-                    <td>
-                        <strong>${escapeHtml(getPriorityLabel(item.rekomendasi.type))} (Skor: ${item.priority_score})</strong><br>
-                        <span>${escapeHtml(item.rekomendasi.action)}</span>
-                    </td>
-                </tr>
-            `;
-        })
-        .join("");
+    const rowsAlat = generateHtmlRows(analitikAlat.value);
+    const rowsBHP = generateHtmlRows(analitikBHP.value);
 
     const html = `
         <!DOCTYPE html>
@@ -1153,9 +1465,10 @@ const printReportToPdf = () => {
                 .summary-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; background: #f8fafc; }
                 .summary-card span { display: block; font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
                 .summary-card strong { display: block; margin-top: 4px; font-size: 20px; color: #0f172a; }
-                table { width: 100%; border-collapse: collapse; font-size: 11px; }
+                .section-title { font-size: 14px; font-weight: 800; margin: 24px 0 10px; color: #1e293b; border-left: 4px solid #3b82f6; padding-left: 8px; }
+                table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 24px; }
                 th { background: #0f172a; color: white; padding: 9px; border: 1px solid #0f172a; text-transform: uppercase; font-size: 9px; letter-spacing: 0.04em; }
-                td { padding: 8px; border: 1px solid #cbd5e1; vertical-align: top; line-height: 1.4; }
+                td { padding: 8px; border: 1px solid #cbd5e1; vertical-align: middle; line-height: 1.4; }
                 tr:nth-child(even) td { background: #f8fafc; }
                 .text-center { text-align: center; }
                 .kode { color: #64748b; font-size: 10px; font-family: monospace; }
@@ -1186,16 +1499,17 @@ const printReportToPdf = () => {
                 <div class="page">
                     <div class="header">
                         <div>
-                            <h1>Laporan Rekomendasi Pengadaan Alat Laboratorium</h1>
+                            <h1>Laporan Rekomendasi Pengadaan Laboratorium</h1>
                             <p>
-                                Sistem Penunjang Keputusan Pengadaan Tahunan (Full-Cycle Analytics)<br>
-                                Laboratorium PLP TIK Politeknik Negeri Jakarta
+                                Sistem Pendukung Keputusan Pengadaan<br>
+                                Laboratorium TIK Politeknik Negeri Jakarta
                             </p>
                         </div>
                         <div class="badge">
                             Data Analitik ${selectedYear.value}
                         </div>
                     </div>
+                    
                     <div class="summary">
                         <div class="summary-card">
                             <span>Total Peminjam</span>
@@ -1214,6 +1528,8 @@ const printReportToPdf = () => {
                             <strong>${totalMasalahTahunIni.value}</strong>
                         </div>
                     </div>
+                    
+                    <div class="section-title">DAFTAR EVALUASI & PENGADAAN ALAT</div>
                     <table>
                         <thead>
                             <tr>
@@ -1227,9 +1543,28 @@ const printReportToPdf = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            ${rows}
+                            ${rowsAlat}
                         </tbody>
                     </table>
+
+                    <div class="section-title">DAFTAR EVALUASI & PENGADAAN BHP</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 4%;">No</th>
+                                <th style="width: 20%;">Nama Bahan Habis Pakai</th>
+                                <th style="width: 8%;">Konsumsi</th>
+                                <th style="width: 15%;">Tingkat Utilisasi (Diagnostic)</th>
+                                <th style="width: 15%;">Proyeksi Habis ${selectedYear.value + 1} (Predictive)</th>
+                                <th style="width: 8%;">Stok</th>
+                                <th>Rekomendasi Mutlak (Prescriptive)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsBHP}
+                        </tbody>
+                    </table>
+
                     <div class="footer">
                         Dicetak pada ${tanggalCetak}. Data berdasarkan aktivitas laboratorium tahun ${selectedYear.value}.
                     </div>

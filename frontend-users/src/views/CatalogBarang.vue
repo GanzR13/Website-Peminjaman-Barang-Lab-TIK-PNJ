@@ -87,7 +87,7 @@
                         </div>
 
                         <p
-                            class="text-[10px] md:text-xs text-slate-500 mt-1 md:mt-1.5 font-medium leading-relaxed line-clamp-2">
+                            class="text-[10px] md:text-xs text-slate-500 mt-1 md:mt-1.5 font-medium leading-relaxed line-clamp-2 whitespace-pre-line">
                             {{ barang.deskripsi || "Tidak ada deskripsi." }}
                         </p>
                     </div>

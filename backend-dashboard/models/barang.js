@@ -4,15 +4,19 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
 	class Barang extends Model {
 		static associate(models) {
-
 			Barang.hasMany(models.DetailPeminjaman, {
 				foreignKey: "barang_id",
 				as: "riwayat_peminjaman",
 			});
-			
+
 			Barang.hasMany(models.LaporanMasalah, {
 				foreignKey: "barang_id",
 				as: "laporan_masalah",
+			});
+
+			Barang.belongsTo(models.Kategori, {
+				foreignKey: "id_kategori",
+				as: "kategori",
 			});
 		}
 	}
@@ -29,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 0,
 			},
 			deskripsi: {
-				type: DataTypes.TEXT, 
+				type: DataTypes.TEXT,
 				allowNull: true,
 			},
 			gambar: {
